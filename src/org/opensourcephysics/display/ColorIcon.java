@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -69,7 +69,8 @@ public class ColorIcon implements Icon {
    *
    * @return the icon width
    */
-  public int getIconWidth() {
+  @Override
+public int getIconWidth() {
     return w;
   }
 
@@ -78,7 +79,8 @@ public class ColorIcon implements Icon {
    *
    * @return the icon height
    */
-  public int getIconHeight() {
+  @Override
+public int getIconHeight() {
     return h;
   }
 
@@ -90,7 +92,8 @@ public class ColorIcon implements Icon {
    * @param x the x coordinate of the icon
    * @param y the y coordinate of the icon
    */
-  public void paintIcon(Component c, Graphics _g, int x, int y) {
+  @Override
+public void paintIcon(Component c, Graphics _g, int x, int y) {
     Graphics2D g = (Graphics2D) _g;
     Rectangle rect = new Rectangle(x, y, w, h);
     Paint gPaint = g.getPaint();
@@ -127,6 +130,6 @@ public class ColorIcon implements Icon {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

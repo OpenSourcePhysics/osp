@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -339,7 +339,8 @@ public class Polynomial implements Function {
   /**
    * Converts this polynomial to a String.
    */
-  public String toString() {
+  @Override
+public String toString() {
     if((coefficients==null)||(coefficients.length<1)) {
       return "Polynomial coefficients are undefined."; //$NON-NLS-1$
     }
@@ -372,7 +373,8 @@ public class Polynomial implements Function {
    * @param x double    value at which the polynomial is evaluated
    * @return double polynomial value.
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     int n = coefficients.length;
     double answer = coefficients[--n];
     while(n>0) {
@@ -423,6 +425,6 @@ public class Polynomial implements Function {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

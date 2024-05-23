@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -29,7 +29,7 @@ public class Protractor extends InteractiveCircle implements Drawable {
   int protractorRadius, protractorRadius2, arrowLengthPix;
   protected Tip tip = new Tip();
   protected double arrowTheta = 0, orientation = 0;
-  protected DecimalFormat f = new DecimalFormat("000"); //$NON-NLS-1$
+  protected DecimalFormat f = org.opensourcephysics.numerics.Util.newDecimalFormat("000"); //$NON-NLS-1$
   protected boolean showTheta = false;
   protected InteractiveLabel tauBox = new InteractiveLabel(thetaStr+f.format(getTheta()));
 
@@ -105,17 +105,13 @@ public class Protractor extends InteractiveCircle implements Drawable {
     return showTheta;
   }
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
-    Interactive interactive = super.findInteractive(panel, xpix, ypix);
-    if(interactive!=null) {
-      return interactive;
-    }
-    interactive = tip.findInteractive(panel, xpix, ypix);
-    if(interactive!=null) {
-      return interactive;
-    }
-    return tauBox.findInteractive(panel, xpix, ypix);
-  }
+	@Override
+	public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+		Interactive o = super.findInteractive(panel, xpix, ypix);
+		return (o != null ? o 
+				: (o = tip.findInteractive(panel, xpix, ypix)) != null ? o
+				: tauBox.findInteractive(panel, xpix, ypix));
+	}
 
   /**
    * Draws the protractor on the given drawing panel.
@@ -123,7 +119,8 @@ public class Protractor extends InteractiveCircle implements Drawable {
    * @param panel DrawingPanel
    * @param g Graphics
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
     double i1 = panel.xToPix(x);
     double j1 = panel.yToPix(y);
@@ -174,7 +171,8 @@ public class Protractor extends InteractiveCircle implements Drawable {
   }
 
   public class Tip extends InteractiveCircle {
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       this.x = x;
       this.y = y;
       arrowTheta = Math.atan2(y-Protractor.this.y, x-Protractor.this.x);
@@ -204,6 +202,6 @@ public class Protractor extends InteractiveCircle implements Drawable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

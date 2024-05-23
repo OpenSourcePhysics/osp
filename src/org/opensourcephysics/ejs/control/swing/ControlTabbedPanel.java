@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -29,7 +29,8 @@ public class ControlTabbedPanel extends ControlContainer {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JTabbedPane) {
       tabbedpanel = (JTabbedPane) _visual;
     } else {
@@ -38,7 +39,8 @@ public class ControlTabbedPanel extends ControlContainer {
     return tabbedpanel;
   }
 
-  public void add(ControlElement _child) {
+  @Override
+public void add(ControlElement _child) {
     String header = _child.getProperty("name"); //$NON-NLS-1$
     if(header!=null) {
       tabbedpanel.add(_child.getComponent(), header);
@@ -56,7 +58,8 @@ public class ControlTabbedPanel extends ControlContainer {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("placement"); //$NON-NLS-1$
@@ -65,7 +68,8 @@ public class ControlTabbedPanel extends ControlContainer {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("placement")) { //$NON-NLS-1$
       return "Placement|int";           //$NON-NLS-1$
     }
@@ -75,7 +79,8 @@ public class ControlTabbedPanel extends ControlContainer {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :
          if(tabbedpanel.getTabPlacement()!=_value.getInteger()) {
@@ -88,7 +93,8 @@ public class ControlTabbedPanel extends ControlContainer {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          tabbedpanel.setTabPlacement(javax.swing.SwingConstants.TOP);
@@ -99,7 +105,8 @@ public class ControlTabbedPanel extends ControlContainer {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
          return null;
@@ -130,6 +137,6 @@ public class ControlTabbedPanel extends ControlContainer {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

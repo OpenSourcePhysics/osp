@@ -2,7 +2,7 @@
 * Open Source Physics software is free software as described near the bottom of this code file.
 *
 * For additional information and documentation on Open Source Physics please see:
-* <https://www.compadre.org/osp/>
+* <http://www.opensourcephysics.org/>
 */
 
 package org.opensourcephysics.display;
@@ -38,7 +38,8 @@ public class TrailBezier extends AbstractTrail {
    * @param x double
    * @param y double
    */
-  public synchronized void addPoint(double x, double y) {
+  @Override
+public synchronized void addPoint(double x, double y) {
     if(closed) {
       throw new IllegalStateException("Cannot add points to a closed trail."); //$NON-NLS-1$
     }
@@ -94,7 +95,8 @@ public class TrailBezier extends AbstractTrail {
   /**
    * Closes the trail by connecting the first point to the last point.
    */
-  public void closeTrail() {
+  @Override
+public void closeTrail() {
     addPoint(x0, y0);
     addPoint(x1, y1);
     addPoint(x2, y2);
@@ -107,7 +109,8 @@ public class TrailBezier extends AbstractTrail {
   /**
    * Clears all points from the trail.
    */
-  public synchronized void clear() {
+  @Override
+public synchronized void clear() {
     numpts = 0;
     xmin = Double.MAX_VALUE;
     xmax = -Double.MAX_VALUE;
@@ -123,14 +126,15 @@ public class TrailBezier extends AbstractTrail {
    * Draw the trail on the panel.
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(numpts==0) {
       return;
     }
     Graphics2D g2 = (Graphics2D) g;
     g2.setColor(color);
     // transform paths from world to pixel coordinates
-    Shape s = path.createTransformedShape(panel.getPixelTransform());
+    Shape s = panel.transformPath(path);
     if(drawingStroke!=null) {
       Stroke stroke = g2.getStroke();
       g2.setStroke(drawingStroke);
@@ -142,24 +146,13 @@ public class TrailBezier extends AbstractTrail {
     if(closed) {
       return;
     }
-    s = pathStart.createTransformedShape(panel.getPixelTransform());
-    g2.draw(s);
+    g2.draw(panel.transformPath(pathStart));
     if(numpts>2) {
-      drawPathEnd(panel, g2);
+        pathEnd.reset();
+        path.moveTo(endPts[0], endPts[1]); // start the path at the last point
+        path.curveTo(endPts[0]+slack*dx2, endPts[1]+slack*dy2, endPts[2]-slack*dxEstimate, endPts[3]-slack*dyEstimate, endPts[2], endPts[3]);
+        g2.draw(panel.transformPath(pathEnd));
     }
-  }
-
-  /**
-   * Draws the points that have not yet been added to the spline.
-   * @param panel DrawingPanel
-   * @param g2 Graphics2D
-   */
-  protected void drawPathEnd(DrawingPanel panel, Graphics2D g2) {
-    pathEnd.reset();
-    path.moveTo(endPts[0], endPts[1]); // start the path at the last point
-    path.curveTo(endPts[0]+slack*dx2, endPts[1]+slack*dy2, endPts[2]-slack*dxEstimate, endPts[3]-slack*dyEstimate, endPts[2], endPts[3]);
-    Shape s = pathEnd.createTransformedShape(panel.getPixelTransform());
-    g2.draw(s);
   }
 
   /**
@@ -176,7 +169,8 @@ public class TrailBezier extends AbstractTrail {
    *
    * @return boolean
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return enableMeasure&&(this.numpts>0);
   }
 
@@ -184,7 +178,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the minimum x value in the trail.
    * @return double
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
@@ -192,7 +187,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the maximum x value in the trail.
    * @return double
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -200,7 +196,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the minimum y value in the trail.
    * @return double
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
@@ -208,7 +205,8 @@ public class TrailBezier extends AbstractTrail {
    * Gets the maximum y value in the trail.
    * @return double
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -216,7 +214,8 @@ public class TrailBezier extends AbstractTrail {
    * A class to save and load Dataset data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       TrailBezier trail = (TrailBezier) obj;
       control.setValue("closed", trail.closed);        //$NON-NLS-1$
       control.setValue("color", trail.color);          //$NON-NLS-1$
@@ -224,11 +223,13 @@ public class TrailBezier extends AbstractTrail {
       //control.setValue("general path", trail.generalPath);
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new TrailBezier();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       TrailBezier trail = (TrailBezier) obj;
       trail.closed = control.getBoolean("closed");      //$NON-NLS-1$
       trail.color = (Color) control.getObject("color"); //$NON-NLS-1$
@@ -261,6 +262,6 @@ public class TrailBezier extends AbstractTrail {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

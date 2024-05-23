@@ -7,6 +7,10 @@
 
 package demo;
 import javax.swing.JFrame;
+
+import org.opensourcephysics.controls.OSPLog;
+import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.ejs.control.value.Value;
 import org.opensourcephysics.frames.PlotFrame;
 
 /**
@@ -16,6 +20,9 @@ import org.opensourcephysics.frames.PlotFrame;
  * @version 1.0
  */
 public class FirstPlotApp {
+	
+	static Value v = Value.VALUE_NULL;
+	
   public static void main(String[] args) {
     PlotFrame frame = new PlotFrame("position", "amplitude", "First Plot"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     frame.setSize(400, 400);
@@ -24,6 +31,14 @@ public class FirstPlotApp {
     }
     frame.setVisible(true);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    OSPLog.info("FirstPlotApp running.");
+    
+    //WC: embedding test
+    if(OSPRuntime.isJS) {
+    	frame.setLocation(0, 0);       // sets position to top left corner
+      OSPRuntime.setAppClass(frame); // undecorated frame can now be embedded into html page
+    }
+    //WC: end testing
   }
 
 }
@@ -48,6 +63,6 @@ public class FirstPlotApp {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
+ * Copyright (c) 2024  The Open Source Physics project
  *                     https://www.compadre.org/osp
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.core;
@@ -75,7 +75,8 @@ public class CameraInspector extends JPanel implements InteractionListener {
     this.camera = panel.getCamera();
     panel.addInteractionListener(this);
     ActionListener fieldListener = new ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+      @Override
+	public void actionPerformed(java.awt.event.ActionEvent evt) {
         String cmd = evt.getActionCommand();
         JTextField field = (JTextField) evt.getSource();
         double value = 0.0;
@@ -115,7 +116,8 @@ public class CameraInspector extends JPanel implements InteractionListener {
 
     };
     ActionListener buttonListener = new ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
+      @Override
+	public void actionPerformed(java.awt.event.ActionEvent evt) {
         String cmd = evt.getActionCommand();
         if(cmd.equals("reset")) {                                                                                //$NON-NLS-1$
           camera.reset();
@@ -238,7 +240,8 @@ public class CameraInspector extends JPanel implements InteractionListener {
    * Public as result of the implementation. Not to be used directly by final users.
    * @param _event InteractionEvent
    */
-  public void interactionPerformed(InteractionEvent _event) {
+  @Override
+public void interactionPerformed(InteractionEvent _event) {
     if(_event.getSource()!=panel) {
       return;
     }
@@ -317,7 +320,8 @@ class CameraInspectorFrame extends JFrame {
     pack();
   }
 
-  public void setVisible(boolean vis) {
+  @Override
+public void setVisible(boolean vis) {
     super.setVisible(vis);
     if(vis) {
       inspector.updateFields();
@@ -346,6 +350,6 @@ class CameraInspectorFrame extends JFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

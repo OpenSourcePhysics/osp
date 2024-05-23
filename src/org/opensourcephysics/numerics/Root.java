@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -257,7 +257,7 @@ public class Root {
     }
     switch(iflag) {
        case 1 :
-         System.out.println("No solution possible"); //$NON-NLS-1$
+         System.out.println("Root: No solution possible"); //$NON-NLS-1$
          break;
     }
     if(Math.abs(fleft)<=Math.abs(fright)) {
@@ -431,6 +431,6 @@ public class Root {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

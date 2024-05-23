@@ -63,6 +63,8 @@ public class AsyncDialog implements PropertyChangeListener {
 	private ActionListener actionListener;
 	private Object choice;
 	private Object[] options;
+	private Object value;
+	private boolean wantsInput;
 
 	// These options can be supplemented as desired.
 
@@ -81,6 +83,7 @@ public class AsyncDialog implements PropertyChangeListener {
 
 	public void showInputDialog(Component frame, Object message, ActionListener a) {
 		setListener(a);
+		wantsInput = true;
 		process(JOptionPane.showInputDialog(frame, message));
 		unsetListener();
 	}
@@ -88,6 +91,7 @@ public class AsyncDialog implements PropertyChangeListener {
 	public void showInputDialog(Component frame, Object message, String title, int messageType, Icon icon,
 			Object[] selectionValues, Object initialSelectionValue, ActionListener a) {
 		setListener(a);
+		wantsInput = true;
 		process(JOptionPane.showInputDialog(frame, message, title, messageType, icon, selectionValues,
 				initialSelectionValue));
 		unsetListener();
@@ -96,6 +100,18 @@ public class AsyncDialog implements PropertyChangeListener {
 	public void showMessageDialog(Component frame, Object message, ActionListener a) {
 		setListener(a);
 		JOptionPane.showMessageDialog(frame, message);
+		unsetListener();
+		if (/** @j2sNative false || */true)
+			process("" + message);
+	}
+
+	public void showMessageDialog(Component frame, Object message, String title, ActionListener a) {
+	   showMessageDialog(frame, message, title, JOptionPane.INFORMATION_MESSAGE, a);
+	}
+
+	public void showMessageDialog(Component frame, Object message, String title, int messageType, ActionListener a) {
+		setListener(a);
+		JOptionPane.showMessageDialog(frame, message, title, messageType);
 		unsetListener();
 		if (/** @j2sNative false || */true)
 			process("" + message);
@@ -200,7 +216,7 @@ public class AsyncDialog implements PropertyChangeListener {
 	private void setListener(ActionListener a) {
 		actionListener = a;
 		@SuppressWarnings("unused")
-		Class c = JOptionPane.class; // loads the class
+		Class<?> c = JOptionPane.class; // loads the class
 		/** @j2sNative c.$clazz$.listener = this */
 	}
 
@@ -214,21 +230,21 @@ public class AsyncDialog implements PropertyChangeListener {
 	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		Object val = evt.getNewValue();
+		value = evt.getNewValue();
 		switch (evt.getPropertyName()) {
 		case "inputValue":			
-			process(val);
+			process(value);
 			break;
 		case "value":
-			if (val != null && options == null && !(val instanceof Integer)) {
-				process(getOptionIndex(((JOptionPane) evt.getSource()).getOptions(), val));
+			if (value != null && options == null && !(value instanceof Integer)) {
+				process(getOptionIndex(((JOptionPane) evt.getSource()).getOptions(), value));
 				return;
 			}
 			if (options != null) {
-				int i = getOptionIndex(options, val);
-				val = Integer.valueOf(i >= 0 ? i : JOptionPane.CLOSED_OPTION);
+				int i = getOptionIndex(options, value);
+				value = Integer.valueOf(i >= 0 ? i : JOptionPane.CLOSED_OPTION);
 			} 
-			process(val);
+			process(value);
 			break;
 		}
 	}
@@ -242,6 +258,13 @@ public class AsyncDialog implements PropertyChangeListener {
 		return -1;
 	}
 
+	public Object getValue() {
+		if (wantsInput || options == null)
+			return value;
+		int val = ((Integer) value).intValue();
+		return (val < 0 ? null : options[val]);
+	}
+	
 	private boolean processed;
 
 	/**

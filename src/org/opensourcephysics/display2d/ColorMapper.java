@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -33,8 +33,13 @@ public class ColorMapper {
   private Color[] colors;
   private byte[][] rgbs;
   private double floor, ceil;
+<<<<<<< HEAD
   private Color floorColor = Color.darkGray;
   private Color ceilColor = Color.lightGray;
+=======
+  private Color floorColor;
+  private Color ceilColor;
+>>>>>>> refs/remotes/origin/swingJS
   private byte[] floorColorRGB;
   private byte[] ceilColorRGB;
   private int numColors;
@@ -174,6 +179,7 @@ public class ColorMapper {
     }
   }
 
+<<<<<<< HEAD
   /**
    * Converts a double to color components.
    *
@@ -192,6 +198,8 @@ public class ColorMapper {
     return rgb;
   }
   
+=======
+>>>>>>> refs/remotes/origin/swingJS
 	/**
 	 * Converts a double to color components.
 	 *
@@ -345,8 +353,7 @@ public class ColorMapper {
    * @param _colors
    */
   public void setColorPalette(Color[] _colors) {
-    floorColor = Color.darkGray;
-    ceilColor = Color.lightGray;
+  	setFloorCeilColor(null, null);    	
     colors = _colors;
     numColors = colors.length;
     rgbs = new byte[numColors][];
@@ -364,7 +371,15 @@ public class ColorMapper {
 	  return rgb;
   }
 
-  /**
+  private static byte[] toRGB(Color c) {
+  	byte[] rgb = new byte[3];
+  	rgb[0] = (byte) c.getRed();
+  	rgb[1] = (byte) c.getGreen();
+  	rgb[2] = (byte) c.getBlue();
+	return rgb;
+}
+
+/**
    * Sets the number of colors
    * @param _numColors
    */
@@ -458,54 +473,61 @@ public class ColorMapper {
 		return colors;
 	}
 
-  /**
-   * Gets a array of colors for use in data visualization.
-   *
-   * Colors are similar to the colors returned by a color mapper instance.
-   * @param numColors
-   * @param paletteType
-   * @return
-   */
-  static public Color[] getColorPalette(int numColors, int paletteType) {
-    if(numColors<2) {
-      numColors = 2;
-    }
-    Color colors[] = new Color[numColors];
-    for(int i = 0; i<numColors; i++) {
-      float level = (float) i/(numColors-1)*0.8f;
-      int r = 0, b = 0;
-      switch(paletteType) {
-         case ColorMapper.REDBLUE_SHADE :
-           r = (Math.max(0, -numColors-1+i*2)*255)/(numColors-1);
-           b = (Math.max(0, numColors-1-i*2)*255)/(numColors-1);
-           colors[i] = new Color(r, 0, b);
-           break;
-         case ColorMapper.SPECTRUM :
-           level = 0.8f-level;
-           colors[i] = Color.getHSBColor(level, 1.0f, 1.0f);
-           break;
-         case ColorMapper.GRAYSCALE :
-         case ColorMapper.BLACK :
-           colors[i] = new Color(i*255/(numColors-1), i*255/(numColors-1), i*255/(numColors-1));
-           break;
-         case ColorMapper.RED :
-           colors[i] = new Color(i*255/(numColors-1), 0, 0);
-           break;
-         case ColorMapper.GREEN :
-           colors[i] = new Color(0, i*255/(numColors-1), 0);
-           break;
-         case ColorMapper.BLUE :
-           colors[i] = new Color(0, 0, i*255/(numColors-1));
-           break;
-         case ColorMapper.DUALSHADE :
-         default :
-           level = (float) i/(numColors-1);
-           colors[i] = Color.getHSBColor(0.8f*(1-level), 1.0f, 0.2f+1.6f*Math.abs(0.5f-level));
-           break;
-      }
-    }
-    return colors;
-  }
+	static public Color[] getColorPalette(int numColors, int paletteType) {
+		return getColorPalette(numColors, paletteType, null);
+	}
+
+	/**
+	 * Gets a array of colors for use in data visualization.
+	 *
+	 * Colors are similar to the colors returned by a color mapper instance.
+	 * 
+	 * @param numColors
+	 * @param paletteType
+	 * @return
+	 */
+	static public Color[] getColorPalette(int numColors, int paletteType, byte[][] rgbs) {
+		if (numColors < 2) {
+			numColors = 2;
+		}
+		Color colors[] = new Color[numColors];
+		for (int i = 0; i < numColors; i++) {
+			float level = 0.8f * i / (numColors - 1);
+			int r = 0, b = 0;
+			switch (paletteType) {
+			case ColorMapper.REDBLUE_SHADE:
+				r = (Math.max(0, -numColors - 1 + i * 2) * 255) / (numColors - 1);
+				b = (Math.max(0, numColors - 1 - i * 2) * 255) / (numColors - 1);
+				colors[i] = new Color(r, 0, b);
+				break;
+			case ColorMapper.SPECTRUM:
+				level = 0.8f - level;
+				colors[i] = Color.getHSBColor(level, 1.0f, 1.0f);
+				break;
+			case ColorMapper.GRAYSCALE:
+			case ColorMapper.BLACK:
+				colors[i] = new Color(i * 255 / (numColors - 1), i * 255 / (numColors - 1), i * 255 / (numColors - 1));
+				break;
+			case ColorMapper.RED:
+				colors[i] = new Color(i * 255 / (numColors - 1), 0, 0);
+				break;
+			case ColorMapper.GREEN:
+				colors[i] = new Color(0, i * 255 / (numColors - 1), 0);
+				break;
+			case ColorMapper.BLUE:
+				colors[i] = new Color(0, 0, i * 255 / (numColors - 1));
+				break;
+			case ColorMapper.DUALSHADE:
+			default:
+				level = (float) i / (numColors - 1);
+				colors[i] = Color.getHSBColor(0.8f * (1 - level), 1.0f, 0.2f + 1.6f * Math.abs(0.5f - level));
+				break;
+			}
+			if (rgbs != null)
+				rgbs[i] = toRGB(colors[i]);
+		}
+		return colors;
+	}
 
   /**
    * Gets a loader that allows a Circle to be represented as XML data.
@@ -526,7 +548,8 @@ public class ColorMapper {
      * @param control XMLControl
      * @param obj Object
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ColorMapper mapper = (ColorMapper) obj;
       control.setValue("palette type", mapper.paletteType);   //$NON-NLS-1$
       control.setValue("number of colors", mapper.numColors); //$NON-NLS-1$
@@ -544,7 +567,8 @@ public class ColorMapper {
      * @param control XMLControl
      * @return Object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ColorMapper(100, -1, 1, ColorMapper.SPECTRUM);
     }
 
@@ -554,7 +578,8 @@ public class ColorMapper {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ColorMapper mapper = (ColorMapper) obj;
       int paletteType = control.getInt("palette type");   //$NON-NLS-1$
       int numColors = control.getInt("number of colors"); //$NON-NLS-1$
@@ -598,6 +623,6 @@ public class ColorMapper {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

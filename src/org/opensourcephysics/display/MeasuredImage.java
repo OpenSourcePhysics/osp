@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -25,6 +25,7 @@ public class MeasuredImage implements Measurable {
   protected BufferedImage image;
   protected double xmin, xmax, ymin, ymax;
   protected boolean visible = true;
+  protected double[] minmax = new double[2];
 
   /**
    * Constructs a MeasuredImage with a pixel scale.
@@ -84,7 +85,8 @@ public class MeasuredImage implements Measurable {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -92,10 +94,13 @@ public class MeasuredImage implements Measurable {
       panel.setMessage(DisplayRes.getString("MeasuredImage.NoImage")); //$NON-NLS-1$
       return;
     }
-    Graphics2D g2 = (Graphics2D) g;
-    AffineTransform gat = g2.getTransform(); // save graphics transform
-    RenderingHints hints = g2.getRenderingHints();
-    if (!OSPRuntime.isMac()) {  //Rendering hint bug in Mac Snow Leopard 
+    Graphics2D g2 = (Graphics2D) g.create();
+    // BH 2020.02.29 using create/dispose here
+//    AffineTransform gat = g2.getTransform(); // save graphics transform
+	// BH 2020.03.04 no need for getting/setting rendering hints if not a mac
+	RenderingHints hints = null;
+	if (OSPRuntime.setRenderingHints) { // Rendering hint bug in Mac Snow Leopard
+		hints = g2.getRenderingHints();
       g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
     }
@@ -104,30 +109,38 @@ public class MeasuredImage implements Measurable {
     g2.transform(AffineTransform.getTranslateInstance(panel.leftGutter+panel.xPixPerUnit*(xmin-panel.xmin), panel.topGutter+panel.yPixPerUnit*(panel.ymax-ymax)));
     g2.transform(AffineTransform.getScaleInstance(sx, sy));
     g2.drawImage(image, 0, 0, panel);
-    g2.setTransform(gat);        // restore graphics transform
-    g2.setRenderingHints(hints); // restore the hints
+    if (hints != null)
+    	g2.setRenderingHints(hints); // restore the hints
+    g2.dispose();
   }
 
-  public boolean isMeasured() {
-    if(image==null) {
-      return false;
-    }
-    return true;
+  @Override
+public boolean isMeasured() {
+	  // BH just tidier
+	  return (image != null);
+//    if(image==null) {
+//      return false;
+//    }
+//    return true;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -176,6 +189,6 @@ public class MeasuredImage implements Measurable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
@@ -15,8 +15,8 @@ import org.opensourcephysics.display.TeXParser;
  * Builds a coordinate string from a mouse event for an axis type.
  */
 public abstract class CoordinateStringBuilder {
-  protected DecimalFormat scientificFormat = new DecimalFormat("0.###E0"); // coordinate display format for message box. //$NON-NLS-1$
-  protected DecimalFormat decimalFormat = new DecimalFormat("0.00"); // coordinate display format for message box. //$NON-NLS-1$
+  protected DecimalFormat scientificFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.###E0"); // coordinate display format for message box. //$NON-NLS-1$
+  protected DecimalFormat decimalFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00"); // coordinate display format for message box. //$NON-NLS-1$
   protected String xLabel = "x=";   //$NON-NLS-1$
   protected String yLabel = "  y="; //$NON-NLS-1$
 
@@ -86,6 +86,6 @@ public abstract class CoordinateStringBuilder {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

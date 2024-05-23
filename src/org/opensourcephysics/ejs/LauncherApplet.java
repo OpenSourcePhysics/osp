@@ -2,13 +2,16 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Frame;
 import java.lang.reflect.Constructor;
+import java.net.URL;
+
 import javax.swing.JApplet;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -112,7 +115,8 @@ public class LauncherApplet extends JApplet {
   }
 
   /** Initialize the applet */
-  public void init() {
+  @Override
+public void init() {
     String simClass = null;
     String windowToCapture = null;
     try {
@@ -138,25 +142,8 @@ public class LauncherApplet extends JApplet {
     }
   }
 
-  // public void destroy(){
-  // System.out.println("LauncherApplet destroy Method.");
-  // super.destroy();
-  // }
-  //
-  // public void stop(){
-  // System.out.println("LauncherApplet stop Method.");
-  // super.stop();
-  // }
-  //
-  // public void start(){
-  // System.out.println("LauncherApplet start Method.");
-  // super.start();
-  // }
-  //
-  // public String getAppletInfo () {
-  // return "An applet to launch a Simulation.";
-  // }
-  public String[][] getParameterInfo() {
+  @Override
+public String[][] getParameterInfo() {
     String[][] pinfo = {
       {"simulation", "String", "The simulation"},                        //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       {"capture", "String", "The name of the component to be captured"}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -175,36 +162,39 @@ public class LauncherApplet extends JApplet {
     return null;
   }
 
-  // ------ Common stuff
-  static Model createModel(String simClass, String _ownerName, java.awt.Frame _ownerFrame, java.net.URL _codebase) {
-    Model aModel = null;
-    if((_ownerName!=null)||(_codebase!=null)) {
-      try { // Instantiate a model with the given name and three parameters
-        Class<?> c = Class.forName(simClass);
-        Constructor<?>[] constructors = c.getConstructors();
-        for(int i = 0; i<constructors.length; i++) {
-          Class<?>[] parameters = constructors[i].getParameterTypes();
-          if((parameters.length==3)&&parameters[0].isAssignableFrom(_ownerName.getClass())&&parameters[1].isAssignableFrom(_ownerFrame.getClass())&&parameters[2].isAssignableFrom(_codebase.getClass())) {
-            aModel = (Model) constructors[i].newInstance(new Object[] {_ownerName, _ownerFrame, _codebase});
-            break;
-          }
-        }
-      } catch(Exception exc) {
-        exc.printStackTrace();
-        aModel = null;
-      }
-    }
-    if(aModel==null) {
-      try { // Now try a simple constructor
-        Class<?> aClass = Class.forName(simClass);
-        aModel = (Model) aClass.newInstance();
-      } catch(Exception exc) {
-        exc.printStackTrace();
-        return null;
-      }
-    }
-    return aModel;
-  }
+	// ------ Common stuff
+	static Model createModel(String simClass, String _ownerName, Frame _ownerFrame, URL _codebase) {
+		Model aModel = null;
+		if (_ownerName != null || _codebase != null) {
+			try { // Instantiate a model with the given name and three parameters
+				Class<?> c = Class.forName(simClass);
+				Constructor<?>[] constructors = c.getConstructors();
+				for (int i = 0; i < constructors.length; i++) {
+					Class<?>[] parameters = constructors[i].getParameterTypes();
+					if ((parameters.length == 3) && parameters[0].isAssignableFrom(String.class)
+							&& parameters[1].isAssignableFrom(_ownerFrame.getClass())
+							&& parameters[2].isAssignableFrom(URL.class)) {
+						aModel = (Model) constructors[i]
+								.newInstance(new Object[] { _ownerName, _ownerFrame, _codebase });
+						break;
+					}
+				}
+			} catch (Exception exc) {
+				exc.printStackTrace();
+				aModel = null;
+			}
+		}
+		if (aModel == null) {
+			try { // Now try a simple constructor
+				Class<?> aClass = Class.forName(simClass);
+				aModel = (Model) aClass.newInstance();
+			} catch (Exception exc) {
+				exc.printStackTrace();
+				return null;
+			}
+		}
+		return aModel;
+	}
 
   private void captureWindow(View _aView, String _aWindow) {
     if(_aWindow==null) {
@@ -276,6 +266,6 @@ public class LauncherApplet extends JApplet {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

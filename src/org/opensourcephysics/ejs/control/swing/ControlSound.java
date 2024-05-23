@@ -2,12 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
-import java.applet.Applet;
 import java.applet.AudioClip;
+
+import javax.swing.JApplet;
+
 import org.opensourcephysics.ejs.control.value.Value;
 
 /**
@@ -27,7 +29,8 @@ public class ControlSound extends ControlCheckBox {
   public ControlSound(Object _visual) {
     super(_visual);
     checkbox.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent _e) {
+      @Override
+	public void actionPerformed(java.awt.event.ActionEvent _e) {
         if(checkbox.isSelected()) {
           play();
         } else {
@@ -59,14 +62,15 @@ public class ControlSound extends ControlCheckBox {
       }
       String filename = prefix+_audioFile;
       java.net.URL url = new java.net.URL(filename);
-      clip = Applet.newAudioClip(url);
+      clip = JApplet.newAudioClip(url);
     } catch(Exception ex) {
       ex.printStackTrace();
       clip = null;
     }
   }
 
-  public void destroy() {
+  @Override
+public void destroy() {
     if(clip!=null) {
       clip.stop();
     }
@@ -92,7 +96,8 @@ public class ControlSound extends ControlCheckBox {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("audiofile"); //$NON-NLS-1$
@@ -101,7 +106,8 @@ public class ControlSound extends ControlCheckBox {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("audiofile")) { //$NON-NLS-1$
       return "File|String";             //$NON-NLS-1$
     }
@@ -111,7 +117,8 @@ public class ControlSound extends ControlCheckBox {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :
          setAudioFile(_value.getString());
@@ -133,7 +140,8 @@ public class ControlSound extends ControlCheckBox {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          setAudioClip(null, null);
@@ -145,7 +153,8 @@ public class ControlSound extends ControlCheckBox {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
          return null;
@@ -193,6 +202,6 @@ public class ControlSound extends ControlCheckBox {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

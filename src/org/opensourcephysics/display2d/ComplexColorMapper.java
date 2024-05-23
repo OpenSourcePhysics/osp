@@ -2,14 +2,17 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
 import java.awt.Color;
+
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
+
 import org.opensourcephysics.display.InteractivePanel;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.axes.XAxis;
 import org.opensourcephysics.display.axes.XYAxis;
 
@@ -19,9 +22,9 @@ public class ComplexColorMapper {
   private double ceil;
   private Color ceilColor = Color.lightGray;
   private JFrame legendFrame;
-  int[] reds = new int[256];
-  int[] greens = new int[256];
-  int[] blues = new int[256];
+  double[] reds = new double[256];
+  double[] greens = new double[256];
+  double[] blues = new double[256];
   protected ZExpansion zMap = null;
 
   /**
@@ -120,29 +123,14 @@ public class ComplexColorMapper {
   }
 
   /**
-   * Converts a double to color components.
-   *
-   * @param samples double[]
-   * @param rgb byte[]
-   * @return byte[]
-   */
-  public byte[] samplesToComponents(double[] samples, byte[] rgb) {
-    Color color = samplesToColor(samples);
-    rgb[0] = (byte) color.getRed();
-    rgb[1] = (byte) color.getGreen();
-    rgb[2] = (byte) color.getBlue();
-    return rgb;
-  }
-
-  /**
    * Converts a phase angle in the range [-Pi,Pi] to hue, saturation, and brightness.
    *
    * @param phi phase angle
    * @return the HSB color
    */
   public Color phaseToColor(double phi) {
-    float b = 1; // brightness
-    float h = (float) ((Math.PI+phi)/PI2);
+    double b = 1; // brightness
+    double h = (Math.PI+phi)/PI2;
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
@@ -154,35 +142,85 @@ public class ComplexColorMapper {
    * @return the HSB color
    */
   public Color complexToColor(double re, double im) {
-    float b = 1; // brightness
-    float h = (float) ((Math.PI+Math.atan2(im, re))/PI2);
+    double b = 1; // brightness
+    double h = (Math.PI+Math.atan2(im, re))/PI2;
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
   }
+  
+  private Color colorTemp = new Color(0);
 
-  /**
-   * Converts an array of samples to hue, saturation, and brightness.
-   * Samples contains magnitude, re, and im.
-   * @param samples
-   * @return the HSB color
-   */
-  public Color samplesToColor(double[] samples) {
-    double zval = samples[0];
-    if(zMap!=null) {
-      zval = zMap.evaluate(zval);
-    }
-    if(zval<=0) {
-      return Color.black;
-    } else if((zMap==null)&&(zval>ceil+COLOR_ERR)) {
-      return ceilColor;
-    } else {
-      zval = Math.min(zval, ceil);
-    }
-    float b = (float) (zval/ceil);                                        // brightness
-    float h = (float) ((Math.PI+Math.atan2(samples[2], samples[1]))/PI2); // hue
-    int index = ((int) (255*h));
-    return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
-  }
+	/**
+	 * Converts an array of samples to hue, saturation, and brightness. Samples
+	 * contains magnitude, re, and im.
+	 * 
+	 * @param samples
+	 * @return the HSB color
+	 */
+	public Color samplesToColor(double[] samples) {
+		double zval = samples[0];
+		if (zMap != null) {
+			zval = zMap.evaluate(zval);
+		}
+		if (zval <= 0) {
+			return Color.black;
+		} else if ((zMap == null) && (zval > ceil + COLOR_ERR)) {
+			return ceilColor;
+		} else {
+			zval = Math.min(zval, ceil);
+		}
+		double bb = zval / ceil; // brightness
+		double h = (Math.PI + Math.atan2(samples[2], samples[1])) / PI2; // hue
+		int index = ((int) (255 * h));
+		int r = (int) (bb * reds[index]);
+		int g = (int) (bb * greens[index]);
+		int b = (int) (bb * blues[index]);
+		int v = (((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF)) | 0xFF000000;
+		Color c = (OSPRuntime.isJS ? colorTemp : null);
+		/**
+		 * just mutate colorTemp
+		 * @j2sNative
+		 * 
+		 * c.value = v;
+		 * 
+		 * 
+		 */
+		{
+			c = new Color(v);
+		}
+		return c;
+	}
+  
+    private byte[] rgbCeil = new byte[3];
+    private byte[] rgbBlack = new byte[3];
+
+	/**
+	 * Return a pixel in the standard rgba format of raster.getPixel.
+	 * 
+	 * @param samples
+	 * @param retRGB temp array to be returned  
+	 * @return byte[] in the form of filling [r g b a]
+	 * 
+	 */
+	public byte[] sampleToPixel(double[] samples, byte[]retRGB) {
+		double zval = samples[0];
+		if (zMap != null) {
+			zval = zMap.evaluate(zval);
+		}
+		if (zval <= 0) {
+			return rgbBlack;
+		}
+		if ((zMap == null) && (zval > ceil + COLOR_ERR)) {
+			return rgbCeil;
+		}
+		double bb = Math.min(zval, ceil) / ceil; // brightness
+		double h = (Math.PI + Math.atan2(samples[2], samples[1])) / PI2; // hue
+		int index = ((int) (255 * h));
+		retRGB[0] = (byte) (bb * reds[index]);
+		retRGB[1] = (byte) (bb * greens[index]);
+		retRGB[2] = (byte) (bb * blues[index]);
+		return retRGB;
+	}
 
   /**
    * Converts a vertex point array of samples to hue, saturation, and brightness.
@@ -202,8 +240,8 @@ public class ComplexColorMapper {
     } else if(zval>ceil+COLOR_ERR) {
       return ceilColor;
     }
-    float b = (float) (zval/ceil);
-    float h = (float) ((Math.PI+Math.atan2(vertex[4], vertex[3]))/PI2);
+    double b = zval/ceil;
+    double h = (Math.PI+Math.atan2(vertex[4], vertex[3]))/PI2;
     int index = ((int) (255*h));
     return new Color((int) (b*reds[index]), (int) (b*greens[index]), (int) (b*blues[index]));
     // return  Color.getHSBColor(h,1,b);
@@ -244,6 +282,7 @@ public class ComplexColorMapper {
    */
   public void setCeilColor(Color _ceilColor) {
     ceilColor = _ceilColor;
+    rgbCeil = new byte[] {(byte)ceilColor.getRed(), (byte)ceilColor.getGreen(), (byte)ceilColor.getBlue()};
   }
 
   private void initColors() {
@@ -280,6 +319,6 @@ public class ComplexColorMapper {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

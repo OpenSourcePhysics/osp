@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -26,17 +26,18 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+
 import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
-import org.opensourcephysics.display.OSPLayout;
-import org.opensourcephysics.display.TextPanel;
+import org.opensourcephysics.display.MessageDrawable;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display3d.core.interaction.InteractionEvent;
 import org.opensourcephysics.display3d.core.interaction.InteractionListener;
 import org.opensourcephysics.tools.VideoTool;
@@ -94,19 +95,14 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   // Variables for painting
   volatile private boolean dirtyImage = true;                               // offscreenImage needs to be recomputed
   // the image that will be copied to the screen
-  volatile private BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+  volatile private BufferedImage offscreenImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
   // the image into which we will draw
   private BufferedImage workingImage = offscreenImage;
   private javax.swing.Timer updateTimer = new javax.swing.Timer(100, this); // delay before updating the panel
   private boolean needResize = true, needsToRecompute = true;
   // Variables for Messages
-  protected TextPanel trMessageBox = new TextPanel();                       // text box in top right hand corner for message
-  protected TextPanel tlMessageBox = new TextPanel();                       // text box in top left hand corner for message
-  protected TextPanel brMessageBox = new TextPanel();                       // text box in lower right hand corner for message
-  protected TextPanel blMessageBox = new TextPanel();                       // text box in lower left hand corner for mouse coordinates
-  protected GlassPanel glassPanel = new GlassPanel();
-  protected OSPLayout glassPanelLayout = new OSPLayout();
   protected Rectangle viewRect = null;                                      // the clipping rectangle within a scroll pane viewport
+  protected MessageDrawable messages = new MessageDrawable();
   //CJB
   //Scale factor
   private double factorX = 1.0;
@@ -197,21 +193,14 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    * Constructor DrawingPanel3D
    */
   public DrawingPanel3D() {
-    // GlassPanel for messages
-    glassPanel.setLayout(glassPanelLayout);
     super.setLayout(new BorderLayout());
-    glassPanel.add(trMessageBox, OSPLayout.TOP_RIGHT_CORNER);
-    glassPanel.add(tlMessageBox, OSPLayout.TOP_LEFT_CORNER);
-    glassPanel.add(brMessageBox, OSPLayout.BOTTOM_RIGHT_CORNER);
-    glassPanel.add(blMessageBox, OSPLayout.BOTTOM_LEFT_CORNER);
-    glassPanel.setOpaque(false);
-    super.add(glassPanel, BorderLayout.CENTER);
     setBackground(bgColor);
     setPreferredSize(new Dimension(300, 300));
     visHints = new VisualizationHints(this);
     camera = new Camera(this);
     addComponentListener(new java.awt.event.ComponentAdapter() {
-      public void componentResized(java.awt.event.ComponentEvent e) {
+      @Override
+	public void componentResized(java.awt.event.ComponentEvent e) {
         needResize = true;
         dirtyImage = true;
       }
@@ -221,11 +210,13 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     addMouseListener(mouseController);
     addMouseMotionListener(mouseController);
     addKeyListener(new java.awt.event.KeyAdapter() {
-      public void keyPressed(java.awt.event.KeyEvent _e) {
+      @Override
+	public void keyPressed(java.awt.event.KeyEvent _e) {
         keyPressed = _e.getKeyCode();
         //            System.out.println("Key = "+keyPressed);
       }
-      public void keyReleased(java.awt.event.KeyEvent _e) {
+      @Override
+	public void keyReleased(java.awt.event.KeyEvent _e) {
         keyPressed = -1;
       }
 
@@ -254,15 +245,11 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    * Performs an action for the update timer by rendering a new background image
    * @param  evt
    */
-  public void actionPerformed(ActionEvent evt) { // render a new image if the current image is dirty
+  @Override
+public void actionPerformed(ActionEvent evt) { // render a new image if the current image is dirty
     if(dirtyImage||needsUpdate()) {
       render(); // renders the scene from within the timer thread
     }
-  }
-
-  public void setIgnoreRepaint(boolean ignoreRepaint) {
-    super.setIgnoreRepaint(ignoreRepaint);
-    glassPanel.setIgnoreRepaint(ignoreRepaint);
   }
 
   /**
@@ -281,15 +268,14 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    * Paints the component by copying the offscreen image into the graphics context.
    * @param g Graphics
    */
-  public void paintComponent(Graphics g) {
+  @Override
+public void paintComponent(Graphics g) {
     // find the clipping rectangle within a scroll pane viewport
     viewRect = null;
     Container c = getParent();
     while(c!=null) {
       if(c instanceof JViewport) {
         viewRect = ((JViewport) c).getViewRect();
-        glassPanel.setBounds(viewRect);
-        glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
         break;
       }
       c = c.getParent();
@@ -311,35 +297,42 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    * @see       LayoutManager
    * @since     JDK1.0
    */
-  public void invalidate() {
+  @Override
+public void invalidate() {
     needResize = true;
     super.invalidate();
   }
 
-  public BufferedImage render(BufferedImage image) {
+  @Override
+public BufferedImage render(BufferedImage image) {
     Graphics g = image.getGraphics();
     paintEverything(g, image.getWidth(null), image.getHeight(null));
-    Rectangle viewRect = this.viewRect; // reference for thread safety
-    if(viewRect!=null) {
-      Rectangle r = new Rectangle(0, 0, image.getWidth(null), image.getHeight(null));
-      glassPanel.setBounds(r);
-      glassPanelLayout.checkLayoutRect(glassPanel, r);
-      glassPanel.render(g);
-      glassPanel.setBounds(viewRect);
-      glassPanelLayout.checkLayoutRect(glassPanel, viewRect);
-    } else {
-      glassPanel.render(g);
-    }
+    @SuppressWarnings("unused")
+	Rectangle viewRect = this.viewRect; // reference for thread safety
     g.dispose(); // Disposes of the graphics context and releases any system resources that it is using.
     return image;
   }
 
-  public BufferedImage render() {
+  private Rectangle visibleRect = new Rectangle();
+  
+  // BH 2020.03.28 can reuse this.
+  private Runnable doNow = new Runnable() {
+      @Override
+	public void run() {
+    	computeVisibleRect(visibleRect);
+        paintImmediately(visibleRect);
+      }
+
+    };
+
+  @Override
+public BufferedImage render() {
     if(!isShowing()||isIconified()) { // don't render if panel cannot be seen
       needsToRecompute = true;        // make sure we recompute later when we are showing
       return null;                    // no need to render if the frame is not visible
     }
     BufferedImage workingImage = checkImageSize(this.workingImage);
+    if(workingImage==null) return workingImage;
     synchronized(workingImage) {          // do not let threads access workingImage while it is being painted
       if(needResize) {
         computeConstants(workingImage.getWidth(), workingImage.getHeight());
@@ -353,39 +346,26 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     }
     // the offscreenImage is now ready to be copied to the screen
     // always update a Swing component from the event thread
-    if(SwingUtilities.isEventDispatchThread()) {
-      paintImmediately(getVisibleRect()); // we are already within the event thread so DO IT!
-    } else {                              // paint within the event thread
-      Runnable doNow = new Runnable() {   // runnable object will be called by invokeAndWait
-        public void run() {
-          paintImmediately(getVisibleRect());
-        }
-
-      };
-      try {
-        SwingUtilities.invokeAndWait(doNow);
-      } // wait for the paint operation to finish; should be fast
-        catch(InvocationTargetException ex) {}
-      catch(InterruptedException ex) {}
-    }
-    if((vidCap!=null)&&(offscreenImage!=null)&&vidCap.isRecording()) { // buffered image should exists so use it.
+	OSPRuntime.dispatchEventWait(doNow);
+	if((vidCap!=null)&&(offscreenImage!=null)&&vidCap.isRecording()) { // buffered image should exists so use it.
       vidCap.addFrame(offscreenImage);
     }
     return workingImage;
   }
 
-  /**
-   * Whether the image is dirty or any of the elements has changed
-   * @return boolean
-   */
-  private final boolean needsUpdate() {
-    for(Iterator<Element> it = elementList.iterator(); it.hasNext(); ) {
-      if((it.next()).getElementChanged()) {
-        return true;
-      }
-    }
-    return false;
-  }
+	/**
+	 * Whether the image is dirty or any of the elements has changed
+	 * 
+	 * @return boolean
+	 */
+	private final boolean needsUpdate() {
+		for (int i = elementList.size(); --i >= 0;) {
+			if (elementList.get(i).getElementChanged()) {
+				return true;
+			}
+		}
+		return false;
+	}
 
   /**
    * Checks the image to see if the working image has the correct Dimension.
@@ -393,12 +373,24 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    */
   private BufferedImage checkImageSize(BufferedImage image) {
     int width = getWidth(), height = getHeight();
+    //System.err.println(" checkImageSize w="+width+"  h= "+height + "buffered image = "+image);
     if((width<=2)||(height<=2)) { // image is too small to draw anything useful
-      return new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+    	//System.err.println(" width and height too small");
+      return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
     }
     if((image==null)||(width!=image.getWidth())||(height!=image.getHeight())) {
-      // a new image with the correct size will be created
-      return getGraphicsConfiguration().createCompatibleImage(width, height);
+      // a new image with the correct size will be created	
+      //System.err.println("begin create compatible image w="+width+"  h= "+height + " image"+image);
+//      if(false && org.opensourcephysics.js.JSUtil.isJS) {
+//    	  image=new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+//    	  //image = getGraphicsConfiguration().createCompatibleImage(width, height);  // WC:  Check to see if bug is fixed
+//    	  //System.err.println("image ="+image);
+//      } else{
+    	  // BH 2020.02.26 -- this is the best way to go in JavaScript as well.
+    	  image = getGraphicsConfiguration().createCompatibleImage(width, height);
+//      }
+      //System.err.println("begin create compatible image w="+width+"  h= "+height + " image"+image);
+      return image;
     }
     return image; // given image is the correct size
   }
@@ -421,19 +413,23 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   // ---------------------------------
   // Implementation of core.DrawingPanel3D
   // ---------------------------------
-  public java.awt.Component getComponent() {
+  @Override
+public java.awt.Component getComponent() {
     return this;
   }
 
-  public void setBackgroundImage(String _imageFile) {
+  @Override
+public void setBackgroundImage(String _imageFile) {
     this.imageFile = _imageFile;
   }
 
-  public String getBackgroundImage() {
+  @Override
+public String getBackgroundImage() {
     return this.imageFile;
   }
 
-  public void setPreferredMinMax(double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
+  @Override
+public void setPreferredMinMax(double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
     this.xmin = minX;
     this.xmax = maxX;
     this.ymin = minY;
@@ -450,27 +446,33 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     dirtyImage = true;
   }
 
-  final public double getPreferredMinX() {
+  @Override
+final public double getPreferredMinX() {
     return this.xmin;
   }
 
-  final public double getPreferredMaxX() {
+  @Override
+final public double getPreferredMaxX() {
     return this.xmax;
   }
 
-  final public double getPreferredMinY() {
+  @Override
+final public double getPreferredMinY() {
     return this.ymin;
   }
 
-  final public double getPreferredMaxY() {
+  @Override
+final public double getPreferredMaxY() {
     return this.ymax;
   }
 
-  final public double getPreferredMinZ() {
+  @Override
+final public double getPreferredMinZ() {
     return this.zmin;
   }
 
-  final public double getPreferredMaxZ() {
+  @Override
+final public double getPreferredMaxZ() {
     return this.zmax;
   }
 
@@ -492,14 +494,16 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     }
   }
 
-  public void zoomToFit() {
+  private double[] firstPoint = new double[3], secondPoint = new double[3];
+
+  @Override
+public void zoomToFit() {
     double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
     double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
     double minZ = Double.POSITIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
-    double[] firstPoint = new double[3], secondPoint = new double[3];
-    Iterator<org.opensourcephysics.display3d.core.Element> it = getElements().iterator();
-    while(it.hasNext()) {
-      ((org.opensourcephysics.display3d.simple3d.Element) it.next()).getExtrema(firstPoint, secondPoint);
+    List<org.opensourcephysics.display3d.core.Element> e = getElements();
+    for (int i = e.size(); --i >= 0;) {
+      ((Element) e.get(i)).getExtrema(firstPoint, secondPoint);
       minX = Math.min(Math.min(minX, firstPoint[0]), secondPoint[0]);
       maxX = Math.max(Math.max(maxX, firstPoint[0]), secondPoint[0]);
       minY = Math.min(Math.min(minY, firstPoint[1]), secondPoint[1]);
@@ -526,7 +530,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     setPreferredMinMax(minX, maxX, minY, maxY, minZ, maxZ);
   }
 
-  public void setSquareAspect(boolean square) {
+  @Override
+public void setSquareAspect(boolean square) {
     // added by W. Christian
     if(squareAspect!=square) { // only recompute if there is a change
       needsToRecompute = true;
@@ -536,15 +541,18 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     // computeConstants(); // removed by W. Christian
   }
 
-  public boolean isSquareAspect() {
+  @Override
+public boolean isSquareAspect() {
     return squareAspect;
   }
 
-  public org.opensourcephysics.display3d.core.VisualizationHints getVisualizationHints() {
+  @Override
+public org.opensourcephysics.display3d.core.VisualizationHints getVisualizationHints() {
     return visHints;
   }
 
-  public org.opensourcephysics.display3d.core.Camera getCamera() {
+  @Override
+public org.opensourcephysics.display3d.core.Camera getCamera() {
     return camera;
   }
 
@@ -553,7 +561,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    *
    * @return the video capture tool
    */
-  public VideoTool getVideoTool() {
+  @Override
+public VideoTool getVideoTool() {
     return vidCap;
   }
 
@@ -562,14 +571,16 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    *
    * @param videoCap the video capture tool
    */
-  public void setVideoTool(VideoTool videoCap) {
+  @Override
+public void setVideoTool(VideoTool videoCap) {
     if(vidCap!=null) {
       vidCap.setVisible(false); // hide the current video capture tool
     }
     vidCap = videoCap;
   }
 
-  public void addElement(org.opensourcephysics.display3d.core.Element element) {
+  @Override
+public void addElement(org.opensourcephysics.display3d.core.Element element) {
     if(!(element instanceof org.opensourcephysics.display3d.simple3d.Element)) {
       throw new UnsupportedOperationException("Can't add element to panel (incorrect implementation)"); //$NON-NLS-1$
     }
@@ -632,40 +643,48 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     dirtyImage = true; // element has been added so image is dirty
   }
 
-  public void removeElement(org.opensourcephysics.display3d.core.Element element) {
+  @Override
+public void removeElement(org.opensourcephysics.display3d.core.Element element) {
     elementList.remove(element);
     dirtyImage = true; // element has been added so image is dirty
   }
 
-  public void removeAllElements() {
+  @Override
+public void removeAllElements() {
     elementList.clear();
     dirtyImage = true; // element has been added so image is dirty
   }
 
-  public synchronized java.util.List<org.opensourcephysics.display3d.core.Element> getElements() {
+  @Override
+public synchronized java.util.List<org.opensourcephysics.display3d.core.Element> getElements() {
     return new ArrayList<org.opensourcephysics.display3d.core.Element>(elementList);
   }
 
   //CJB
-  public void setScaleFactor(double factorX, double factorY, double factorZ) {
+  @Override
+public void setScaleFactor(double factorX, double factorY, double factorZ) {
     this.factorX = factorX;
     this.factorY = factorY;
     this.factorZ = factorZ;
   }
 
-  public double getScaleFactorX() {
+  @Override
+public double getScaleFactorX() {
     return factorX;
   }
 
-  public double getScaleFactorY() {
+  @Override
+public double getScaleFactorY() {
     return factorY;
   }
 
-  public double getScaleFactorZ() {
+  @Override
+public double getScaleFactorZ() {
     return factorZ;
   }
 
-  public void setAxesMode(int mode) {
+  @Override
+public void setAxesMode(int mode) {
     BuildAxesPanel(mode);
     for(int i = 0; i<elementList.size(); i++) {
       Element el = elementList.get(i);
@@ -674,7 +693,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     }
   }
 
-  public int getAxesMode() {
+  @Override
+public int getAxesMode() {
     return axisMode;
   }
 
@@ -686,7 +706,7 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    * @param msg
    */
   public void setMessage(String msg) {
-    brMessageBox.setText(msg); // the default message box
+    messages.setMessage(null, msg, 1);  // BR message box
   }
 
   /**
@@ -704,17 +724,17 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   public void setMessage(String msg, int location) {
     switch(location) {
        case BOTTOM_LEFT :
-         blMessageBox.setText(msg);
+         messages.setMessage(null, msg, 0); // BL message box
          break;
        default :
        case BOTTOM_RIGHT :
-         brMessageBox.setText(msg);
+      	 messages.setMessage(null, msg, 1);  // BR message box
          break;
        case TOP_RIGHT :
-         trMessageBox.setText(msg);
+      	 messages.setMessage(null, msg, 2);  // TR message box
          break;
        case TOP_LEFT :
-         tlMessageBox.setText(msg);
+      	 messages.setMessage(null, msg, 3);  // TL message box
          break;
     }
   }
@@ -722,18 +742,21 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   // ---------------------------------
   // Implementation of core.InteractionSource
   // ---------------------------------
-  public org.opensourcephysics.display3d.core.interaction.InteractionTarget getInteractionTarget(int target) {
+  @Override
+public org.opensourcephysics.display3d.core.interaction.InteractionTarget getInteractionTarget(int target) {
     return myTarget;
   }
 
-  public void addInteractionListener(InteractionListener listener) {
+  @Override
+public void addInteractionListener(InteractionListener listener) {
     if((listener==null)||listeners.contains(listener)) {
       return;
     }
     listeners.add(listener);
   }
 
-  public void removeInteractionListener(InteractionListener listener) {
+  @Override
+public void removeInteractionListener(InteractionListener listener) {
     listeners.remove(listener);
   }
 
@@ -771,44 +794,45 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     paintDrawableList(g, tempList);
   }
 
-  private void paintDrawableList(Graphics g, java.util.List<org.opensourcephysics.display3d.core.Element> tempList) {
-    Graphics2D g2 = (Graphics2D) g;
-    Iterator<org.opensourcephysics.display3d.core.Element> it = tempList.iterator();
-    if(quickRedrawOn||!visHints.isRemoveHiddenLines()) { // Do a quick sketch of the scene
-      while(it.hasNext()) {
-        ((Element) it.next()).drawQuickly(g2);
-      }
-      return;
-    }
-    // Collect objects, sort and draw them one by one. Takes time!!!
-    list3D.clear();
-    while(it.hasNext()) { // Collect all Objects3D
-      Object3D[] objects = ((Element) it.next()).getObjects3D();
-      if(objects==null) {
-        continue;
-      }
-      for(int i = 0, n = objects.length; i<n; i++) {
-        // providing NaN as distance can be used by Drawables3D to hide a given Object3D
-        if(!Double.isNaN(objects[i].getDistance())) {
-          list3D.add(objects[i]);
-        }
-      }
-    }
-    if(list3D.size()<=0) {
-      return;
-    }
-    Object3D[] objects = list3D.toArray(new Object3D[0]);
-    Arrays.sort(objects, comparator);
-    for(int i = 0, n = objects.length; i<n; i++) {
-      Object3D obj = objects[i];
-      obj.getElement().draw(g2, obj.getIndex());
-    }
-  }
+	private void paintDrawableList(Graphics g, java.util.List<org.opensourcephysics.display3d.core.Element> tempList) {
+		Graphics2D g2 = (Graphics2D) g;
+		if (quickRedrawOn || !visHints.isRemoveHiddenLines()) { // Do a quick sketch of the scene
+			for (int i = 0, n = tempList.size(); i < n; i++) {
+				((Element) tempList.get(i)).drawQuickly(g2);
+			}
+			return;
+		}
+		// Collect objects, sort and draw them one by one. Takes time!!!
+		list3D.clear();
+		for (int ii = 0, nn = tempList.size(); ii < nn; ii++) {
+			Object3D[] objects = ((Element) tempList.get(ii)).getObjects3D();
+			if (objects == null) {
+				continue;
+			}
+			for (int i = 0, n = objects.length; i < n; i++) {
+				// providing NaN as distance can be used by Drawables3D to hide a given Object3D
+				if (!Double.isNaN(objects[i].getDistance())) {
+					list3D.add(objects[i]);
+				}
+			}
+		}
+		if (list3D.size() <= 0) {
+			return;
+		}
+		Object3D[] objects = list3D.toArray(new Object3D[0]);
+		Arrays.sort(objects, comparator);
+		for (int i = 0, n = objects.length; i < n; i++) {
+			Object3D obj = objects[i];
+			obj.getElement().draw(g2, obj.getIndex());
+		}
+		messages.drawOn3D(this, g2);
+	}
 
   // ----------------------------------------------------
   // Printable interface
   // ----------------------------------------------------
-  public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws PrinterException {
+  @Override
+public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws PrinterException {
     if(pageIndex>=1) {
       return Printable.NO_SUCH_PAGE;
     }
@@ -842,7 +866,7 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
          zText.setText(labels[2]);
          setCursorMode();
        }
-       // do not break!
+		//$FALL-THROUGH$
        case VisualizationHints.HINT_DECORATION_TYPE :
          switch(visHints.getDecorationType()) {
             case org.opensourcephysics.display3d.core.VisualizationHints.DECORATION_NONE :
@@ -1056,16 +1080,15 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   }
 
   private void reportTheNeedToProject() {
-    Iterator<org.opensourcephysics.display3d.core.Element> it = getElements().iterator();
-    while(it.hasNext()) {
-      ((Element) it.next()).setNeedToProject(true);
-    }
-    it = new ArrayList<org.opensourcephysics.display3d.core.Element>(decorationList).iterator();
-    while(it.hasNext()) {
-      ((Element) it.next()).setNeedToProject(true);
-    }
+	setToProject(getElements());
+	setToProject(decorationList);
   }
 
+  private void setToProject(List<org.opensourcephysics.display3d.core.Element> elements) {
+	  for (int i = elements.size(); --i >= 0;)
+		  ((Element) elements.get(i)).setNeedToProject(true);
+  }
+  
   private void resetDecoration(double _dx, double _dy, double _dz) {
     boxSides[0].setXYZ(xmin, ymin, zmin);
     boxSides[0].setSizeXYZ(_dx, 0.0, 0.0);
@@ -1177,20 +1200,19 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
     }
   }
 
-  // ----------------------------------------------------
-  // Interaction
-  // ----------------------------------------------------
-  private InteractionTarget getTargetHit(int x, int y) {
-    Iterator<org.opensourcephysics.display3d.core.Element> it = getElements().iterator();
-    InteractionTarget target = null;
-    while(it.hasNext()) {
-      target = ((Element) it.next()).getTargetHit(x, y);
-      if(target!=null) {
-        return target;
-      }
-    }
-    return null;
-  }
+	// ----------------------------------------------------
+	// Interaction
+	// ----------------------------------------------------
+	private InteractionTarget getTargetHit(int x, int y) {
+		List<org.opensourcephysics.display3d.core.Element> e = getElements();
+		for (int i = 0, n = e.size(); i < n; i++) {
+			InteractionTarget target = ((Element) e.get(i)).getTargetHit(x, y);
+			if (target != null) {
+				return target;
+			}
+		}
+		return null;
+	}
 
   private void setMouseCursor(Cursor cursor) {
     Container c = getTopLevelAncestor();
@@ -1355,7 +1377,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
    * The inner class that will handle all mouse related events.
    */
   private class IADMouseController extends MouseInputAdapter {
-    public void mousePressed(MouseEvent _evt) {
+    @Override
+	public void mousePressed(MouseEvent _evt) {
       requestFocus();
       if(_evt.isPopupTrigger()||(_evt.getModifiers()==InputEvent.BUTTON3_MASK)) {
         return;
@@ -1398,7 +1421,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
       updatePanel();
     }
 
-    public void mouseReleased(MouseEvent _evt) {
+    @Override
+	public void mouseReleased(MouseEvent _evt) {
       if(_evt.isPopupTrigger()||(_evt.getModifiers()==InputEvent.BUTTON3_MASK)) {
         return;
       }
@@ -1417,7 +1441,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
       // setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
 
-    public void mouseDragged(MouseEvent _evt) {
+    @Override
+	public void mouseDragged(MouseEvent _evt) {
       if(_evt.isPopupTrigger()||(_evt.getModifiers()==InputEvent.BUTTON3_MASK)) {
         return;
       }
@@ -1449,7 +1474,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
       updatePanel();
     }
 
-    public void mouseEntered(MouseEvent _evt) {
+    @Override
+	public void mouseEntered(MouseEvent _evt) {
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       if(myTarget.isEnabled()) {
         invokeActions(new InteractionEvent(DrawingPanel3D.this, InteractionEvent.MOUSE_ENTERED, myTarget.getActionCommand(), null, _evt));
@@ -1457,7 +1483,8 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
       targetHit = targetEntered = null;
     }
 
-    public void mouseExited(MouseEvent _evt) {
+    @Override
+	public void mouseExited(MouseEvent _evt) {
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       if(myTarget.isEnabled()) {
         invokeActions(new InteractionEvent(DrawingPanel3D.this, InteractionEvent.MOUSE_EXITED, myTarget.getActionCommand(), null, _evt));
@@ -1465,9 +1492,11 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
       targetHit = targetEntered = null;
     }
 
-    public void mouseClicked(MouseEvent _evt) {}
+    @Override
+	public void mouseClicked(MouseEvent _evt) {}
 
-    public void mouseMoved(MouseEvent _evt) {
+    @Override
+	public void mouseMoved(MouseEvent _evt) {
       InteractionTarget target = getTargetHit(_evt.getX(), _evt.getY());
       if(target!=null) {
         if(targetEntered==null) {
@@ -1487,25 +1516,11 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
 
   }
 
-  private class GlassPanel extends javax.swing.JPanel {
-    public void render(Graphics g) {
-      Component[] c = glassPanelLayout.getComponents();
-      for(int i = 0, n = c.length; i<n; i++) {
-        if(c[i]==null) {
-          continue;
-        }
-        g.translate(c[i].getX(), c[i].getY());
-        c[i].print(g);
-        g.translate(-c[i].getX(), -c[i].getY());
-      }
-    }
-
-  }
-
   // ----------------------------------------------------
   // Lights
   // ----------------------------------------------------
-  public void setLightEnabled(boolean _state, int nlight) {} // simple3d supports no light control
+  @Override
+public void setLightEnabled(boolean _state, int nlight) {} // simple3d supports no light control
 
   // ----------------------------------------------------
   // XML loader
@@ -1520,11 +1535,13 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
   }
 
   static private class DrawingPanel3DLoader extends org.opensourcephysics.display3d.core.DrawingPanel3D.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DrawingPanel3D();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       DrawingPanel3D panel = (DrawingPanel3D) obj;
       // Load the visualization hints
@@ -1568,6 +1585,6 @@ public class DrawingPanel3D extends javax.swing.JPanel implements org.opensource
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

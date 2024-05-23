@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -27,7 +27,7 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   private double[] pixel = new double[3];     // The ouput of position projections
   private double[] pixelSize = new double[2]; // The ouput of size projections
   private Object3D[] objects = new Object3D[] {new Object3D(this, 0)};
-  private AffineTransform transform = new AffineTransform(), originalTransform = null;
+  private AffineTransform transform = new AffineTransform();
 
   {
     setSizeXYZ(0, 0, 0);
@@ -36,18 +36,21 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // New configuration methods
   // -------------------------------------
-  public void setRotationAngle(double angle) {
+  @Override
+public void setRotationAngle(double angle) {
     this.angle = angle;
   }
 
-  public double getRotationAngle() {
+  @Override
+public double getRotationAngle() {
     return this.angle;
   }
 
   // -------------------------------------
   // Abstract part of Element
   // -------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -57,14 +60,16 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
     return objects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     // Allow the panel to adjust color according to depth
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), objects[0].getDistance());
     Color theFillColor = getDrawingPanel3D().projectColor(getRealStyle().getFillColor(), objects[0].getDistance());
     drawIt(_g2, theColor, theFillColor);
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -77,7 +82,8 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -110,8 +116,8 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
     int xc = (int) (pixel[0]-pixelSize[0]/2), yc = (int) (pixel[1]-pixelSize[1]/2);
     _g2.setStroke(getRealStyle().getLineStroke());
     if(angle!=0.0) {
-      originalTransform = _g2.getTransform();
-      transform.setTransform(originalTransform);
+    	_g2 = (Graphics2D) _g2.create();
+      transform.setTransform(_g2.getTransform());
       transform.rotate(-angle, pixel[0], pixel[1]);
       _g2.setTransform(transform);
     }
@@ -124,7 +130,7 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
       _g2.drawOval(xc, yc, (int) pixelSize[0], (int) pixelSize[1]);
     }
     if(angle!=0.0) {
-      _g2.setTransform(originalTransform);
+    	_g2.dispose();
     }
   }
 
@@ -141,7 +147,8 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementCircle.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementCircle();
     }
 
@@ -169,6 +176,6 @@ public class ElementCircle extends Element implements org.opensourcephysics.disp
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.frames;
@@ -87,7 +87,8 @@ public class FFT2DFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -110,7 +111,8 @@ public class FFT2DFrame extends DrawingFrame {
     menubarGroup.add(gridItem);
     gridItem.setSelected(true);
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToGridPlot();
       }
 
@@ -121,7 +123,8 @@ public class FFT2DFrame extends DrawingFrame {
     surfaceItem = new JRadioButtonMenuItem(DisplayRes.getString("Scalar2DFrame.MenuItem.SurfacePlot")); //$NON-NLS-1$
     menubarGroup.add(surfaceItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToSurfacePlot();
       }
 
@@ -132,7 +135,8 @@ public class FFT2DFrame extends DrawingFrame {
     interpolatedItem = new JRadioButtonMenuItem(DisplayRes.getString("Scalar2DFrame.MenuItem.InterpolatedPlot")); //$NON-NLS-1$
     menubarGroup.add(interpolatedItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToInterpolatedPlot();
       }
 
@@ -143,7 +147,8 @@ public class FFT2DFrame extends DrawingFrame {
     menu.addSeparator();
     JMenuItem phaseItem = new JMenuItem(DisplayRes.getString("GUIUtils.PhaseLegend")); //$NON-NLS-1$
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         ComplexColorMapper.showPhaseLegend();
       }
 
@@ -213,10 +218,6 @@ public class FFT2DFrame extends DrawingFrame {
    *
    * @param nx int
    * @param ny int
-   * @param xmin double
-   * @param xmax double
-   * @param ymin double
-   * @param ymax double
    */
   private void resizeGrid(int nx, int ny) {
     fftData = new double[2*nx*ny];
@@ -417,7 +418,8 @@ public class FFT2DFrame extends DrawingFrame {
   /**
    * Removes drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear(); // removes all drawables
     drawingPanel.addDrawable(plot);
   }
@@ -427,10 +429,9 @@ public class FFT2DFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
-    ArrayList<Drawable> list = super.getDrawables();
-    list.remove(plot);
-    return list;
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
+    return super.getDrawablesExcept(null, plot);
   }
 
   /**
@@ -443,10 +444,9 @@ public class FFT2DFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
-    ArrayList<T> list = super.getDrawables(c);
-    list.remove(plot);
-    return list;
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+		return getDrawablesExcept(c, plot);
   }
 
   private void fillGrid(int nx, int ny, double[] vals) {
@@ -487,6 +487,6 @@ public class FFT2DFrame extends DrawingFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -26,12 +26,12 @@ import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.tools.FontSizer;
 
 public class ControlUtils {
-  static DecimalFormat format2 = new DecimalFormat("#0.00");      //$NON-NLS-1$
-  static DecimalFormat format3 = new DecimalFormat("#0.000");     //$NON-NLS-1$
-  static DecimalFormat format4 = new DecimalFormat("#0.0000");    //$NON-NLS-1$
-  static DecimalFormat format_E2 = new DecimalFormat("0.00E0");   //$NON-NLS-1$
-  static DecimalFormat format_E3 = new DecimalFormat("0.000E0");  //$NON-NLS-1$
-  static DecimalFormat format_E4 = new DecimalFormat("0.0000E0"); //$NON-NLS-1$
+  static DecimalFormat format2 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.00");      //$NON-NLS-1$
+  static DecimalFormat format3 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.000");     //$NON-NLS-1$
+  static DecimalFormat format4 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.0000");    //$NON-NLS-1$
+  static DecimalFormat format_E2 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0");   //$NON-NLS-1$
+  static DecimalFormat format_E3 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.000E0");  //$NON-NLS-1$
+  static DecimalFormat format_E4 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0000E0"); //$NON-NLS-1$
 
   /**
    * Convert a double to a string, printing two decimal places.
@@ -214,7 +214,8 @@ public class ControlUtils {
     chooser = new JFileChooser(new File(OSPRuntime.chooserDir));
     javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
       // accept all directories and *.xml or *.osp files.
-      public boolean accept(File f) {
+      @Override
+	public boolean accept(File f) {
         if(f==null) {
           return false;
         }
@@ -233,7 +234,8 @@ public class ControlUtils {
         return false;
       }
       // the description of this filter
-      public String getDescription() {
+      @Override
+	public String getDescription() {
         return "XML files"; //$NON-NLS-1$
       }
 
@@ -292,6 +294,6 @@ public class ControlUtils {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

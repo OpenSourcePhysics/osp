@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.Toolkit;
@@ -45,9 +45,8 @@ public class IntegerField extends NumberField {
    * @param columns the number of columns available for text characters
    */
   public IntegerField(int columns) {
-    super(columns);
-    fixedPattern = fixedPatternByDefault = true;
-    format.setParseIntegerOnly(true);
+    super(columns, 4, true);
+    super.setParseIntegerOnly();
     setIntValue((int) prevValue);
   }
 
@@ -67,7 +66,7 @@ public class IntegerField extends NumberField {
         n = s.indexOf(units);
       }
     }
-    if(s.equals(format.format(prevValue))) {
+    if(s.equals(nf.format(prevValue))) {
       return(int) prevValue;
     }
     try {
@@ -101,7 +100,7 @@ public class IntegerField extends NumberField {
     if(maxValue!=null) {
       value = Math.min(value, maxValue.intValue());
     }
-    String s = format.format(value);
+    String s = nf.format(value);
     if(units!=null) {
       s += units;
     }
@@ -133,6 +132,6 @@ public class IntegerField extends NumberField {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

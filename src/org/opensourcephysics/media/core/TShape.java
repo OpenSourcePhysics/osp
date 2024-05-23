@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.BasicStroke;
@@ -80,7 +80,7 @@ public class TShape extends TPoint {
    *
    * @param point the Point2D
    */
-  public TShape(Point2D point) {
+  public TShape(Point2D.Double point) {
     super(point);
   }
 
@@ -126,7 +126,8 @@ public class TShape extends TPoint {
    * @param vidPanel the video panel
    * @return the bounding rectangle
    */
-  public Rectangle getBounds(VideoPanel vidPanel) {
+  @Override
+public Rectangle getBounds(VideoPanel vidPanel) {
     return getShape(vidPanel).getBounds();
   }
 
@@ -154,7 +155,8 @@ public class TShape extends TPoint {
    * @param panel the drawing panel requesting the drawing
    * @param _g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics _g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics _g) {
     if(!(panel instanceof VideoPanel)||!isVisible()) {
       return;
     }
@@ -175,7 +177,8 @@ public class TShape extends TPoint {
    * @param ypix the y pixel position on the panel
    * @return the interactive drawable object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!(panel instanceof VideoPanel)) {
       return null;
     }
@@ -195,7 +198,8 @@ public class TShape extends TPoint {
    *
    * @return a descriptive string
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "TShape ["+x+", "+y+"]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   }
 
@@ -246,6 +250,6 @@ public class TShape extends TPoint {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

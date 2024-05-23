@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -145,14 +145,16 @@ public abstract class ControlContainer extends ControlSwingElement {
   // ------------------------------------------------
   // Properties
   // ------------------------------------------------
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("visible")) { //$NON-NLS-1$
       return "boolean";               // not HIDDEN //$NON-NLS-1$
     }
     return super.getPropertyInfo(_property);
   }
 
-  public ControlElement setProperty(String _property, String _value) {
+  @Override
+public ControlElement setProperty(String _property, String _value) {
     ControlElement returnValue = super.setProperty(_property, _value);
     if(_property.equals("font")||_property.equals("foreground")||_property.equals("background")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       propagateProperty(_property, _value);
@@ -182,6 +184,6 @@ public abstract class ControlContainer extends ControlSwingElement {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -36,90 +36,107 @@ public class ElementEllipsoid extends AbstractTile implements org.opensourcephys
   // -------------------------------------
   // Configuration
   // -------------------------------------
-  public void setClosedBottom(boolean close) {
+  @Override
+public void setClosedBottom(boolean close) {
     this.closedBottom = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedBottom() {
+  @Override
+public boolean isClosedBottom() {
     return this.closedBottom;
   }
 
-  public void setClosedTop(boolean close) {
+  @Override
+public void setClosedTop(boolean close) {
     this.closedTop = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedTop() {
+  @Override
+public boolean isClosedTop() {
     return this.closedTop;
   }
 
-  public void setClosedLeft(boolean close) {
+  @Override
+public void setClosedLeft(boolean close) {
     this.closedLeft = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedLeft() {
+  @Override
+public boolean isClosedLeft() {
     return this.closedLeft;
   }
 
-  public void setClosedRight(boolean close) {
+  @Override
+public void setClosedRight(boolean close) {
     this.closedRight = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedRight() {
+  @Override
+public boolean isClosedRight() {
     return this.closedRight;
   }
 
-  public void setMinimumAngleU(int angle) {
+  @Override
+public void setMinimumAngleU(int angle) {
     this.minAngleU = angle;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public int getMinimumAngleU() {
+  @Override
+public int getMinimumAngleU() {
     return this.minAngleU;
   }
 
-  public void setMaximumAngleU(int angle) {
+  @Override
+public void setMaximumAngleU(int angle) {
     this.maxAngleU = angle;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public int getMaximumAngleU() {
+  @Override
+public int getMaximumAngleU() {
     return this.maxAngleU;
   }
 
-  public void setMinimumAngleV(int angle) {
+  @Override
+public void setMinimumAngleV(int angle) {
     this.minAngleV = angle;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public int getMinimumAngleV() {
+  @Override
+public int getMinimumAngleV() {
     return this.minAngleV;
   }
 
-  public void setMaximumAngleV(int angle) {
+  @Override
+public void setMaximumAngleV(int angle) {
     this.maxAngleV = angle;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public int getMaximumAngleV() {
+  @Override
+public int getMaximumAngleV() {
     return this.maxAngleV;
   }
 
   // -------------------------------------
   // Private or protected methods
   // -------------------------------------
-  protected synchronized void computeCorners() {
+  @Override
+protected synchronized void computeCorners() {
     int theNr = 1, theNu = 1, theNv = 1;
     double angleu1 = minAngleU, angleu2 = maxAngleU;
     if(Math.abs(angleu2-angleu1)>360) {
@@ -175,7 +192,8 @@ public class ElementEllipsoid extends AbstractTile implements org.opensourcephys
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementEllipsoid.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementEllipsoid();
     }
 
@@ -203,6 +221,6 @@ public class ElementEllipsoid extends AbstractTile implements org.opensourcephys
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

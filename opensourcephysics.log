@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2020-04-05T15:42:55</date>
+  <millis>1586119375331</millis>
+  <sequence>34</sequence>
+  <logger>org.opensourcephysics</logger>
+  <level>INFO</level>
+  <class>org.opensourcephysics.controls.OSPLog</class>
+  <method>getFileHandler</method>
+  <thread>17</thread>
+  <message>Logging to file enabled. File = C:\Users\hansonr\git\osp\opensourcephysics.log</message>
+</record>
+</log>

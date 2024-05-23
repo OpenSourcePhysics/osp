@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -77,7 +77,8 @@ public class OSPApplication {
      * @param xmlControl the xml control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl xmlControl, Object obj) {
+    @Override
+	public void saveObject(XMLControl xmlControl, Object obj) {
       OSPApplication app = (OSPApplication) obj;
       xmlControl.setValue("control", app.control); //$NON-NLS-1$
       xmlControl.setValue("model", app.model);     //$NON-NLS-1$
@@ -89,7 +90,8 @@ public class OSPApplication {
      * @param xmlControl the xml control
      * @return the newly created object
      */
-    public Object createObject(XMLControl xmlControl) {
+    @Override
+	public Object createObject(XMLControl xmlControl) {
       Object model = xmlControl.getObject("model");                //$NON-NLS-1$
       Control control = (Control) xmlControl.getObject("control"); //$NON-NLS-1$
       return new OSPApplication(control, model);
@@ -102,7 +104,8 @@ public class OSPApplication {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl xmlControl, Object obj) {
+    @Override
+	public Object loadObject(XMLControl xmlControl, Object obj) {
       OSPApplication app = (OSPApplication) obj;
       app.loadedControlClass = null;
       app.loadedModelClass = null;
@@ -136,10 +139,12 @@ public class OSPApplication {
         cControl.loadObject(app.control);
       } else {
         // auto-import compatible models
+        // BH! THIS METHOD COULD FAIL IN JAVASCRIPT if importAll (compatibleModels) is false
+
         cControl.loadObject(app.control, true, compatibleModels);
       }
-      Collection<String> appNames = app.control.getPropertyNames();
-      Iterator<String> it = cControl.getPropertyNames().iterator();
+      Collection<String> appNames = app.control.getPropertyNamesRaw();
+      Iterator<String> it = cControl.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String name = it.next();
         if(!appNames.contains(name)) { // remove names that are not currently in the app
@@ -153,6 +158,8 @@ public class OSPApplication {
         mControl.loadObject(app.model);
       } else {
         // mismatched model class: auto-import with chooser
+    	  
+    	  // BH! false for importAll here could fail in JavaScript
         mControl.loadObject(app.model, true, false);
       }
       GUIUtils.repaintOSPFrames(); // make sure frames are up to date
@@ -183,6 +190,6 @@ public class OSPApplication {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

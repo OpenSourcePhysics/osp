@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -21,7 +21,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
   // -------------------------------------
   // Super methods overwritten
   // -------------------------------------
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     // Allow the panel to adjust color according to depth
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), objects[_index].getDistance());
     if(_index<(div-1)) {
@@ -34,7 +35,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
     }
   }
 
-  synchronized void drawQuickly(Graphics2D _g2) {
+  @Override
+synchronized void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -55,7 +57,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
   private int headPoints = 0;
   private int headA[] = new int[10], headB[] = new int[10]; // Used to display the head
 
-  void projectPoints() {
+  @Override
+void projectPoints() {
     super.projectPoints();
     // Now compute the head
     double a = aCoord[div]-aCoord[0];
@@ -120,7 +123,8 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementArrow.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementArrow();
     }
 
@@ -148,6 +152,6 @@ public class ElementArrow extends ElementSegment implements org.opensourcephysic
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

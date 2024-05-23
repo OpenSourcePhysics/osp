@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -33,11 +33,13 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
   // -------------------------------------
   // New configuration methods
   // -------------------------------------
-  public void setClosed(boolean closed) {
+  @Override
+public void setClosed(boolean closed) {
     this.closed = closed;
   }
 
-  public boolean isClosed() {
+  @Override
+public boolean isClosed() {
     return this.closed;
   }
 
@@ -51,7 +53,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
    * array do not affect the polygon, until this setData() methos is invoked.
    * @param data double[][] the double[nPoints][3] array with the data
    */
-  public void setData(double[][] data) {
+  @Override
+public void setData(double[][] data) {
     if(coordinates.length!=data.length) {
       int n = data.length;
       coordinates = new double[n][3];
@@ -69,7 +72,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
     setElementChanged(true);
   }
 
-  public void setData(double[] xArray, double[] yArray, double[] zArray) {
+  @Override
+public void setData(double[] xArray, double[] yArray, double[] zArray) {
     if((xArray==null)||(yArray==null)||(zArray==null)) {
       return;
     }
@@ -107,7 +111,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
    * Gets (a copy of) the data of the points for the polygon
    * @return double[][] the double[nPoints][3] array with the data
    */
-  public double[][] getData() {
+  @Override
+public double[][] getData() {
     double[][] data = new double[coordinates.length][3];
     for(int i = 0, n = coordinates.length; i<n; i++) {
       System.arraycopy(coordinates[i], 0, data[i], 0, 3);
@@ -118,7 +123,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
   // -------------------------------------
   // Abstract part of Element or Parent methods overwritten
   // -------------------------------------
-  public void getExtrema(double[] min, double[] max) {
+  @Override
+public void getExtrema(double[] min, double[] max) {
     double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
     double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
     double minZ = Double.POSITIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
@@ -141,7 +147,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
     max[2] = maxZ;
   }
 
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()||(coordinates.length==0)) {
       return null;
     }
@@ -156,7 +163,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
     return lineObjects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     if(_index<0) { // Interior ==> closed = true and fillPattern!=null
       Color theFillColor = getDrawingPanel3D().projectColor(getRealStyle().getFillColor(), closedObject[0].getDistance());
       _g2.setPaint(theFillColor);
@@ -187,7 +195,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
     }
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()||(coordinates.length==0)) {
       return;
     }
@@ -208,7 +217,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()||(coordinates.length==0)) {
       return null;
     }
@@ -295,7 +305,8 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementPolygon.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementPolygon();
     }
 
@@ -323,6 +334,6 @@ public class ElementPolygon extends Element implements org.opensourcephysics.dis
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

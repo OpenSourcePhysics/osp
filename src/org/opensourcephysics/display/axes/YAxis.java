@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Interactive;
@@ -47,7 +46,8 @@ public class YAxis extends XYAxis {
    * @param drawingPanel
    * @param g
    */
-  public void draw(DrawingPanel drawingPanel, Graphics g) {
+  @Override
+public void draw(DrawingPanel drawingPanel, Graphics g) {
     int pixLoc = drawingPanel.xToPix(location);
     if(pixLoc<1) {
       location = drawingPanel.getXMin();
@@ -55,8 +55,9 @@ public class YAxis extends XYAxis {
     if(pixLoc>drawingPanel.getWidth()-1) {
       location = drawingPanel.getXMax();
     }
-    Graphics2D g2 = (Graphics2D) g;
-    Shape clipShape = g2.getClip();
+    Graphics2D g2 = (Graphics2D) g.create();
+    //Shape clipShape = g2.getClip();
+    // unclip needed here?
     g2.clipRect(0, 0, drawingPanel.getWidth(), drawingPanel.getHeight());
     switch(locationType) {
        case DRAW_AT_LOCATION :
@@ -70,7 +71,7 @@ public class YAxis extends XYAxis {
          drawInsideDisplay(drawingPanel, g);
          break;
     }
-    g2.setClip(clipShape);
+    g2.dispose();// BH 2020.02.26//setClip(clipShape);
   }
 
   private void drawInsideDisplay(DrawingPanel drawingPanel, Graphics g) {
@@ -197,7 +198,8 @@ public class YAxis extends XYAxis {
   }
 
   // implements interactive drawable interface
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!enabled) {
       return null;
     }
@@ -207,11 +209,13 @@ public class YAxis extends XYAxis {
     return null;
   }
 
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     location = x;
   }
 
-  public void setX(double x) {
+  @Override
+public void setX(double x) {
     location = x;
   }
 
@@ -237,6 +241,6 @@ public class YAxis extends XYAxis {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

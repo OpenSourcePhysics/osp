@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
 public class InteractiveLabel extends MeasuredCircle implements Interactive {
   public static final int TOP_LEFT_LOCATION = 0;
@@ -45,7 +44,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
     text = TeXParser.parseTeX(str);
   }
 
-  public void setXY(double _x, double _y) {
+  @Override
+public void setXY(double _x, double _y) {
     x = _x;
     y = _y;
   }
@@ -85,7 +85,6 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
 
   /**
    * Gets the label's offset in the x direction.
-   * @param offset int
    */
   public int getOffsetX() {
     return box.xoffset;
@@ -101,13 +100,13 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
 
   /**
    * Gets the label's offset in the y direction.
-   * @param offset int
    */
   public int getOffsetY() {
     return box.yoffset;
   }
 
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     String tempText = text; // local reference for thread safety
     if(tempText==null) {
       return;
@@ -122,7 +121,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
     box.draw(panel, g);
   }
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(box.isInside(panel, xpix, ypix)) {
       return box;
     }
@@ -145,7 +145,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
    * Enables mouse interactions
    * @param enabled boolean
    */
-  public void setEnabled(boolean enabled) {
+  @Override
+public void setEnabled(boolean enabled) {
     this.enabled = enabled;
     box.setEnabled(enabled);
   }
@@ -154,7 +155,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
    * Gets the mouse interaction enabled property.
    * @return boolean
    */
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enabled;
   }
 
@@ -172,25 +174,28 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
      * @param panel DrawingPanel
      * @param g Graphics
      */
-    public void draw(DrawingPanel panel, Graphics g) {
-      this.panel = panel;
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
+      this.panel = panel.dref(this);
       String tempText = text; // local reference for thread safety
       if(tempText==null) {
         return;
       }
-      Graphics2D g2 = (Graphics2D) g;
+      Graphics2D g2 = (Graphics2D) g.create();
       g2.setColor(color);
-      Font oldFont = g2.getFont();
+//      Font oldFont = g2.getFont();
       g2.setFont(font);
-      Shape clipShape = g2.getClip();
+//      Shape clipShape = g2.getClip();
+      // unclip needed here?
       g2.setClip(0, 0, panel.getWidth(), panel.getHeight());
       g2.setColor(Color.YELLOW);
       g2.fillRect(leftPix, topPix, boxWidth, boxHeight);
       g2.setColor(Color.BLACK);
       g2.drawRect(leftPix, topPix, boxWidth, boxHeight);
       g2.drawString(tempText, leftPix+3, topPix+boxHeight-2);
-      g2.setFont(oldFont);
-      g2.setClip(clipShape);
+//      g2.setFont(oldFont);
+//      g2.setClip(clipShape);
+      g2.dispose();
     }
 
     void computeBoxMetrics(DrawingPanel panel, Graphics g) {
@@ -219,7 +224,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
       g2.setFont(oldFont);
     }
 
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       if(panel==null) {
         return;
       }
@@ -231,7 +237,8 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
       yoffset = y2-y1;
     }
 
-    public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+    @Override
+	public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
       if((xpix>=leftPix)&&(xpix<=leftPix+boxWidth)&&(ypix>=topPix)&&(ypix<=topPix+boxHeight)) {
         return true;
       }
@@ -262,6 +269,6 @@ public class InteractiveLabel extends MeasuredCircle implements Interactive {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

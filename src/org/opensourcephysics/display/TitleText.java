@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -10,7 +10,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Shape;
 
 /**
  * A text line that is offset relative to a drawing panel's display area.
@@ -72,7 +71,8 @@ public class TitleText extends DrawableTextLine {
  *
  * @param font Font
  */
-  public void setFont(Font font) {
+  @Override
+public void setFont(Font font) {
     super.setFont(font);
     dirty = true;
   }
@@ -82,7 +82,8 @@ public class TitleText extends DrawableTextLine {
    *
    * @param text String
    */
-  public void setText(String text) {
+  @Override
+public void setText(String text) {
     super.setText(text);
     dirty = true;
   }
@@ -93,7 +94,8 @@ public class TitleText extends DrawableTextLine {
  * @param panel DrawingPanel
  * @param g Graphics
  */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(dirty) {
       parseText(g);
       dirty = false;
@@ -101,11 +103,11 @@ public class TitleText extends DrawableTextLine {
     int xpix = 0, ypix = 0;
     switch(location) {
        case CENTER :
-         xpix = panel.getLeftGutter()+(panel.width-panel.getLeftGutter()-panel.getRightGutter())/2;
-         ypix = panel.getTopGutter()+(panel.height-panel.getTopGutter()-panel.getBottomGutter())/2;
+         xpix = panel.getLeftGutter()+(panel.lastWidth-panel.getLeftGutter()-panel.getRightGutter())/2;
+         ypix = panel.getTopGutter()+(panel.lastHeight-panel.getTopGutter()-panel.getBottomGutter())/2;
          break;
        case BOTTOM :
-         xpix = panel.getLeftGutter()+(panel.width-panel.leftGutter-panel.rightGutter)/2;
+         xpix = panel.getLeftGutter()+(panel.lastWidth-panel.leftGutter-panel.rightGutter)/2;
          ypix = (panel.getBottomGutter()>height+yoff) ?       // is gutter large enough?
            panel.getHeight()-panel.bottomGutter+yoff+height : // draw in bottom gutter
              panel.getHeight()-panel.bottomGutter-yoff;       // draw in display area
@@ -114,28 +116,28 @@ public class TitleText extends DrawableTextLine {
          xpix = (panel.leftGutter>height+xoff) ?              // is left gutter large enought?
            panel.leftGutter-xoff :                            // draw in left of gutter
              panel.leftGutter+xoff+height;                    // draw in display area
-         ypix = panel.getTopGutter()+(panel.height-panel.getTopGutter()-panel.getBottomGutter())/2;
+         ypix = panel.getTopGutter()+(panel.lastHeight-panel.getTopGutter()-panel.getBottomGutter())/2;
          break;
        default :
        case TOP :
-         xpix = panel.getLeftGutter()+(panel.width-panel.leftGutter-panel.rightGutter)/2;
+         xpix = panel.getLeftGutter()+(panel.lastWidth-panel.leftGutter-panel.rightGutter)/2;
          ypix = (panel.getTopGutter()>ascent+yoff) ?          // is gutter large enough?
            panel.getTopGutter()-yoff-descent-1 :              // draw in gutter
              panel.getTopGutter()+yoff+ascent+1;              // draw in display area
          break;
        case RIGHT :
          xpix = (panel.rightGutter>height+xoff) ?             // is right gutter large enought?
-           panel.width-panel.leftGutter+xoff+height :         // draw in left of gutter
-             panel.width-panel.leftGutter-xoff;               // draw in display area
-         ypix = panel.getTopGutter()+(panel.height-panel.getTopGutter()-panel.getBottomGutter())/2;
+           panel.lastWidth-panel.leftGutter+xoff+height :         // draw in left of gutter
+             panel.lastWidth-panel.leftGutter-xoff;               // draw in display area
+         ypix = panel.getTopGutter()+(panel.lastHeight-panel.getTopGutter()-panel.getBottomGutter())/2;
          break;
        case CUSTOM :
          xpix = xoff;
          ypix = yoff;
          break;
     }
-    Graphics2D g2 = (Graphics2D) g;
-    Shape currentClip = g2.getClip();
+    Graphics2D g2 = (Graphics2D) g.create();
+    //Shape currentClip = g2.getClip();
     Rectangle viewRect = panel.getViewRect();
     if(viewRect==null) {
       g2.setClip(0, 0, panel.getWidth(), panel.getHeight());
@@ -143,7 +145,7 @@ public class TitleText extends DrawableTextLine {
       g2.setClip(viewRect.x, viewRect.y, viewRect.x+viewRect.width, viewRect.y+viewRect.height);
     }
     drawText(g, xpix, ypix);
-    g2.setClip(currentClip); // restore the original clipping
+    g2.dispose();// BH 2020.02.26//setClip(currentClip); // restore the original clipping
   }
 
 }
@@ -168,6 +170,6 @@ public class TitleText extends DrawableTextLine {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

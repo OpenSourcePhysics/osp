@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -51,7 +51,8 @@ public class Verlet extends AbstractODESolver {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     super.initialize(stepSize);
     rate1 = new double[numEqn];
     rate2 = new double[numEqn];
@@ -89,7 +90,8 @@ public class Verlet extends AbstractODESolver {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     // state[]: x1, d x1/dt, x2, d x2/dt .... xN, d xN/dt, t
     double[] state = ode.getState();
     if(state.length!=numEqn) {
@@ -137,6 +139,6 @@ public class Verlet extends AbstractODESolver {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

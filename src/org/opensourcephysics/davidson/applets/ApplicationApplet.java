@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.davidson.applets;
@@ -36,6 +36,7 @@ import org.opensourcephysics.tools.Translator;
  * @author     Wolfgang Christian
  * @created    October 06, 2005
  */
+@SuppressWarnings("serial")
 public class ApplicationApplet extends JApplet {
   JFrame mainFrame = null;
   JButton showFramesButton = new JButton("Show"); //$NON-NLS-1$
@@ -61,9 +62,10 @@ public class ApplicationApplet extends JApplet {
   /**
    *  Initializes the applet
    */
-  public void init() {
+  @Override
+public void init() {
     super.init();
-    OSPRuntime.applet = this;
+    OSPRuntime.setApplet(this);
     OSPRuntime.appletMode = false; // This insures that ALL frames are made visible when the applet is launched.
     if(getParameter("showLog", "false").toLowerCase().trim().equals("true")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       OSPLog.showLog();
@@ -129,7 +131,8 @@ public class ApplicationApplet extends JApplet {
   /**
    *  Destroys the applet's resources.
    */
-  public void destroy() {
+  @Override
+public void destroy() {
     disposeOwnedFrames();
     target = null;
     mainFrame = null;
@@ -146,12 +149,11 @@ public class ApplicationApplet extends JApplet {
       return;
     }
     String name = "META-INF/MANIFEST.MF"; //$NON-NLS-1$
-    Resource res = ResourceLoader.getResource(archive, name);
-    if(res==null) {
+    String manifest = ResourceLoader.getText(archive, name, Resource.class, true);
+    if(manifest==null) {
       OSPLog.fine("manifest not found in="+archive); //$NON-NLS-1$
       return;
     }
-    String manifest = res.getString();
     String[] lines = manifest.split("\n"); //$NON-NLS-1$
     for(int i = 0, n = Math.min(10, lines.length); i<n; i++) {
       int index = lines[i].indexOf("Main-Class:");                                 //$NON-NLS-1$
@@ -228,12 +230,13 @@ public class ApplicationApplet extends JApplet {
   }
 
   private class DisplayBtnListener implements ActionListener {
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       if(singleApp&&(OSPRuntime.applet!=ApplicationApplet.this)) {
         disposeOwnedFrames();
         target = null;
         mainFrame = null;
-        OSPRuntime.applet = ApplicationApplet.this;
+        OSPRuntime.setApplet(ApplicationApplet.this);
       }
       if(target==null) {
         target = createTarget();
@@ -257,7 +260,7 @@ public class ApplicationApplet extends JApplet {
       Iterator<Frame> it = newFrames.iterator();
       while(it.hasNext()) {
         Frame frame = (it.next());
-        if(frame.isDisplayable()&&!(frame instanceof OSPLog)&&!(frame instanceof MessageFrame)&&!(frame instanceof Translator)) {
+        if(frame.isDisplayable()&& frame != OSPLog.getFrame() &&!(frame instanceof MessageFrame)&&!(frame instanceof Translator)) {
           frame.setVisible(true);
         }
       }
@@ -309,6 +312,6 @@ public class ApplicationApplet extends JApplet {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

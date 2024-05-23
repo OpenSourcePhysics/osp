@@ -2,10 +2,11 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -23,7 +24,7 @@ import org.opensourcephysics.display.OSPFrame;
 public abstract class AbstractCalculation implements Calculation {
   protected OSPFrame mainFrame;                                        // the main frame that closed the program
   protected Control control;                                           // the Calculation's control
-  protected DecimalFormat decimalFormat = new DecimalFormat("0.00E0"); // display format for messages //$NON-NLS-1$
+  protected DecimalFormat decimalFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0"); // display format for messages //$NON-NLS-1$
 
   /**
    * Sets object that controls this calculation.
@@ -33,7 +34,8 @@ public abstract class AbstractCalculation implements Calculation {
    *
    * @param control
    */
-  public void setControl(Control control) {
+  @Override
+public void setControl(Control control) {
     this.control = control;
     mainFrame = null;
     if(control!=null) {
@@ -51,10 +53,24 @@ public abstract class AbstractCalculation implements Calculation {
 
   /**
    * Gets the main OSPFrame.  The main frame will usually exit program when it is closed.
+   * 
+   *  @j2sAlias getMainFrame
+   * 
    * @return OSPFrame
    */
   public OSPFrame getMainFrame() {
     return mainFrame;
+  }
+  
+  /**
+   * Gets the Main Frame size. 
+   * 
+   * @j2sAlias getMainFrameSize
+   * 
+   */
+  public int[] getMainFrameSize(){
+ 	 Dimension d=mainFrame.getSize();
+ 	 return new int[] {d.width,d.height};
   }
 
   /**
@@ -102,12 +118,14 @@ public abstract class AbstractCalculation implements Calculation {
   /**
    * Does the calculation.
    */
-  public abstract void calculate();
+  @Override
+public abstract void calculate();
 
   /**
    * Resets the calculation to a predefined state.
    */
-  public void resetCalculation() {
+  @Override
+public void resetCalculation() {
     control.clearMessages();
     reset();
   }
@@ -138,7 +156,8 @@ public abstract class AbstractCalculation implements Calculation {
      * @param control the control
      * @param obj the object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ((Calculation) obj).calculate();
       return obj;
     }
@@ -167,6 +186,6 @@ public abstract class AbstractCalculation implements Calculation {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

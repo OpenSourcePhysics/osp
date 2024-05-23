@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -34,7 +34,8 @@ public class DataAdapter implements Data {
    * Gets column names.  Client should assign colors.
    * Implementation of Data interface.
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     return colNames;
   }
 
@@ -50,7 +51,8 @@ public class DataAdapter implements Data {
   /**
    * Gets the name of the Data.
    */
-  public String getName() {
+  @Override
+public String getName() {
     return name;
   }
 
@@ -65,7 +67,8 @@ public class DataAdapter implements Data {
    * Gets the double[][] array.
    * Implementation of Data interface.
    */
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     return data;
   }
 
@@ -73,7 +76,8 @@ public class DataAdapter implements Data {
    * Not used.
    * Implementation of Data interface method.
    */
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
@@ -81,7 +85,8 @@ public class DataAdapter implements Data {
    * Not used.
    * Implementation of Data interface.
    */
-  public List<Data> getDataList() {
+  @Override
+public List<Data> getDataList() {
     return null;
   }
 
@@ -89,7 +94,8 @@ public class DataAdapter implements Data {
    * Not used Data because is stored in 2D array.
    * Implementation of Data interface.
    */
-  public ArrayList<Dataset> getDatasets() {
+  @Override
+public ArrayList<Dataset> getDatasets() {
     return null;
   }
 
@@ -97,7 +103,8 @@ public class DataAdapter implements Data {
    * Fill colors for columns are not specified. Client should assign colors.
    * Implementation of Data interface.
    */
-  public Color[] getFillColors() {
+  @Override
+public Color[] getFillColors() {
     return null;
   }
 
@@ -105,21 +112,24 @@ public class DataAdapter implements Data {
    * Lines colors for columns are not specified.  Client should assign colors.
    * Implementation of Data interface.
    */
-  public Color[] getLineColors() {
+  @Override
+public Color[] getLineColors() {
     return null;
   }
 
   /**
    * Gets the Data ID.
    */
-  public int getID() {
+  @Override
+public int getID() {
     return ID;
   }
 
   /**
    * Sets the Data ID.
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     ID = id;
   }
 
@@ -145,6 +155,6 @@ public class DataAdapter implements Data {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -32,7 +32,8 @@ public class ControlBar extends ControlSwingElement {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JProgressBar) {
       bar = (JProgressBar) _visual;
     } else {
@@ -56,7 +57,8 @@ public class ControlBar extends ControlSwingElement {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("variable");    //$NON-NLS-1$
@@ -69,7 +71,8 @@ public class ControlBar extends ControlSwingElement {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("variable")) { //$NON-NLS-1$
       return "int|double";             //$NON-NLS-1$
     }
@@ -91,7 +94,8 @@ public class ControlBar extends ControlSwingElement {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :
          setValue(_value.getDouble());
@@ -132,7 +136,8 @@ public class ControlBar extends ControlSwingElement {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          break; // Do nothing
@@ -155,7 +160,8 @@ public class ControlBar extends ControlSwingElement {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
        case 1 :
@@ -232,6 +238,6 @@ public class ControlBar extends ControlSwingElement {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -11,7 +11,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 
 public class TextBox implements Drawable {
   public static final int COORDINATE_PLACEMENT = 0;
@@ -76,15 +75,12 @@ public class TextBox implements Drawable {
     boxWidth = 0;
   }
 
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     String tempText = text; // local reference for thread safety
     if(tempText==null) {
       return;
     }
-    Graphics2D g2 = (Graphics2D) g;
-    g2.setColor(color);
-    Font oldFont = g2.getFont();
-    g2.setFont(font);
     FontMetrics fm = g.getFontMetrics();
     int sh = fm.getAscent()+2;           // current string height
     int sw = fm.stringWidth(tempText)+6; // current string width
@@ -140,15 +136,20 @@ public class TextBox implements Drawable {
     if(this.alignment_mode==TOP_CENTER_ALIGNMENT) {
       xoffset -= boxWidth/2;
     }
-    Shape clipShape = g2.getClip();
+    Graphics2D g2 = (Graphics2D) g.create();
+    g2.setColor(color);
+//    Font oldFont = g2.getFont();
+    g2.setFont(font);
+//    Shape clipShape = g2.getClip();
     g2.setClip(0, 0, panel.getWidth(), panel.getHeight());
     g2.setColor(Color.yellow);
     g2.fillRect(xpix+xoffset, ypix+yoffset, boxWidth, boxHeight);
     g2.setColor(Color.black);
     g2.drawRect(xpix+xoffset, ypix+yoffset, boxWidth, boxHeight);
     g2.drawString(tempText, xpix+3+xoffset, ypix+boxHeight-2+yoffset);
-    g2.setFont(oldFont);
-    g2.setClip(clipShape);
+//    g2.setFont(oldFont);
+//    g2.setClip(clipShape);
+    g2.dispose(); // BH 2020.02.26
   }
 
 }
@@ -173,6 +174,6 @@ public class TextBox implements Drawable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

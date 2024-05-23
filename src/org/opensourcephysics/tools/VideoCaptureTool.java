@@ -2,183 +2,184 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
+
 import java.awt.image.BufferedImage;
-import java.rmi.RemoteException;
-import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.media.core.VideoGrabber;
 import org.opensourcephysics.media.core.VideoType;
 
 /**
- * A video capture tool.
- * This simply forwards jobs to the media tool.
+ * A video capture tool. This simply forwards jobs to the media tool.
  *
  * @author Douglas Brown
  * @version 1.0
  */
 public class VideoCaptureTool implements Tool, VideoTool {
-	
-  private VideoCaptureTool mediaCap;
 
-  /**
-   * Public constructor.
-   */
-  public VideoCaptureTool() {
-    /** empty block */
-  }
+	private VideoCaptureTool mediaCap;
 
-  /**
-   * Protected constructor for subclasses to prevent circular references.
-   *
-   * @param ignored ignored
-   */
-  protected VideoCaptureTool(boolean ignored) {
-    /** empty block */
-  }
+	/**
+	 * Public constructor.
+	 */
+	public VideoCaptureTool() {
+		/** empty block */
+	}
 
-  /**
-   * Adds a frame to the video if it is recording.
-   *
-   * @param image the frame to be added
-   * @return true if frame was added
-   */
-  public boolean addFrame(BufferedImage image) {
-    return getGrabber().addFrame(image);
-  }
+	/**
+	 * Protected constructor for subclasses to prevent circular references.
+	 *
+	 * @param ignored ignored
+	 */
+	protected VideoCaptureTool(boolean ignored) {
+		/** empty block */
+	}
 
-  /**
-   * Clear the video from the tool in preparation for a new video.
-   */
-  public void clear() {
-    getGrabber().clear();
-  }
+	/**
+	 * Adds a frame to the video if it is recording.
+	 *
+	 * @param image the frame to be added
+	 * @return true if frame was added
+	 */
+	@Override
+	public boolean addFrame(BufferedImage image) {
+		return getGrabber().addFrame(image);
+	}
 
-  /**
-   * Sets the recording flag.
-   *
-   * @param record true to record rendered images
-   */
-  public void setRecording(boolean record) {
-    getGrabber().setRecording(record);
-  }
+	/**
+	 * Clear the video from the tool in preparation for a new video.
+	 */
+	@Override
+	public void clear() {
+		getGrabber().clear();
+	}
 
-  /**
-   * Gets the recording flag.
-   *
-   * @return true if recording rendered images
-   */
-  public boolean isRecording() {
-    return getGrabber().isRecording();
-  }
+	/**
+	 * Sets the recording flag.
+	 *
+	 * @param record true to record rendered images
+	 */
+	public void setRecording(boolean record) {
+		getGrabber().setRecording(record);
+	}
 
-  /**
-   * Sets the visibility.
-   *
-   * @param visible true to set this visible
-   */
-  public void setVisible(boolean visible) {
-    getGrabber().setVisible(visible);
-  }
+	/**
+	 * Gets the recording flag.
+	 *
+	 * @return true if recording rendered images
+	 */
+	@Override
+	public boolean isRecording() {
+		return getGrabber().isRecording();
+	}
 
-  /**
-   * Gets the visibility.
-   *
-   * @return true if visible
-   */
-  public boolean isVisible() {
-    return getGrabber().isVisible();
-  }
+	/**
+	 * Sets the visibility.
+	 *
+	 * @param visible true to set this visible
+	 */
+	@Override
+	public void setVisible(boolean visible) {
+		getGrabber().setVisible(visible);
+	}
 
-  /**
-   * Determines whether this tool is functional.
-   *
-   * @return true if media capture is available
-   */
-  public boolean canCapture() {
-    return getGrabber()!=null;
-  }
+	/**
+	 * Gets the visibility.
+	 *
+	 * @return true if visible
+	 */
+	public boolean isVisible() {
+		return getGrabber().isVisible();
+	}
 
-  /**
-   * Sets the video type.
-   *
-   * @param type the video type
-   */
-  public void setVideoType(VideoType type) {
-    getGrabber().setVideoType(type);
-  }
+	/**
+	 * Determines whether this tool is functional.
+	 *
+	 * @return true if media capture is available
+	 */
+	public boolean canCapture() {
+		return getGrabber() != null;
+	}
 
-  /**
-   * Sets the frame rate.
-   *
-   * @param fps the frame rate in frames per second
-   */
-  public void setFrameRate(double fps) {
-    getGrabber().setFrameRate(fps);
-  }
+	/**
+	 * Sets the video type.
+	 *
+	 * @param type the video type
+	 */
+	public void setVideoType(VideoType type) {
+		getGrabber().setVideoType(type);
+	}
 
-  /**
-   * Adds frame specified by image file path.
-   *
-   * @param job the job
-   * @param replyTo the tool to reply to
-   * @throws RemoteException
-   */
-  public void send(Job job, Tool replyTo) throws RemoteException {
-    if(job==null) {
-      return;
-    }
-    XMLControl control = new XMLControlElement(job.getXML());
-    String path = control.getString("imagepath"); //$NON-NLS-1$
-    if(path!=null) {
-      BufferedImage image = ResourceLoader.getBufferedImage(path);
-      if(image!=null) {
-        addFrame(image);
-      }
-    }
-  }
+	/**
+	 * Sets the frame rate.
+	 *
+	 * @param fps the frame rate in frames per second
+	 */
+	public void setFrameRate(double fps) {
+		getGrabber().setFrameRate(fps);
+	}
 
-  /**
-   * Gets the shared Tool.
-   *
-   * @return the shared VideoCaptureTool
-   */
-  public static VideoCaptureTool getTool() {
-    return VideoGrabber.getTool();
-  }
+	/**
+	 * Adds frame specified by image file path.
+	 *
+	 * @param job     the job
+	 * @param noReply  ignored
+	 */
+	@Override
+	public void send(Job job, Tool noReply) {
+		if (job == null) {
+			return;
+		}
+		String path = new XMLControlElement(job.getXML()).getString("imagepath"); //$NON-NLS-1$
+		if (path != null) {
+			BufferedImage image = ResourceLoader.getBufferedImage(path);
+			if (image != null) {
+				addFrame(image);
+			}
+		}
+	}
 
-  private VideoCaptureTool getGrabber() {
-    if(mediaCap==null) {
-      mediaCap = new VideoGrabber();
-    }
-    return mediaCap;
-  }
+	/**
+	 * Gets the shared Tool.
+	 *
+	 * @return the shared VideoCaptureTool
+	 */
+	public static VideoCaptureTool getTool() {
+		return VideoGrabber.getTool();
+	}
+
+	private VideoCaptureTool getGrabber() {
+		if (mediaCap == null) {
+			mediaCap = new VideoGrabber();
+		}
+		return mediaCap;
+	}
 
 }
 
 /*
- * Open Source Physics software is free software; you can redistribute
- * it and/or modify it under the terms of the GNU General Public License (GPL) as
+ * Open Source Physics software is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License (GPL) as
  * published by the Free Software Foundation; either version 2 of the License,
  * or(at your option) any later version.
  *
  * Code that uses any portion of the code in the org.opensourcephysics package
- * or any subpackage (subdirectory) of this package must must also be be released
- * under the GNU GPL license.
+ * or any subpackage (subdirectory) of this package must must also be be
+ * released under the GNU GPL license.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This software is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
- * or view the license online at http://www.gnu.org/copyleft/gpl.html
+ * You should have received a copy of the GNU General Public License along with
+ * this; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
+ * Suite 330, Boston MA 02111-1307 USA or view the license online at
+ * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.jibble.epsgraphics;
@@ -379,7 +379,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Draws a 3D rectangle outline.  If it is raised, light appears to come
    * from the top left.
    */
-  public void draw3DRect(int x, int y, int width, int height, boolean raised) {
+  @Override
+public void draw3DRect(int x, int y, int width, int height, boolean raised) {
     Color originalColor = getColor();
     Stroke originalStroke = getStroke();
     setStroke(new BasicStroke(1.0f));
@@ -405,7 +406,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Fills a 3D rectangle.  If raised, it has bright fill and light appears
    * to come from the top left.
    */
-  public void fill3DRect(int x, int y, int width, int height, boolean raised) {
+  @Override
+public void fill3DRect(int x, int y, int width, int height, boolean raised) {
     Color originalColor = getColor();
     if(raised) {
       setColor(originalColor.brighter());
@@ -420,14 +422,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a Shape on the EPS document.
    */
-  public void draw(Shape s) {
+  @Override
+public void draw(Shape s) {
     draw(s, "stroke"); //$NON-NLS-1$
   }
 
   /**
    * Draws an Image on the EPS document.
    */
-  public boolean drawImage(Image img, AffineTransform xform, ImageObserver obs) {
+  @Override
+public boolean drawImage(Image img, AffineTransform xform, ImageObserver obs) {
     AffineTransform at = getTransform();
     transform(xform);
     boolean st = drawImage(img, 0, 0, obs);
@@ -438,7 +442,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a BufferedImage on the EPS document.
    */
-  public void drawImage(BufferedImage img, BufferedImageOp op, int x, int y) {
+  @Override
+public void drawImage(BufferedImage img, BufferedImageOp op, int x, int y) {
     BufferedImage img1 = op.filter(img, null);
     drawImage(img1, new AffineTransform(1f, 0f, 0f, 1f, x, y), null);
   }
@@ -446,7 +451,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a RenderedImage on the EPS document.
    */
-  public void drawRenderedImage(RenderedImage img, AffineTransform xform) {
+  @Override
+public void drawRenderedImage(RenderedImage img, AffineTransform xform) {
     Hashtable<String, Object> properties = new Hashtable<String, Object>();
     String[] names = img.getPropertyNames();
     for(int i = 0; i<names.length; i++) {
@@ -463,21 +469,24 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a RenderableImage by invoking its createDefaultRendering method.
    */
-  public void drawRenderableImage(RenderableImage img, AffineTransform xform) {
+  @Override
+public void drawRenderableImage(RenderableImage img, AffineTransform xform) {
     drawRenderedImage(img.createDefaultRendering(), xform);
   }
 
   /**
    * Draws a string at (x,y)
    */
-  public void drawString(String str, int x, int y) {
+  @Override
+public void drawString(String str, int x, int y) {
     drawString(str, (float) x, (float) y);
   }
 
   /**
    * Draws a string at (x,y)
    */
-  public void drawString(String s, float x, float y) {
+  @Override
+public void drawString(String s, float x, float y) {
     if((s!=null)&&(s.length()>0)) {
       AttributedString as = new AttributedString(s);
       as.addAttribute(TextAttribute.FONT, getFont());
@@ -489,7 +498,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Draws the characters of an AttributedCharacterIterator, starting from
    * (x,y).
    */
-  public void drawString(AttributedCharacterIterator iterator, int x, int y) {
+  @Override
+public void drawString(AttributedCharacterIterator iterator, int x, int y) {
     drawString(iterator, (float) x, (float) y);
   }
 
@@ -497,7 +507,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Draws the characters of an AttributedCharacterIterator, starting from
    * (x,y).
    */
-  public void drawString(AttributedCharacterIterator iterator, float x, float y) {
+  @Override
+public void drawString(AttributedCharacterIterator iterator, float x, float y) {
     if(getAccurateTextMode()) {
       TextLayout layout = new TextLayout(iterator, getFontRenderContext());
       Shape shape = layout.getOutline(AffineTransform.getTranslateInstance(x, y));
@@ -520,7 +531,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a GlyphVector at (x,y)
    */
-  public void drawGlyphVector(GlyphVector g, float x, float y) {
+  @Override
+public void drawGlyphVector(GlyphVector g, float x, float y) {
     Shape shape = g.getOutline(x, y);
     draw(shape, "fill"); //$NON-NLS-1$
   }
@@ -528,7 +540,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Fills a Shape on the EPS document.
    */
-  public void fill(Shape s) {
+  @Override
+public void fill(Shape s) {
     draw(s, "fill"); //$NON-NLS-1$
   }
 
@@ -536,7 +549,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Checks whether or not the specified Shape intersects the specified
    * Rectangle, which is in device space.
    */
-  public boolean hit(Rectangle rect, Shape s, boolean onStroke) {
+  @Override
+public boolean hit(Rectangle rect, Shape s, boolean onStroke) {
     return s.intersects(rect);
   }
 
@@ -544,7 +558,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Returns the device configuration associated with this EpsGraphics2D
    * object.
    */
-  public GraphicsConfiguration getDeviceConfiguration() {
+  @Override
+public GraphicsConfiguration getDeviceConfiguration() {
     GraphicsConfiguration gc = null;
     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
     GraphicsDevice[] gds = ge.getScreenDevices();
@@ -562,7 +577,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Sets the Composite to be used by this EpsGraphics2D.  EpsGraphics2D
    * does not make use of these.
    */
-  public void setComposite(Composite comp) {
+  @Override
+public void setComposite(Composite comp) {
     _composite = comp;
   }
 
@@ -570,7 +586,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Sets the Paint attribute for the EpsGraphics2D object.  Only Paint
    * objects of type Color are respected by EpsGraphics2D.
    */
-  public void setPaint(Paint paint) {
+  @Override
+public void setPaint(Paint paint) {
     _paint = paint;
     if(paint instanceof Color) {
       setColor((Color) paint);
@@ -581,7 +598,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Sets the stroke.  Only accepts BasicStroke objects (or subclasses of
    * BasicStroke).
    */
-  public void setStroke(Stroke s) {
+  @Override
+public void setStroke(Stroke s) {
     if(s instanceof BasicStroke) {
       _stroke = (BasicStroke) s;
       append(_stroke.getLineWidth()+" setlinewidth"); //$NON-NLS-1$
@@ -608,7 +626,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Sets a rendering hint. These are not used by EpsGraphics2D.
    */
-  public void setRenderingHint(RenderingHints.Key hintKey, Object hintValue) {
+  @Override
+public void setRenderingHint(RenderingHints.Key hintKey, Object hintValue) {
     // Do nothing.
   }
 
@@ -616,28 +635,32 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Returns the value of a single preference for the rendering
    * algorithms.  Rendering hints are not used by EpsGraphics2D.
    */
-  public Object getRenderingHint(RenderingHints.Key hintKey) {
+  @Override
+public Object getRenderingHint(RenderingHints.Key hintKey) {
     return null;
   }
 
   /**
    * Sets the rendering hints.  These are ignored by EpsGraphics2D.
    */
-  public void setRenderingHints(Map<?, ?> hints) {
+  @Override
+public void setRenderingHints(Map<?, ?> hints) {
     // Do nothing.
   }
 
   /**
    * Adds rendering hints.  These are ignored by EpsGraphics2D.
    */
-  public void addRenderingHints(Map<?, ?> hints) {
+  @Override
+public void addRenderingHints(Map<?, ?> hints) {
     // Do nothing.
   }
 
   /**
    * Returns the preferences for the rendering algorithms.
    */
-  public RenderingHints getRenderingHints() {
+  @Override
+public RenderingHints getRenderingHints() {
     return new RenderingHints(null);
   }
 
@@ -645,7 +668,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Translates the origin of the EpsGraphics2D context to the point (x,y)
    * in the current coordinate system.
    */
-  public void translate(int x, int y) {
+  @Override
+public void translate(int x, int y) {
     translate((double) x, (double) y);
   }
 
@@ -653,7 +677,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Concatenates the current EpsGraphics2D Transformation with a
    * translation transform.
    */
-  public void translate(double tx, double ty) {
+  @Override
+public void translate(double tx, double ty) {
     transform(AffineTransform.getTranslateInstance(tx, ty));
   }
 
@@ -661,7 +686,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Concatenates the current EpsGraphics2D Transform with a rotation
    * transform.
    */
-  public void rotate(double theta) {
+  @Override
+public void rotate(double theta) {
     rotate(theta, 0, 0);
   }
 
@@ -669,7 +695,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Concatenates the current EpsGraphics2D Transform with a translated
    * rotation transform.
    */
-  public void rotate(double theta, double x, double y) {
+  @Override
+public void rotate(double theta, double x, double y) {
     transform(AffineTransform.getRotateInstance(theta, x, y));
   }
 
@@ -677,7 +704,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Concatenates the current EpsGraphics2D Transform with a scaling
    * transformation.
    */
-  public void scale(double sx, double sy) {
+  @Override
+public void scale(double sx, double sy) {
     transform(AffineTransform.getScaleInstance(sx, sy));
   }
 
@@ -685,7 +713,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Concatenates the current EpsGraphics2D Transform with a shearing
    * transform.
    */
-  public void shear(double shx, double shy) {
+  @Override
+public void shear(double shx, double shy) {
     transform(AffineTransform.getShearInstance(shx, shy));
   }
 
@@ -693,7 +722,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Composes an AffineTransform object with the Transform in this
    * EpsGraphics2D according to the rule last-specified-first-applied.
    */
-  public void transform(AffineTransform Tx) {
+  @Override
+public void transform(AffineTransform Tx) {
     _transform.concatenate(Tx);
     setTransform(getTransform());
   }
@@ -701,7 +731,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Sets the AffineTransform to be used by this EpsGraphics2D.
    */
-  public void setTransform(AffineTransform Tx) {
+  @Override
+public void setTransform(AffineTransform Tx) {
     if(Tx==null) {
       _transform = new AffineTransform();
     } else {
@@ -715,28 +746,32 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Gets the AffineTransform used by this EpsGraphics2D.
    */
-  public AffineTransform getTransform() {
+  @Override
+public AffineTransform getTransform() {
     return new AffineTransform(_transform);
   }
 
   /**
    * Returns the current Paint of the EpsGraphics2D object.
    */
-  public Paint getPaint() {
+  @Override
+public Paint getPaint() {
     return _paint;
   }
 
   /**
    * returns the current Composite of the EpsGraphics2D object.
    */
-  public Composite getComposite() {
+  @Override
+public Composite getComposite() {
     return _composite;
   }
 
   /**
    * Sets the background color to be used by the clearRect method.
    */
-  public void setBackground(Color color) {
+  @Override
+public void setBackground(Color color) {
     if(color==null) {
       color = Color.black;
     }
@@ -746,7 +781,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Gets the background color that is used by the clearRect method.
    */
-  public Color getBackground() {
+  @Override
+public Color getBackground() {
     return _backgroundColor;
   }
 
@@ -754,7 +790,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Returns the Stroke currently used.  Guaranteed to be an instance of
    * BasicStroke.
    */
-  public Stroke getStroke() {
+  @Override
+public Stroke getStroke() {
     return _stroke;
   }
 
@@ -762,7 +799,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Intersects the current clip with the interior of the specified Shape
    * and sets the clip to the resulting intersection.
    */
-  public void clip(Shape s) {
+  @Override
+public void clip(Shape s) {
     if(_clip==null) {
       setClip(s);
     } else {
@@ -775,7 +813,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Returns the FontRenderContext.
    */
-  public FontRenderContext getFontRenderContext() {
+  @Override
+public FontRenderContext getFontRenderContext() {
     return _fontRenderContext;
   }
 
@@ -784,7 +823,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Returns a new Graphics object that is identical to this EpsGraphics2D.
    */
-  public Graphics create() {
+  @Override
+public Graphics create() {
     return new EpsGraphics2D(this);
   }
 
@@ -793,7 +833,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Graphics object, but with a new translation and clip
    * area.
    */
-  public Graphics create(int x, int y, int width, int height) {
+  @Override
+public Graphics create(int x, int y, int width, int height) {
     Graphics g = create();
     g.translate(x, y);
     g.clipRect(0, 0, width, height);
@@ -804,14 +845,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Returns the current Color.  This will be a default value (black)
    * until it is changed using the setColor method.
    */
-  public Color getColor() {
+  @Override
+public Color getColor() {
     return _color;
   }
 
   /**
    * Sets the Color to be used when drawing all future shapes, text, etc.
    */
-  public void setColor(Color c) {
+  @Override
+public void setColor(Color c) {
     if(c==null) {
       c = Color.black;
     }
@@ -834,28 +877,32 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Sets the paint mode of this EpsGraphics2D object to overwrite the
    * destination EpsDocument with the current color.
    */
-  public void setPaintMode() {
+  @Override
+public void setPaintMode() {
     // Do nothing - paint mode is the only method supported anyway.
   }
 
   /**
    * <b><i><font color="red">Not implemented</font></i></b> - performs no action.
    */
-  public void setXORMode(Color c1) {
+  @Override
+public void setXORMode(Color c1) {
     methodNotSupported();
   }
 
   /**
    * Returns the Font currently being used.
    */
-  public Font getFont() {
+  @Override
+public Font getFont() {
     return _font;
   }
 
   /**
    * Sets the Font to be used in future text.
    */
-  public void setFont(Font font) {
+  @Override
+public void setFont(Font font) {
     if(font==null) {
       font = Font.decode(null);
     }
@@ -868,14 +915,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Gets the font metrics of the current font.
    */
-  public FontMetrics getFontMetrics() {
+  @Override
+public FontMetrics getFontMetrics() {
     return getFontMetrics(getFont());
   }
 
   /**
    * Gets the font metrics for the specified font.
    */
-  public FontMetrics getFontMetrics(Font f) {
+  @Override
+public FontMetrics getFontMetrics(Font f) {
     BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
     Graphics g = image.getGraphics();
     return g.getFontMetrics(f);
@@ -884,7 +933,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Returns the bounding rectangle of the current clipping area.
    */
-  public Rectangle getClipBounds() {
+  @Override
+public Rectangle getClipBounds() {
     if(_clip==null) {
       return null;
     }
@@ -895,7 +945,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Intersects the current clip with the specified rectangle.
    */
-  public void clipRect(int x, int y, int width, int height) {
+  @Override
+public void clipRect(int x, int y, int width, int height) {
     clip(new Rectangle(x, y, width, height));
   }
 
@@ -903,14 +954,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Sets the current clip to the rectangle specified by the given
    * coordinates.
    */
-  public void setClip(int x, int y, int width, int height) {
+  @Override
+public void setClip(int x, int y, int width, int height) {
     setClip(new Rectangle(x, y, width, height));
   }
 
   /**
    * Gets the current clipping area.
    */
-  public Shape getClip() {
+  @Override
+public Shape getClip() {
     if(_clip==null) {
       return null;
     }
@@ -926,7 +979,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Sets the current clipping area to an arbitrary clip shape.
    */
-  public void setClip(Shape clip) {
+  @Override
+public void setClip(Shape clip) {
     if(clip!=null) {
       if(_document.isClipSet()) {
         append("grestore"); //$NON-NLS-1$
@@ -950,14 +1004,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * <b><i><font color="red">Not implemented</font></i></b> - performs no action.
    */
-  public void copyArea(int x, int y, int width, int height, int dx, int dy) {
+  @Override
+public void copyArea(int x, int y, int width, int height, int dx, int dy) {
     methodNotSupported();
   }
 
   /**
    * Draws a straight line from (x1,y1) to (x2,y2).
    */
-  public void drawLine(int x1, int y1, int x2, int y2) {
+  @Override
+public void drawLine(int x1, int y1, int x2, int y2) {
     Shape shape = new Line2D.Float(x1, y1, x2, y2);
     draw(shape);
   }
@@ -965,7 +1021,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Fills a rectangle with top-left corner placed at (x,y).
    */
-  public void fillRect(int x, int y, int width, int height) {
+  @Override
+public void fillRect(int x, int y, int width, int height) {
     Shape shape = new Rectangle(x, y, width, height);
     draw(shape, "fill"); //$NON-NLS-1$
   }
@@ -973,7 +1030,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a rectangle with top-left corner placed at (x,y).
    */
-  public void drawRect(int x, int y, int width, int height) {
+  @Override
+public void drawRect(int x, int y, int width, int height) {
     Shape shape = new Rectangle(x, y, width, height);
     draw(shape);
   }
@@ -982,7 +1040,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Clears a rectangle with top-left corner placed at (x,y) using the
    * current background color.
    */
-  public void clearRect(int x, int y, int width, int height) {
+  @Override
+public void clearRect(int x, int y, int width, int height) {
     Color originalColor = getColor();
     setColor(getBackground());
     Shape shape = new Rectangle(x, y, width, height);
@@ -993,7 +1052,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a rounded rectangle.
    */
-  public void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+  @Override
+public void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
     Shape shape = new RoundRectangle2D.Float(x, y, width, height, arcWidth, arcHeight);
     draw(shape);
   }
@@ -1001,7 +1061,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Fills a rounded rectangle.
    */
-  public void fillRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+  @Override
+public void fillRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
     Shape shape = new RoundRectangle2D.Float(x, y, width, height, arcWidth, arcHeight);
     draw(shape, "fill"); //$NON-NLS-1$
   }
@@ -1009,7 +1070,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws an oval.
    */
-  public void drawOval(int x, int y, int width, int height) {
+  @Override
+public void drawOval(int x, int y, int width, int height) {
     Shape shape = new Ellipse2D.Float(x, y, width, height);
     draw(shape);
   }
@@ -1017,7 +1079,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Fills an oval.
    */
-  public void fillOval(int x, int y, int width, int height) {
+  @Override
+public void fillOval(int x, int y, int width, int height) {
     Shape shape = new Ellipse2D.Float(x, y, width, height);
     draw(shape, "fill"); //$NON-NLS-1$
   }
@@ -1025,7 +1088,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws an arc.
    */
-  public void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+  @Override
+public void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
     Shape shape = new Arc2D.Float(x, y, width, height, startAngle, arcAngle, Arc2D.OPEN);
     draw(shape);
   }
@@ -1033,7 +1097,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Fills an arc.
    */
-  public void fillArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+  @Override
+public void fillArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
     Shape shape = new Arc2D.Float(x, y, width, height, startAngle, arcAngle, Arc2D.PIE);
     draw(shape, "fill"); //$NON-NLS-1$
   }
@@ -1041,7 +1106,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a polyline.
    */
-  public void drawPolyline(int[] xPoints, int[] yPoints, int nPoints) {
+  @Override
+public void drawPolyline(int[] xPoints, int[] yPoints, int nPoints) {
     if(nPoints>0) {
       GeneralPath path = new GeneralPath();
       path.moveTo(xPoints[0], yPoints[0]);
@@ -1055,7 +1121,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a polygon made with the specified points.
    */
-  public void drawPolygon(int[] xPoints, int[] yPoints, int nPoints) {
+  @Override
+public void drawPolygon(int[] xPoints, int[] yPoints, int nPoints) {
     Shape shape = new Polygon(xPoints, yPoints, nPoints);
     draw(shape);
   }
@@ -1063,14 +1130,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws a polygon.
    */
-  public void drawPolygon(Polygon p) {
+  @Override
+public void drawPolygon(Polygon p) {
     draw(p);
   }
 
   /**
    * Fills a polygon made with the specified points.
    */
-  public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints) {
+  @Override
+public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints) {
     Shape shape = new Polygon(xPoints, yPoints, nPoints);
     draw(shape, "fill"); //$NON-NLS-1$
   }
@@ -1078,14 +1147,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Fills a polygon.
    */
-  public void fillPolygon(Polygon p) {
+  @Override
+public void fillPolygon(Polygon p) {
     draw(p, "fill"); //$NON-NLS-1$
   }
 
   /**
    * Draws the specified characters, starting from (x,y)
    */
-  public void drawChars(char[] data, int offset, int length, int x, int y) {
+  @Override
+public void drawChars(char[] data, int offset, int length, int x, int y) {
     String string = new String(data, offset, length);
     drawString(string, x, y);
   }
@@ -1093,7 +1164,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws the specified bytes, starting from (x,y)
    */
-  public void drawBytes(byte[] data, int offset, int length, int x, int y) {
+  @Override
+public void drawBytes(byte[] data, int offset, int length, int x, int y) {
     String string = new String(data, offset, length);
     drawString(string, x, y);
   }
@@ -1101,21 +1173,24 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws an image.
    */
-  public boolean drawImage(Image img, int x, int y, ImageObserver observer) {
+  @Override
+public boolean drawImage(Image img, int x, int y, ImageObserver observer) {
     return drawImage(img, x, y, Color.white, observer);
   }
 
   /**
    * Draws an image.
    */
-  public boolean drawImage(Image img, int x, int y, int width, int height, ImageObserver observer) {
+  @Override
+public boolean drawImage(Image img, int x, int y, int width, int height, ImageObserver observer) {
     return drawImage(img, x, y, width, height, Color.white, observer);
   }
 
   /**
    * Draws an image.
    */
-  public boolean drawImage(Image img, int x, int y, Color bgcolor, ImageObserver observer) {
+  @Override
+public boolean drawImage(Image img, int x, int y, Color bgcolor, ImageObserver observer) {
     int width = img.getWidth(null);
     int height = img.getHeight(null);
     return drawImage(img, x, y, width, height, bgcolor, observer);
@@ -1124,21 +1199,24 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Draws an image.
    */
-  public boolean drawImage(Image img, int x, int y, int width, int height, Color bgcolor, ImageObserver observer) {
+  @Override
+public boolean drawImage(Image img, int x, int y, int width, int height, Color bgcolor, ImageObserver observer) {
     return drawImage(img, x, y, x+width, y+height, 0, 0, width, height, bgcolor, observer);
   }
 
   /**
    * Draws an image.
    */
-  public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2, ImageObserver observer) {
+  @Override
+public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2, ImageObserver observer) {
     return drawImage(img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, Color.white, observer);
   }
 
   /**
    * Draws an image.
    */
-  public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2, Color bgcolor, ImageObserver observer) {
+  @Override
+public boolean drawImage(Image img, int dx1, int dy1, int dx2, int dy2, int sx1, int sy1, int sx2, int sy2, Color bgcolor, ImageObserver observer) {
     if(dx1>=dx2) {
       throw new IllegalArgumentException("dx1 >= dx2"); //$NON-NLS-1$
     }
@@ -1231,14 +1309,16 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * a EpsDocument object, then the EpsDocument object shall become
    * eligible for garbage collection.
    */
-  public void dispose() {
+  @Override
+public void dispose() {
     _document = null;
   }
 
   /**
    * Finalizes the object.
    */
-  public void finalize() {
+  @Override
+public void finalize() {
     super.finalize();
   }
 
@@ -1247,7 +1327,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * headers and bounding box.  The returned String is suitable for
    * being written directly to disk as an EPS file.
    */
-  public String toString() {
+  @Override
+public String toString() {
     StringWriter writer = new StringWriter();
     try {
       _document.write(writer);
@@ -1263,7 +1344,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
    * Returns true if the specified rectangular area might intersect the
    * current clipping area.
    */
-  public boolean hitClip(int x, int y, int width, int height) {
+  @Override
+public boolean hitClip(int x, int y, int width, int height) {
     if(_clip==null) {
       return true;
     }
@@ -1274,7 +1356,8 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
   /**
    * Returns the bounding rectangle of the current clipping area.
    */
-  public Rectangle getClipBounds(Rectangle r) {
+  @Override
+public Rectangle getClipBounds(Rectangle r) {
     if(_clip==null) {
       return r;
     }
@@ -1320,6 +1403,6 @@ public class EpsGraphics2D extends java.awt.Graphics2D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

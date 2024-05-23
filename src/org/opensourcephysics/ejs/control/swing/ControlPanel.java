@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -31,7 +31,8 @@ public class ControlPanel extends ControlContainer {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JPanel) {
       panel = (JPanel) _visual;
     } else {
@@ -45,7 +46,8 @@ public class ControlPanel extends ControlContainer {
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("layout"); //$NON-NLS-1$
@@ -55,7 +57,8 @@ public class ControlPanel extends ControlContainer {
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("layout")) { //$NON-NLS-1$
       return "Layout|Object";        //$NON-NLS-1$
     }
@@ -68,7 +71,8 @@ public class ControlPanel extends ControlContainer {
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 : // layout
          if(_value.getObject() instanceof java.awt.LayoutManager) {
@@ -94,7 +98,8 @@ public class ControlPanel extends ControlContainer {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          getContainer().setLayout(myLayout = new java.awt.BorderLayout());
@@ -110,7 +115,8 @@ public class ControlPanel extends ControlContainer {
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
        case 1 :
@@ -142,6 +148,6 @@ public class ControlPanel extends ControlContainer {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

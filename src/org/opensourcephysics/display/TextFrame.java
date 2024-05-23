@@ -2,37 +2,26 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.io.IOException;
+import java.net.URL;
+
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+
 import org.opensourcephysics.controls.OSPLog;
-import org.opensourcephysics.tools.Resource;
+import org.opensourcephysics.desktop.OSPDesktop;
 import org.opensourcephysics.tools.ResourceLoader;
 
 public class TextFrame extends JFrame {
   HyperlinkListener hyperlinkListener;
-  JTextPane textPane = new JTextPane() {
-    public void paintComponent(Graphics g) {
-      if(OSPRuntime.antiAliasText) {
-        Graphics2D g2 = (Graphics2D) g;
-        RenderingHints rh = g2.getRenderingHints();
-        rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-      }
-      super.paintComponent(g);
-    }
-
-  };
+  JTextPane textPane = GUIUtils.newJTextPane();
   JScrollPane textScroller;
 
   /**
@@ -52,19 +41,19 @@ public class TextFrame extends JFrame {
   }
 
   /**
-   * Constructs the HTMLFrame with the given html resource at the given location.
-   * The location is relative to the given class.
+   * Constructs the HTMLFrame with the given html resource of the given type.
+   * The location is relative to the given type.
    *
    * @param resourceName String
-   * @param location
+   * @param type
    */
-  public TextFrame(String resourceName, Class<?> location) {
+  public TextFrame(String resourceName, Class<?> type) {
     setSize(300, 300);
     textPane.setEditable(false);
     textScroller = new JScrollPane(textPane);
     setContentPane(textScroller);
     if(resourceName!=null) {
-      loadResource(resourceName, location);
+      loadTextResource(resourceName, type);
     }
   }
 
@@ -80,7 +69,8 @@ public class TextFrame extends JFrame {
       textPane.removeHyperlinkListener(hyperlinkListener);
     }
     hyperlinkListener = new HyperlinkListener() {
-      public void hyperlinkUpdate(HyperlinkEvent e) {
+      @Override
+	public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) {
           try {
             textPane.setPage(e.getURL());
@@ -100,15 +90,18 @@ public class TextFrame extends JFrame {
       textPane.removeHyperlinkListener(hyperlinkListener);
     }
     hyperlinkListener = new HyperlinkListener() {
-      public void hyperlinkUpdate(HyperlinkEvent e) {
+      @Override
+	public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType()==HyperlinkEvent.EventType.ACTIVATED) {
-          try {
-            if(!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
-              // try the old way
-              org.opensourcephysics.desktop.ostermiller.Browser.init();
-              org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
-            }
-          } catch(Exception e1) {}
+          	OSPDesktop.displayURL(e.getURL().toString());
+//          try {
+//          	.browse(e.getURL().toURI());
+//            if(!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
+//              // try the old way
+//              org.opensourcephysics.desktop.ostermiller.Browser.init();
+//              org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
+//            }
+//          } catch(Exception e1) {}
         }
       }
 
@@ -126,20 +119,20 @@ public class TextFrame extends JFrame {
     hyperlinkListener = null;
   }
 
-  public boolean loadResource(String resourceName, Class<?> location) {
-    Resource res = null;
+  private boolean loadTextResource(String resourceName, Class<?> type) {
+    URL url = null;
     try {
-      res = ResourceLoader.getResource(resourceName, location);
+      url = ResourceLoader.getTextURL(resourceName, type);
     } catch(Exception ex) {
       OSPLog.fine("Error getting resource: "+resourceName); //$NON-NLS-1$
       return false;
     }
-    if(res==null) {
+    if(url==null) {
       OSPLog.fine("Resource not found: "+resourceName); //$NON-NLS-1$
       return false;
     }
     try {
-      textPane.setPage(res.getURL());
+      textPane.setPage(url);
     } catch(IOException ex) {
       OSPLog.fine("Resource not loadeded: "+resourceName); //$NON-NLS-1$
       return false;
@@ -170,6 +163,6 @@ public class TextFrame extends JFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

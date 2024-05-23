@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -42,22 +42,22 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
    * Enables mouse interactions.
    * @param _enableInteraction
    */
-  public void setEnabled(boolean _enableInteraction) {
+  @Override
+public void setEnabled(boolean _enableInteraction) {
     enableInteraction = _enableInteraction;
   }
 
-  public boolean isEnabled() {
+  @Override
+public boolean isEnabled() {
     return enableInteraction;
   }
 
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
-    if(findInteractive(panel, xpix, ypix)==null) {
-      return false;
-    }
-    return true;
-  }
+	public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+		return (findInteractive(panel, xpix, ypix) != null);
+	}
 
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(!enableInteraction) {
       return null;
     }
@@ -82,7 +82,8 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
      * @param control XMLControl
      * @param obj Object
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       InteractiveCircle circle = (InteractiveCircle) obj;
       control.setValue("interaction enabled", circle.enableInteraction); //$NON-NLS-1$
@@ -94,7 +95,8 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
      * @param control XMLControl
      * @return Object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveCircle();
     }
 
@@ -104,7 +106,8 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       InteractiveCircle circle = (InteractiveCircle) obj;
       circle.enableInteraction = control.getBoolean("interaction enabled"); //$NON-NLS-1$
@@ -136,6 +139,6 @@ public class InteractiveCircle extends MeasuredCircle implements Interactive {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

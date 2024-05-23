@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.dialogs;
@@ -27,6 +27,7 @@ import org.opensourcephysics.display.DrawingPanel;
  * @author W. Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class AutoScaleInspector extends JDialog {
   // instance fields
   protected DrawingPanel plotPanel;
@@ -57,7 +58,8 @@ public class AutoScaleInspector extends JDialog {
   private void createGUI() {
     xAutoscaleCheckBox = new JCheckBox(DialogsRes.AUTOSCALE_AUTO+" x"); //$NON-NLS-1$
     xAutoscaleCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setAutoscaleX(xAutoscaleCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -67,7 +69,8 @@ public class AutoScaleInspector extends JDialog {
     });
     yAutoscaleCheckBox = new JCheckBox(DialogsRes.AUTOSCALE_AUTO+" y"); //$NON-NLS-1$
     yAutoscaleCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setAutoscaleY(yAutoscaleCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -103,7 +106,8 @@ public class AutoScaleInspector extends JDialog {
     okButton = new JButton(DialogsRes.AUTOSCALE_OK);
     okButton.setForeground(new Color(0, 0, 102));
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 
@@ -146,6 +150,6 @@ public class AutoScaleInspector extends JDialog {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

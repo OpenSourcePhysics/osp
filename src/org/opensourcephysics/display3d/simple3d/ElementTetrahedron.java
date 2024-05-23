@@ -2,7 +2,7 @@
 * Open Source Physics software is free software as described near the bottom of this code file.
 *
 * For additional information and documentation on Open Source Physics please see:
-* <https://www.compadre.org/osp/>
+* <http://www.opensourcephysics.org/>
 */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -27,7 +27,8 @@ public class ElementTetrahedron extends AbstractTile implements org.opensourceph
   // -------------------------------------
   // Configuration
   // -------------------------------------
-  public void setTruncationHeight(double height) {
+  @Override
+public void setTruncationHeight(double height) {
     if(height<0) {
       height = Double.NaN;
     }
@@ -36,31 +37,37 @@ public class ElementTetrahedron extends AbstractTile implements org.opensourceph
     changeNTiles = true;
   }
 
-  public double getTruncationHeight() {
+  @Override
+public double getTruncationHeight() {
     return truncationHeight;
   }
 
-  public void setClosedBottom(boolean close) {
+  @Override
+public void setClosedBottom(boolean close) {
     this.closedBottom = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedBottom() {
+  @Override
+public boolean isClosedBottom() {
     return this.closedBottom;
   }
 
-  public void setClosedTop(boolean close) {
+  @Override
+public void setClosedTop(boolean close) {
     this.closedTop = close;
     setElementChanged(true);
     changeNTiles = true;
   }
 
-  public boolean isClosedTop() {
+  @Override
+public boolean isClosedTop() {
     return this.closedTop;
   }
 
-  protected void computeCorners() {
+  @Override
+protected void computeCorners() {
     if(changeNTiles) { // Reallocate arrays
       changeNTiles = false;
       double height = truncationHeight/getSizeZ();
@@ -92,7 +99,8 @@ public class ElementTetrahedron extends AbstractTile implements org.opensourceph
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementTetrahedron.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementTetrahedron();
     }
 
@@ -120,6 +128,6 @@ public class ElementTetrahedron extends AbstractTile implements org.opensourceph
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
 * or view the license online at http://www.gnu.org/copyleft/gpl.html
 *
-* Copyright (c) 2019  The Open Source Physics project
-*                     https://www.compadre.org/osp
+* Copyright (c) 2024  The Open Source Physics project
+*                     http://www.opensourcephysics.org
 */

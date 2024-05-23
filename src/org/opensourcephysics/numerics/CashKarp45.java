@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -52,7 +52,8 @@ public class CashKarp45 implements ODEAdaptiveSolver {
    *
    * @param _stepSize
    */
-  public void initialize(double _stepSize) {
+  @Override
+public void initialize(double _stepSize) {
     stepSize = _stepSize;
     double state[] = ode.getState();
     if(state==null) { // state vector not defined.
@@ -74,7 +75,8 @@ public class CashKarp45 implements ODEAdaptiveSolver {
    *
    * @return the step size
    */
-  public double step() {
+  @Override
+public double step() {
     error_code = ODEAdaptiveSolver.NO_ERROR;
     int iterations = 10;
     double currentStep = stepSize, error = 0;
@@ -146,7 +148,8 @@ public class CashKarp45 implements ODEAdaptiveSolver {
    *
    * @param stepSize
    */
-  public void setStepSize(double stepSize) {
+  @Override
+public void setStepSize(double stepSize) {
     this.stepSize = stepSize;
   }
 
@@ -157,7 +160,8 @@ public class CashKarp45 implements ODEAdaptiveSolver {
    *
    * @return the step size
    */
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return stepSize;
   }
 
@@ -166,7 +170,8 @@ public class CashKarp45 implements ODEAdaptiveSolver {
    *
    * @param _tol
    */
-  public void setTolerance(double _tol) {
+  @Override
+public void setTolerance(double _tol) {
     tol = Math.abs(_tol);
     if(tol<1.0E-12) {
       String err_msg = "Error: CashKarp ODE solver tolerance cannot be smaller than 1.0e-12."; //$NON-NLS-1$
@@ -182,7 +187,8 @@ public class CashKarp45 implements ODEAdaptiveSolver {
    *
    * @return tolerance
    */
-  public double getTolerance() {
+  @Override
+public double getTolerance() {
     return tol;
   }
 
@@ -193,7 +199,8 @@ public class CashKarp45 implements ODEAdaptiveSolver {
  *   ODEAdaptiveSolver.DID_NOT_CONVERGE
  * @return int
  */
-  public int getErrorCode() {
+  @Override
+public int getErrorCode() {
     return error_code;
   }
 
@@ -219,6 +226,6 @@ public class CashKarp45 implements ODEAdaptiveSolver {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

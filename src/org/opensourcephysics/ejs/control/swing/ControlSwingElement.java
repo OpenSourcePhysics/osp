@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -88,7 +88,8 @@ public abstract class ControlSwingElement extends ControlElement {
    * Returns the visual component of this <code>ControlElement</code>,
    * the one you can configure graphically.
    */
-  final public Component getVisual() {
+  @Override
+final public Component getVisual() {
     return myVisual;
   }
 
@@ -96,7 +97,8 @@ public abstract class ControlSwingElement extends ControlElement {
    * Returns the component of this <code>ControlElement</code>,
    * the one that is added to a container.
    */
-  public Component getComponent() {
+  @Override
+public Component getComponent() {
     return myVisual;
   }
   // This one is not final becuase, although this is the usual behaviour,
@@ -115,7 +117,8 @@ public abstract class ControlSwingElement extends ControlElement {
    */
   // Important: Order is crucial!!! if you change the order of the properties
   // you must up date the constants at the beginning of this file accordingly!!!
-  public ArrayList<String> getPropertyList() {
+  @Override
+public ArrayList<String> getPropertyList() {
     if(myInfoList==null) {
       myInfoList = new ArrayList<String>();
       myInfoList.add("name");       //$NON-NLS-1$
@@ -146,7 +149,8 @@ public abstract class ControlSwingElement extends ControlElement {
    *  </ll>
    */
   // Order in the implementation is irrelevant.
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("name")) {             //$NON-NLS-1$
       return "String         CONSTANT HIDDEN"; //$NON-NLS-1$
     }
@@ -189,7 +193,8 @@ public abstract class ControlSwingElement extends ControlElement {
    * @param     String _property The property name
    * @param     String _value The proposed value for the property
    */
-  public Value parseConstant(String _propertyType, String _value) {
+  @Override
+public Value parseConstant(String _propertyType, String _value) {
     if(_value==null) {
       return null;
     }
@@ -243,7 +248,8 @@ public abstract class ControlSwingElement extends ControlElement {
    * @param _index   A keyword index that distinguishes among variables
    * @param _value The object holding the value for the variable.
    */
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     // System.out.println ("Setting property #"+_index+" to "+_value.toString());
     switch(_index) {
        case NAME :
@@ -326,7 +332,8 @@ public abstract class ControlSwingElement extends ControlElement {
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     // System.out.println ("Setting default value for property #"+_index);
     switch(_index) {
        case NAME :
@@ -393,7 +400,8 @@ public abstract class ControlSwingElement extends ControlElement {
    * @param _index   A keyword index that distinguishes among variables
    * @return Value _value The object holding the value for the variable.
    */
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     return null; // Any of these properties can be modified by the element
   }
 
@@ -434,6 +442,6 @@ public abstract class ControlSwingElement extends ControlElement {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

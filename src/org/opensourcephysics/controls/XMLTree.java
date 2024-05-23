@@ -2,20 +2,22 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Enumeration;
+
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import org.opensourcephysics.tools.ResourceLoader;
 
 /**
  * This is an XML tree in a scroller.
@@ -138,7 +140,7 @@ public class XMLTree {
   protected void createGUI() {
     // create icons
     String imageFile = "/org/opensourcephysics/resources/controls/images/hilite.gif"; //$NON-NLS-1$
-    hiliteIcon = new ImageIcon(XMLTree.class.getResource(imageFile));
+    hiliteIcon = ResourceLoader.getImageIcon(imageFile);
     // create root and tree
     root = new XMLTreeNode(control);
     tree = new JTree(root);
@@ -153,7 +155,8 @@ public class XMLTree {
    * A cell renderer to show launchable nodes.
    */
   private class HighlightRenderer extends DefaultTreeCellRenderer {
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    @Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
       XMLTreeNode node = (XMLTreeNode) value;
       XMLProperty prop = node.getProperty();
@@ -188,6 +191,6 @@ public class XMLTree {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

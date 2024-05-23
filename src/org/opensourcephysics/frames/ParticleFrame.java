@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.frames;
@@ -93,7 +93,8 @@ public class ParticleFrame extends DrawingFrame {
   /**
    * Cleares drawable objects added by the user from this frame and clears the particles.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     clearData();
     drawingPanel.clear(); // removes drawables added by user
   }
@@ -101,7 +102,8 @@ public class ParticleFrame extends DrawingFrame {
   /**
    * Clears all particles from this frame.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     Iterator<Particles> it = partlist.iterator();
     while(it.hasNext()) { // clears the data from the arrays
       Particles p = it.next();
@@ -164,7 +166,8 @@ public class ParticleFrame extends DrawingFrame {
      * @param panel DrawingPanel
      * @param g Graphics
      */
-    public void draw(DrawingPanel panel, Graphics g) {
+    @Override
+	public void draw(DrawingPanel panel, Graphics g) {
       synchronized(pointList) {
         Iterator<Point2D> it = pointList.iterator();
         while(it.hasNext()) {
@@ -180,7 +183,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getXMax() {
+    @Override
+	public double getXMax() {
       return xmax;
     }
 
@@ -189,7 +193,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getXMin() {
+    @Override
+	public double getXMin() {
       return xmin;
     }
 
@@ -198,7 +203,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getYMax() {
+    @Override
+	public double getYMax() {
       return ymax;
     }
 
@@ -207,7 +213,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return double
      */
-    public double getYMin() {
+    @Override
+	public double getYMin() {
       return ymin;
     }
 
@@ -216,7 +223,8 @@ public class ParticleFrame extends DrawingFrame {
      *
      * @return boolean
      */
-    public boolean isMeasured() {
+    @Override
+	public boolean isMeasured() {
       synchronized(pointList) {
         return(pointList.size()>0) ? true : false;
       }
@@ -246,6 +254,6 @@ public class ParticleFrame extends DrawingFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

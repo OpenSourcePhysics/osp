@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -10,7 +10,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -99,7 +98,8 @@ public class InteractiveTextLine extends InteractiveShape {
    * @param ypix int
    * @return boolean
    */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     if((textLine==null)||!enabled) {
       return false;
     }
@@ -109,14 +109,15 @@ public class InteractiveTextLine extends InteractiveShape {
     return false;
   }
 
-  private void checkBounds(Graphics g) {
-    if(dirty||(toPixels.getScaleX()!=sx)||(toPixels.getScaleY()!=sy)) {
-      boundsRect = textLine.getStringBounds(g);
-      sx = toPixels.getScaleX();
-      sy = toPixels.getScaleY();
-      dirty = false;
-    }
-  }
+	private boolean checkBoundsChanged() {
+		if (dirty || (toPixels.getScaleX() != sx) || (toPixels.getScaleY() != sy)) {
+			sx = toPixels.getScaleX();
+			sy = toPixels.getScaleY();
+			dirty = false;
+			return true;
+		}
+		return false;
+	}
 
   /**
    * Draws the text.
@@ -124,21 +125,21 @@ public class InteractiveTextLine extends InteractiveShape {
    * @param panel  the world in which the arrow is viewed
    * @param g  the graphics context upon which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(textLine.getText().trim().equals("")) { //$NON-NLS-1$
       return;
     }
     textLine.setColor(color);
-    toPixels = panel.getPixelTransform();
-    checkBounds(g);
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
+    getPixelPt(panel);
+    if (checkBoundsChanged())
+        boundsRect = textLine.getStringBounds(g);
     Graphics2D g2 = (Graphics2D) g;
-    g2.translate(pt.getX(), pt.getY());
+    g2.translate(pixelPt.x, pixelPt.y);
     g2.rotate(-theta);
     textLine.drawText(g2, (int) boundsRect.getX(), (int) boundsRect.getY());
     g2.rotate(theta);
-    g2.translate(-pt.getX(), -pt.getY());
+    g2.translate(-pixelPt.x, -pixelPt.y);
   }
 
   /**
@@ -153,7 +154,8 @@ public class InteractiveTextLine extends InteractiveShape {
    * A class to save and load InteractiveArrow in an XMLControl.
    */
   protected static class InteractiveTextLineLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       InteractiveTextLine interactiveTextLine = (InteractiveTextLine) obj;
       control.setValue("text", interactiveTextLine.getText());           //$NON-NLS-1$
       control.setValue("x", interactiveTextLine.x);                      //$NON-NLS-1$
@@ -163,11 +165,13 @@ public class InteractiveTextLine extends InteractiveShape {
       control.setValue("color", interactiveTextLine.color);              //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveTextLine("", 0, 0); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       InteractiveTextLine interactiveTextLine = (InteractiveTextLine) obj;
       double x = control.getDouble("x"); //$NON-NLS-1$
       double y = control.getDouble("y"); //$NON-NLS-1$
@@ -203,6 +207,6 @@ public class InteractiveTextLine extends InteractiveShape {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

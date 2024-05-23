@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
@@ -11,7 +11,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
-import java.text.DecimalFormat;
 import org.opensourcephysics.display.DrawingPanel;
 
 /**
@@ -40,14 +39,16 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
    * Automatically sets the spacing of the radial grid.
    * @param autoscaleR
    */
-  public void autospaceRings(boolean autospace) {
+  @Override
+public void autospaceRings(boolean autospace) {
     this.autospaceRings = autospace;
   }
 
   /**
    * Gets the spacing of the radial grid.
    */
-  public double getDeltaR() {
+  @Override
+public double getDeltaR() {
     return dr;
   }
 
@@ -55,14 +56,16 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
    * Sets the spacing of the radial gridlines.
    * @param dr
    */
-  public void setDeltaR(double dr) {
+  @Override
+public void setDeltaR(double dr) {
     this.dr = dr;
   }
 
   /**
    * Gets the spacing of the radial gridlines.
    */
-  public double getDeltaTheta() {
+  @Override
+public double getDeltaTheta() {
     return dtheta;
   }
 
@@ -70,7 +73,8 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
    * Sets the spacing of the radial gridlines.
    * @param dtheta in degree
    */
-  public void setDeltaTheta(double dtheta) {
+  @Override
+public void setDeltaTheta(double dtheta) {
     this.dtheta = Math.abs(dtheta);
   }
 
@@ -80,7 +84,7 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
    * @param formatString
    */
   public void setLabelFormat(String formatString) {
-    labelFormat = new DecimalFormat(formatString);
+    labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(formatString);
   }
 
   /**
@@ -127,7 +131,8 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
    *
    * @return double the ring separation used
    */
-  public double drawRings(double rmax, DrawingPanel panel, Graphics g) {
+  @Override
+public double drawRings(double rmax, DrawingPanel panel, Graphics g) {
     double dr = Math.max(this.dr, 1.0e-9);
     if(autospaceRings) {
       int exponent = (int) (Math.log(rmax)/LOG10);
@@ -174,7 +179,8 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
    * @param panel
    * @param g
    */
-  public void drawSpokes(double rmax, DrawingPanel panel, Graphics g) {
+  @Override
+public void drawSpokes(double rmax, DrawingPanel panel, Graphics g) {
     g.setColor(gridcolor);
     for(double theta = 0; theta<Math.PI; theta += dtheta) {
       int x1 = panel.xToPix(rmax*Math.cos(theta));
@@ -207,6 +213,6 @@ public abstract class AbstractPolarAxis extends AbstractAxes implements PolarAxe
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.frames;
@@ -68,8 +68,9 @@ public class ImageFrame extends OSPFrame {
     fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item"));     //$NON-NLS-1$
     printItem = new JMenuItem(DisplayRes.getString("ImageFrame.Print_menu_item")); //$NON-NLS-1$
     printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
-    printItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+    if(!OSPRuntime.isJS) printItem.addActionListener(new ActionListener() {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         PrintUtils.printComponent(drawingPanel);
       }
 
@@ -85,7 +86,8 @@ public class ImageFrame extends OSPFrame {
     saveImageMenu.add(jpgItem);
     saveImageMenu.add(pngItem);
     epsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String description = DisplayRes.getString("ImageFrame.EPS_filter_description");   //$NON-NLS-1$
         String[] extensions = new String[] {"eps", "EPS"};                                //$NON-NLS-1$ //$NON-NLS-2$
         GUIUtils.saveImageAs(drawingPanel, "eps", chooserTitle, description, extensions); //$NON-NLS-1$
@@ -93,7 +95,8 @@ public class ImageFrame extends OSPFrame {
 
     });
     gifItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String description = DisplayRes.getString("ImageFrame.GIF_filter_description");   //$NON-NLS-1$
         String[] extensions = new String[] {"gif", "GIF"};                                //$NON-NLS-1$ //$NON-NLS-2$
         GUIUtils.saveImageAs(drawingPanel, "gif", chooserTitle, description, extensions); //$NON-NLS-1$
@@ -101,7 +104,8 @@ public class ImageFrame extends OSPFrame {
 
     });
     jpgItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String description = DisplayRes.getString("ImageFrame.JPEG_filter_description"); //$NON-NLS-1$
         String[] extensions = new String[] {"jpg", "jpeg", "JPG", "JPEG"};               //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
         GUIUtils.saveImageAs(drawingPanel, "jpeg", chooserTitle, description, extensions); //$NON-NLS-1$
@@ -109,17 +113,18 @@ public class ImageFrame extends OSPFrame {
 
     });
     pngItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String description = DisplayRes.getString("ImageFrame.PNG_filter_description");   //$NON-NLS-1$
         String[] extensions = new String[] {"png", "PNG"};                                //$NON-NLS-1$ //$NON-NLS-2$
         GUIUtils.saveImageAs(drawingPanel, "png", chooserTitle, description, extensions); //$NON-NLS-1$
       }
 
     });
-    if(OSPRuntime.applet==null) {
-      fileMenu.add(saveImageMenu);
+    if(!OSPRuntime.isApplet) {
+      if(!OSPRuntime.isJS)fileMenu.add(saveImageMenu);
       fileMenu.addSeparator();
-      fileMenu.add(printItem);
+      if(!OSPRuntime.isJS)fileMenu.add(printItem);
     }
     menuBar.add(fileMenu);
     // edit menu
@@ -128,7 +133,8 @@ public class ImageFrame extends OSPFrame {
     copyItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Copy_menu_item")); //$NON-NLS-1$
     copyItem.setAccelerator(KeyStroke.getKeyStroke('C', MENU_SHORTCUT_KEY_MASK));
     copyItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         BufferedImage bi = new BufferedImage(drawingPanel.getWidth(), drawingPanel.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
         Graphics g = bi.getGraphics();
         drawingPanel.paint(g);
@@ -147,7 +153,8 @@ public class ImageFrame extends OSPFrame {
     JMenuItem aboutItem = new JMenuItem(DisplayRes.getString("DrawingFrame.AboutOSP_menu_item")); //$NON-NLS-1$
     aboutItem.setAccelerator(KeyStroke.getKeyStroke('A', MENU_SHORTCUT_KEY_MASK));
     aboutItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         OSPRuntime.showAboutDialog(ImageFrame.this);
       }
 
@@ -158,7 +165,8 @@ public class ImageFrame extends OSPFrame {
   /**
    * Adds a Display menu to the menu bar.
    */
-  protected JMenu loadDisplayMenu() {
+  @Override
+protected JMenu loadDisplayMenu() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return null;
@@ -169,7 +177,8 @@ public class ImageFrame extends OSPFrame {
     displayMenu.add(fontMenu);
     JMenuItem sizeUpItem = new JMenuItem(DisplayRes.getString("DrawingFrame.IncreaseFontSize_menu_item")); //$NON-NLS-1$
     sizeUpItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelUp();
       }
 
@@ -177,20 +186,26 @@ public class ImageFrame extends OSPFrame {
     fontMenu.add(sizeUpItem);
     final JMenuItem sizeDownItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DecreaseFontSize_menu_item")); //$NON-NLS-1$
     sizeDownItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         FontSizer.levelDown();
       }
 
     });
     fontMenu.add(sizeDownItem);
     fontMenu.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
+      @Override
+	public void stateChanged(ChangeEvent e) {
         sizeDownItem.setEnabled(FontSizer.getLevel()>0);
       }
 
     });
     return displayMenu;
   }
+
+	public static OSPFrame newFrame(MeasuredImage mi) {
+		return new ImageFrame(mi);
+	}
 
 }
 
@@ -214,6 +229,6 @@ public class ImageFrame extends OSPFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

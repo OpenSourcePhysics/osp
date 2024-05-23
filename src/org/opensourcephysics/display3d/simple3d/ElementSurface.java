@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -29,19 +29,22 @@ public class ElementSurface extends AbstractTile implements org.opensourcephysic
   // -------------------------------------
   // Configuration
   // -------------------------------------
-  public void setData(double[][][] data) {
+  @Override
+public void setData(double[][][] data) {
     this.data = data;
     setElementChanged(true);
   }
 
-  public double[][][] getData() {
+  @Override
+public double[][][] getData() {
     return this.data;
   }
 
   // -------------------------------------
   // Private or protected methods
   // -------------------------------------
-  public void getExtrema(double[] min, double[] max) {
+  @Override
+public void getExtrema(double[] min, double[] max) {
     double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
     double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
     double minZ = Double.POSITIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
@@ -67,7 +70,8 @@ public class ElementSurface extends AbstractTile implements org.opensourcephysic
     max[2] = maxZ;
   }
 
-  protected synchronized void computeCorners() {
+  @Override
+protected synchronized void computeCorners() {
     if(data==null) {
       return;
     }
@@ -111,7 +115,8 @@ public class ElementSurface extends AbstractTile implements org.opensourcephysic
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementSurface.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementSurface();
     }
 
@@ -139,6 +144,6 @@ public class ElementSurface extends AbstractTile implements org.opensourcephysic
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

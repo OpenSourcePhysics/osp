@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -164,7 +164,8 @@ public class Quaternion implements MatrixTransformation {
 * @param mat double[] optional matrix
 * @return double[] the matrix
 */
-  public final double[] getFlatMatrix(double[] mat) {
+  @Override
+public final double[] getFlatMatrix(double[] mat) {
     double q0q0 = q0*q0, q0q1 = q0*q1, q0q2 = q0*q2, q0q3 = q0*q3;
     double q1q1 = q1*q1, q1q2 = q1*q2, q1q3 = q1*q3;
     double q2q2 = q2*q2, q2q3 = q2*q3;
@@ -259,10 +260,10 @@ public class Quaternion implements MatrixTransformation {
    * @param q Quaternion
    */
   public final void add(Quaternion q) {
-    q0 += this.q0;
-    q1 += this.q1;
-    q2 += this.q2;
-    q3 += this.q3;
+    q0 += q.q0;
+    q1 += q.q1;
+    q2 += q.q2;
+    q3 += q.q3;
   }
 
   /**
@@ -271,10 +272,10 @@ public class Quaternion implements MatrixTransformation {
    * @param q Quaternion
    */
   public final void subtract(Quaternion q) {
-    q0 -= this.q0;
-    q1 -= this.q1;
-    q2 -= this.q2;
-    q3 -= this.q3;
+    q0 -= q.q0;
+    q1 -= q.q1;
+    q2 -= q.q2;
+    q3 -= q.q3;
   }
 
   /**
@@ -337,7 +338,8 @@ public class Quaternion implements MatrixTransformation {
    * Instaniates a quaterion whose components are identical to this quaterion.
    * @return Object
    */
-  public Object clone() {
+  @Override
+public Object clone() {
     Quaternion q = new Quaternion(q0, q1, q2, q3);
     q.setOrigin(ox, oy, oz);
     return q;
@@ -349,7 +351,8 @@ public class Quaternion implements MatrixTransformation {
    * @param p double[]
    * @return double[]
    */
-  public double[] direct(double[] p) { // assumes quaternion is normalized
+  @Override
+public double[] direct(double[] p) { // assumes quaternion is normalized
     p[0] -= ox;
     p[1] -= oy;
     p[2] -= oz;
@@ -364,7 +367,8 @@ public class Quaternion implements MatrixTransformation {
     return p;
   }
 
-  public double[] inverse(double[] p) throws UnsupportedOperationException { // assumes quaternion is normalized
+  @Override
+public double[] inverse(double[] p) throws UnsupportedOperationException { // assumes quaternion is normalized
     p[0] -= ox;
     p[1] -= oy;
     p[2] -= oz;
@@ -384,7 +388,8 @@ public class Quaternion implements MatrixTransformation {
   }
 
   protected static class QuaternionLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Quaternion qr = (Quaternion) obj;
       control.setValue("q0", qr.q0); //$NON-NLS-1$
       control.setValue("q1", qr.q1); //$NON-NLS-1$
@@ -395,11 +400,13 @@ public class Quaternion implements MatrixTransformation {
       control.setValue("oz", qr.oz); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Quaternion();
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Quaternion qr = (Quaternion) obj;
       double q0 = control.getDouble("q0"); //$NON-NLS-1$
       double q1 = control.getDouble("q0"); //$NON-NLS-1$
@@ -437,6 +444,6 @@ public class Quaternion implements MatrixTransformation {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

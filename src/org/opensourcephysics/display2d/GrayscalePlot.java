@@ -2,22 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.ComponentSampleModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import org.opensourcephysics.controls.XML;
@@ -66,7 +58,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -76,7 +69,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -86,7 +80,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -96,7 +91,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -107,7 +103,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][] val = (double[][]) obj;
     copyData(val);
     update();
@@ -124,7 +121,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][] val = (double[][]) obj;
     copyData(val);
     if(griddata.isCellData()) {
@@ -155,7 +153,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -164,14 +163,15 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    *
    * @param _griddata new data storage
    */
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
     if(griddata==null) {
       return;
     }
-    int nx = griddata.getNx();
-    int ny = griddata.getNy();
-    int size = nx*ny;
+    int nx = griddata.getNx(); // columns, so width
+    int ny = griddata.getNy(); // rows, so height
+    //int size = nx*ny;
     Grid newgrid = new Grid(nx, ny, xmin, xmax, ymin, ymax);
     if(grid!=null) {
       newgrid.setColor(grid.getColor());
@@ -180,21 +180,32 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
       newgrid.setColor(Color.pink);
     }
     grid = newgrid;
-    ComponentColorModel ccm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_GRAY), new int[] {16}, false, // hasAlpha
-      false, // alspha premultiplied
-        Transparency.OPAQUE, DataBuffer.TYPE_USHORT);
-    ComponentSampleModel csm = new ComponentSampleModel(DataBuffer.TYPE_USHORT, nx, ny, 1, nx, new int[] {0});
-    bwData = new short[size];
-    DataBuffer databuffer = new DataBufferUShort(bwData, size);
-    WritableRaster raster = Raster.createWritableRaster(csm, databuffer, new Point(0, 0));
-    image = new BufferedImage(ccm, raster, true, null);
+    // BH 2020.02.29 just keeping this simple. It is better 
+    // and simpler to let Java manage the buffer. This is exactly the
+    // same operation.
+//    ComponentColorModel ccm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_GRAY), new int[] {16}, 
+//    		false, // hasAlpha
+//    		// BH note: since hasAlpha is false here, both of the next
+//    		// two fields are ignored, set to false and Transparency.OPAQUE, as you have here.
+//    			false, // alpha premultiplied
+//    			Transparency.OPAQUE, 
+//    		DataBuffer.TYPE_USHORT);
+//    ComponentSampleModel csm = new ComponentSampleModel(DataBuffer.TYPE_USHORT, nx, ny, 1, nx, new int[] {0});
+//    bwData = new short[size];
+//    DataBuffer databuffer = new DataBufferUShort(bwData, size);
+//    WritableRaster raster = Raster.createWritableRaster(csm, databuffer, new Point(0, 0));
+//    image = new BufferedImage(ccm, raster, true, null);
+    image = new BufferedImage(ny, nx, BufferedImage.TYPE_USHORT_GRAY);
+    bwData = ((DataBufferUShort) image.getRaster().getDataBuffer()).getData();
+       
     xmin = griddata.getLeft();
     xmax = griddata.getRight();
     ymin = griddata.getBottom();
     ymax = griddata.getTop();
   }
 
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     InteractivePanel dp = new InteractivePanel();
     dp.setPreferredSize(new java.awt.Dimension(300, 66));
     dp.setPreferredGutters(0, 0, 0, 35);
@@ -246,7 +257,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param _floor
    * @param _ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double _floor, double _ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double _floor, double _ceil) {
     autoscaleZ = isAutoscale;
     if(autoscaleZ) {
       update();
@@ -265,14 +277,16 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 	  symmetricZ=symmetric;
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return symmetricZ;
   }
 
@@ -281,7 +295,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -289,7 +304,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return floor;
   }
 
@@ -297,7 +313,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return ceil;
   }
 
@@ -306,7 +323,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    *
    * @param  showGrid
    */
-  public void setShowGridLines(boolean showGrid) {
+  @Override
+public void setShowGridLines(boolean showGrid) {
     grid.setVisible(showGrid);
   }
 
@@ -316,7 +334,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param expanded boolean
    * @param expansionFactor double
    */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       zMap = new ZExpansion(expansionFactor);
       zMap.setMinMax(floor, ceil);
@@ -328,12 +347,13 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
   /**
    * Updates the buffered image using the data array.
    */
-  public void update() {
+  @Override
+public void update() {
     if(griddata==null) {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
        	 ceil=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
        	 floor=-ceil;
@@ -356,79 +376,119 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    *
    * @param indexes the sample-component
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
   }
 
-  /**
-   * Recolors the image pixels using the data array.
-   */
-  protected void recolorImage() {
-    if(griddata==null) {
-      return;
-    }
-    if(griddata.isCellData()) {
-      double dx = griddata.getDx();
-      double dy = griddata.getDy();
-      xmin = griddata.getLeft()-dx/2;
-      xmax = griddata.getRight()+dx/2;
-      ymin = griddata.getBottom()+dy/2;
-      ymax = griddata.getTop()-dy/2;
-    } else {
-      xmin = griddata.getLeft();
-      xmax = griddata.getRight();
-      ymin = griddata.getBottom();
-      ymax = griddata.getTop();
-    }
-    grid.setMinMax(xmin, xmax, ymin, ymax);
-    double[][][] data = griddata.getData();
-    int nx = griddata.getNx();
-    int ny = griddata.getNy();
-    double zscale = 2*Short.MAX_VALUE/(ceil-floor);
-    if(griddata instanceof GridPointData) {
-      int index = ampIndex+2;
-      for(int ix = 0; ix<nx; ix++) {
-        for(int iy = 0; iy<ny; iy++) {
-          double val = data[ix][iy][index];
-          if(zMap!=null) {
-            val = zMap.evaluate(val);
-          }
-          val = zscale*(val-floor);
-          if(val<0) {
-            bwData[iy*nx+ix] = 0;
-          } else if(val>2*Short.MAX_VALUE) {
-            bwData[iy*nx+ix] = (short) (2*Short.MAX_VALUE);
-          } else {
-            bwData[iy*nx+ix] = (short) val;
-          }
-        }
-      }
-    } else if(griddata instanceof ArrayData) {
-      for(int ix = 0; ix<nx; ix++) {
-        for(int iy = 0; iy<ny; iy++) {
-          double val = data[ampIndex][ix][iy];
-          if(zMap!=null) {
-            val = zMap.evaluate(val);
-          }
-          val = zscale*(val-floor);
-          if(val<0) {
-            bwData[iy*nx+ix] = 0;
-          } else if(val>2*Short.MAX_VALUE) {
-            bwData[iy*nx+ix] = (short) (2*Short.MAX_VALUE);
-          } else {
-            bwData[iy*nx+ix] = (short) val;
-          }
-        }
-      }
-    }
-  }
+	/**
+	 * Recolors the image pixels using the data array.
+	 */
+	protected void recolorImage() {
+		if (griddata == null) {
+			return;
+		}
+		if (griddata.isCellData()) {
+			double dx = griddata.getDx();
+			double dy = griddata.getDy();
+			xmin = griddata.getLeft() - dx / 2;
+			xmax = griddata.getRight() + dx / 2;
+			ymin = griddata.getBottom() + dy / 2;
+			ymax = griddata.getTop() - dy / 2;
+		} else {
+			xmin = griddata.getLeft();
+			xmax = griddata.getRight();
+			ymin = griddata.getBottom();
+			ymax = griddata.getTop();
+		}
+		grid.setMinMax(xmin, xmax, ymin, ymax);
+		double[][][] data = griddata.getData();
+		int nx = griddata.getNx();
+		int ny = griddata.getNy();
+		double zscale = 2 * Short.MAX_VALUE / (ceil - floor);
+		if (griddata instanceof GridPointData) {
+			int index = ampIndex + 2;
+			// BH note -- this is inverted from standard practice
+			// of scanning rows slowly and columns more quickly.
+			// I am reversing this so that columns are inside, allowing for
+			// a simple pointer description
+//      for(int ix = 0, pt = 0; ix<nx; ix++) {
+//        for(int iy = 0; iy<ny; iy++, pt++) {
+//          double val = data[ix][iy][index];
+//          if(zMap!=null) {
+//            val = zMap.evaluate(val);
+//          }
+//          val = zscale*(val-floor);
+//          if(val<0) {
+//            bwData[iy*nx+ix] = 0;
+//          } else if(val>2*Short.MAX_VALUE) {
+//            bwData[iy*nx+ix] = (short) (2*Short.MAX_VALUE);
+//          } else {
+//            bwData[iy*nx+ix] = (short) val;
+//          }
+//        }
+//      }
+			for (int iy = 0, pt = 0; iy < ny; iy++) {
+				for (int ix = 0; ix < nx; ix++, pt++) {
+					double val = data[ix][iy][index];
+					if (zMap != null) {
+						val = zMap.evaluate(val);
+					}
+					val = zscale * (val - floor);
+					if (val < 0) {
+						bwData[pt] = 0;
+					} else if (val > 2 * Short.MAX_VALUE) {
+						// BH just being clear that this is FFFE
+						bwData[pt] = -1;//(short) 0xFFFF;//-2;//(short) (2 * Short.MAX_VALUE);
+					} else {
+						bwData[pt] = (short) val;
+					}
+				}
+			}
+		} else if (griddata instanceof ArrayData) {
+//			for (int ix = 0; ix < nx; ix++) {
+//				for (int iy = 0; iy < ny; iy++) {
+//					double val = data[ampIndex][ix][iy];
+//					if (zMap != null) {
+//						val = zMap.evaluate(val);
+//					}
+//					val = zscale * (val - floor);
+//					if (val < 0) {
+//						bwData[iy * nx + ix] = 0;
+//					} else if (val > 2 * Short.MAX_VALUE) {
+//						bwData[iy * nx + ix] = (short) (2 * Short.MAX_VALUE);
+//					} else {
+//						bwData[iy * nx + ix] = (short) val;
+//					}
+//				}
+//			}
+				for (int iy = 0, pt = 0; iy < ny; iy++) {
+					for (int ix = 0; ix < nx; ix++, pt++) {
+					double val = data[ampIndex][ix][iy];
+					if (zMap != null) {
+						val = zMap.evaluate(val);
+					}
+					val = zscale * (val - floor);
+					if (val < 0) {
+						bwData[pt] = 0;
+					} else if (val > 2 * Short.MAX_VALUE) {
+						// BH just being clear that this is FFFE
+						bwData[pt] = -1;//-2;//(short) (2 * Short.MAX_VALUE);
+					} else {
+						bwData[pt] = (short) val;
+					}
+				}
+			}
+		}
+	}
 
   /**
    * Draws the image and the grid.
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(griddata==null) {
       return;
     }
@@ -443,26 +503,30 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    * @param floorColor Color
    * @param ceilColor Color
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {}
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {}
 
   /**
    * Setting the color palette is not supported.  Palette is gray scale.
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {}
+  @Override
+public void setColorPalette(Color[] colors) {}
 
   /**
    * Setting the color palette is not supported.  Palette is gray scale.
    * @param type
    */
-  public void setPaletteType(int type) {}
+  @Override
+public void setPaletteType(int type) {}
 
   /**
    * Sets the grid color.
    *
    * @param c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     grid.setColor(c);
   }
 
@@ -473,7 +537,8 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new GrayscalePlot(null);
       }
 
@@ -502,6 +567,6 @@ public class GrayscalePlot extends MeasuredImage implements Plot2D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

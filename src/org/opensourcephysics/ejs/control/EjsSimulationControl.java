@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control;
@@ -77,7 +77,8 @@ public class EjsSimulationControl extends EjsControlFrame {
    * Unlike repaint, the render method is draws the panel within the calling method's thread.
    * This method is called automatically if the frame is animated.
    */
-  public void render() {
+  @Override
+public void render() {
     if(drawingPanel!=null) {
       drawingPanel.render(); // simulations should render their panels at every time step
     }
@@ -86,7 +87,8 @@ public class EjsSimulationControl extends EjsControlFrame {
   /**
    * Clears the current XML default.
    */
-  public void clearDefaultXML() {
+  @Override
+public void clearDefaultXML() {
     if((xmlDefault==null)||(model==null)) {
       return;
     }
@@ -141,7 +143,8 @@ public class EjsSimulationControl extends EjsControlFrame {
   /**
    * Does the calculation.
    */
-  public void initialize() {
+  @Override
+public void initialize() {
     model.stopAnimation();
     getControl("runButton").setProperty("image", "/org/opensourcephysics/resources/controls/images/play.gif"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     GUIUtils.clearDrawingFrameData(true);
@@ -171,6 +174,6 @@ public class EjsSimulationControl extends EjsControlFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

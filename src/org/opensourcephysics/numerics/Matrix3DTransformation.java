@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -266,7 +266,8 @@ public class Matrix3DTransformation implements MatrixTransformation {
   /**
    * Provides a copy of this transformation.
    */
-  public Object clone() {
+  @Override
+public Object clone() {
     Matrix3DTransformation m = new Matrix3DTransformation(matrix);
     m.origin = origin.clone();
     if(inverseMatrix==null) {
@@ -288,7 +289,8 @@ public class Matrix3DTransformation implements MatrixTransformation {
 * @param mat double[] optional matrix
 * @return double[] the matrix
 */
-  public final double[] getFlatMatrix(double[] mat) {
+  @Override
+public final double[] getFlatMatrix(double[] mat) {
     if(mat==null) {
       mat = new double[16];
     }
@@ -466,7 +468,8 @@ public class Matrix3DTransformation implements MatrixTransformation {
    *
    * @param point the coordinates to be transformed
    */
-  public double[] direct(double[] point) {
+  @Override
+public double[] direct(double[] point) {
     point[0] -= origin[0];
     point[1] -= origin[1];
     point[2] -= origin[2];
@@ -523,7 +526,8 @@ public class Matrix3DTransformation implements MatrixTransformation {
    *
    * @param point the coordinates to be transformed
    */
-  public double[] inverse(double[] point) throws UnsupportedOperationException {
+  @Override
+public double[] inverse(double[] point) throws UnsupportedOperationException {
     if(inverseMatrix==null) {
       calcInverse();                                                                   // computes the inverse using LU decompostion
       if(inverseMatrix==null) {                                                        // inverse does not exist
@@ -591,7 +595,8 @@ public class Matrix3DTransformation implements MatrixTransformation {
   }
 
   protected static class Affine3DTransformationLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Matrix3DTransformation transf = (Matrix3DTransformation) obj;
       control.setValue("matrix", transf.matrix); //$NON-NLS-1$
       if(transf.inverseMatrix!=null) {
@@ -600,11 +605,13 @@ public class Matrix3DTransformation implements MatrixTransformation {
       control.setValue("origin", transf.origin); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Matrix3DTransformation(null);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Matrix3DTransformation transf = (Matrix3DTransformation) obj;
       transf.matrix = (double[][]) control.getObject("matrix");         //$NON-NLS-1$
       transf.inverseMatrix = (double[][]) control.getObject("inverse"); //$NON-NLS-1$
@@ -636,6 +643,6 @@ public class Matrix3DTransformation implements MatrixTransformation {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

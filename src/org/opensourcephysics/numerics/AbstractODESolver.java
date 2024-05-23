@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -37,7 +37,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @return the step size
    */
-  abstract public double step();
+  @Override
+abstract public double step();
 
   /**
    * Sets the step size.
@@ -46,7 +47,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @param _stepSize
    */
-  public void setStepSize(double _stepSize) {
+  @Override
+public void setStepSize(double _stepSize) {
     stepSize = _stepSize;
   }
 
@@ -58,7 +60,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @param _stepSize
    */
-  public void initialize(double _stepSize) {
+  @Override
+public void initialize(double _stepSize) {
     stepSize = _stepSize;
     double state[] = ode.getState();
     if(state==null) { // state vector not defined
@@ -75,7 +78,8 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
    *
    * @return the step size
    */
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return stepSize;
   }
 
@@ -101,6 +105,6 @@ public abstract class AbstractODESolver extends Object implements ODESolver {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

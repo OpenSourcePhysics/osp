@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.dialogs;
@@ -72,7 +72,8 @@ public class ScaleInspector extends JDialog {
     inspectorPanel.add(controlPanel, BorderLayout.SOUTH);
     // create actions, labels, fields and check boxes
     final Action setXAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         double xMin = xMinCheckBox.isSelected() ? Double.NaN : xMinField.getValue();
         double xMax = xMaxCheckBox.isSelected() ? Double.NaN : xMaxField.getValue();
         drawingPanel.setPreferredMinMaxX(xMin, xMax);
@@ -82,7 +83,8 @@ public class ScaleInspector extends JDialog {
 
     };
     final Action setYAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         double yMin = yMinCheckBox.isSelected() ? Double.NaN : yMinField.getValue();
         double yMax = yMaxCheckBox.isSelected() ? Double.NaN : yMaxField.getValue();
         drawingPanel.setPreferredMinMaxY(yMin, yMax);
@@ -96,14 +98,16 @@ public class ScaleInspector extends JDialog {
     xMinField = new DecimalField(4, 2);
     xMinField.setMaximumSize(xMinField.getPreferredSize());
     xMinField.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setXAction.actionPerformed(null);
         xMinField.requestFocusInWindow();
       }
 
     });
     xMinField.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         setXAction.actionPerformed(null);
       }
 
@@ -114,14 +118,16 @@ public class ScaleInspector extends JDialog {
     xMaxField = new DecimalField(4, 2);
     xMaxField.setMaximumSize(xMaxField.getPreferredSize());
     xMaxField.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setXAction.actionPerformed(null);
         xMaxField.requestFocusInWindow();
       }
 
     });
     xMaxField.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         setXAction.actionPerformed(null);
       }
 
@@ -133,14 +139,16 @@ public class ScaleInspector extends JDialog {
     yMinField = new DecimalField(4, 2);
     yMinField.setMaximumSize(yMinField.getPreferredSize());
     yMinField.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setYAction.actionPerformed(null);
         yMinField.requestFocusInWindow();
       }
 
     });
     yMinField.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         setYAction.actionPerformed(null);
       }
 
@@ -152,14 +160,16 @@ public class ScaleInspector extends JDialog {
     yMaxField = new DecimalField(4, 2);
     yMaxField.setMaximumSize(yMaxField.getPreferredSize());
     yMaxField.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setYAction.actionPerformed(null);
         yMaxField.requestFocusInWindow();
       }
 
     });
     yMaxField.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         setYAction.actionPerformed(null);
       }
 
@@ -220,7 +230,8 @@ public class ScaleInspector extends JDialog {
     okButton = new JButton(DialogsRes.SCALE_OK);
     okButton.setForeground(new Color(0, 0, 102));
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 
@@ -271,6 +282,6 @@ public class ScaleInspector extends JDialog {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

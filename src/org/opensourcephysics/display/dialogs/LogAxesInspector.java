@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.dialogs;
@@ -57,7 +57,8 @@ public class LogAxesInspector extends JDialog {
   private void createGUI() {
     logXCheckBox = new JCheckBox(DialogsRes.LOG_X);
     logXCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setLogScaleX(logXCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -67,7 +68,8 @@ public class LogAxesInspector extends JDialog {
     });
     logYCheckBox = new JCheckBox(DialogsRes.LOG_Y);
     logYCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         plotPanel.setLogScaleY(logYCheckBox.isSelected());
         plotPanel.scale();
         updateDisplay();
@@ -103,7 +105,8 @@ public class LogAxesInspector extends JDialog {
     okButton = new JButton(DialogsRes.LOG_OK);
     okButton.setForeground(new Color(0, 0, 102));
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 
@@ -143,6 +146,6 @@ public class LogAxesInspector extends JDialog {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

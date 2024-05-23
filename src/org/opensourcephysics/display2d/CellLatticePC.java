@@ -2,17 +2,19 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
+import java.awt.image.DataBufferInt;
 import java.util.Random;
+
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
+
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Grid;
@@ -35,24 +37,18 @@ import org.opensourcephysics.display.axes.XYAxis;
  * @created    February 11, 2003
  * @version    1.0
  */
-public class CellLatticePC extends MeasuredImage implements ByteLattice {
+public class CellLatticePC extends MeasuredImage implements CellLattice.OSLattice {
+	
+	// BH 2020.03.04 rewritten for efficiency to remove raster.setPixel and to use int colors instead of byte[3]
+	
   // static final int ZERO = 0;
-  WritableRaster raster;
+//  WritableRaster raster;
+	int[] rasterData;
   Grid grid;
   int ny, nx;
-  int[][] rgb = new int[256][3];
+  int[] rgb = new int[256];
   byte[][] data;
   private JFrame legendFrame;
-
-  /**
-   * Constructs a cell lattice.
-   *
-   * Cell values are -128 to 127.
-   *
-   */
-  public CellLatticePC() {
-    this(1, 1);
-  }
 
   /**
    * Constructs a cell lattice with the given size.
@@ -63,36 +59,47 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param _ny the number of values in y direction
    */
   public CellLatticePC(int _nx, int _ny) {
-    ny = Math.max(1, _ny);
-    nx = Math.max(1, _nx);
     createDefaultColors();
-    data = new byte[nx][ny];
-    image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_RGB);
-    raster = image.getRaster();
-    xmin = 0;
-    xmax = nx;
-    ymin = 0;
-    ymax = ny;
-    grid = new Grid(nx, ny, xmin, xmax, ymin, ymax);
-    grid.setColor(Color.lightGray);
-    // set all pixels in the raster to correspond to the zero color
-    for(int ix = 0; ix<nx; ix++) {
-      for(int iy = 0; iy<ny; iy++) {
-        raster.setPixel(ix, iy, rgb[0]);
-      }
-    }
+    init(_nx, _ny);
   }
 
-  /**
+	private void init(int _nx, int _ny) {
+		ny = _ny;
+		nx = _nx;
+		data = new byte[nx][ny];
+		image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_RGB);
+		rasterData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		// BH note: resizeLattice did not have the next four lines. I don't see how that could work
+		xmin = 0;
+		xmax = nx;
+		ymin = 0;
+		ymax = ny;
+		Grid oldGrid = grid;
+		grid = new Grid(nx, ny, xmin, xmax, ymin, ymax);
+		if (oldGrid == null) {
+			grid.setColor(Color.lightGray);
+		} else {
+			grid.setColor(oldGrid.getColor());
+			grid.setVisible(oldGrid.isVisible());
+		}
+		// set all pixels in the raster to correspond to the zero color
+		int color = rgb[0];
+		for (int i = rasterData.length; --i >= 0;)
+			rasterData[i] = color;
+
+	}
+
+/**
    * Creates a new SiteLattice containing the same data as this lattice.
    */
-  public SiteLattice createSiteLattice() {
+  @Override
+public SiteLattice createSiteLattice() {
     SiteLattice lattice = new SiteLattice(nx, ny);
     lattice.setBlock(data);
     lattice.setMinMax(getXMin(), getXMax(), getYMin(), getYMax());
     Color[] colors = new Color[rgb.length];
     for(int i = 0; i<colors.length; i++) {
-      colors[i] = new Color(rgb[i][0], rgb[i][1], rgb[i][2]);
+      colors[i] = new Color(rgb[i]);
     }
     lattice.setColorPalette(colors);
     return lattice;
@@ -103,44 +110,31 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param _nx the number of x entries
    * @param _ny the number of y entries
    */
-  public void resizeLattice(int _nx, int _ny) {
-    ny = _ny;
-    nx = _nx;
-    data = new byte[nx][ny];
-    image = new BufferedImage(nx, ny, BufferedImage.TYPE_INT_RGB);
-    raster = image.getRaster();
-    Grid oldGrid = grid;
-    grid = new Grid(nx, ny, xmin, xmax, ymin, ymax);
-    if(oldGrid!=null) {
-      grid.setColor(oldGrid.getColor());
-      grid.setVisible(oldGrid.isVisible());
-    }
-    // set all pixels in the raster to correspond to the zero color
-    for(int ix = 0; ix<nx; ix++) {
-      for(int iy = 0; iy<ny; iy++) {
-        raster.setPixel(ix, iy, rgb[0]);
-      }
-    }
-    setMinMax(xmin, xmax, ymin, ymax);
-    //setMinMax(0, nx, 0, ny);
+  @Override
+public void resizeLattice(int _nx, int _ny) {
+    init(_nx, _ny);
   }
   
-  public void setXMin(double _value) {
+  @Override
+public void setXMin(double _value) {
     super.setXMin(_value);
 	grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setXMax(double _value) {
+  @Override
+public void setXMax(double _value) {
 	super.setXMax(_value);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMin(double _value) {
+  @Override
+public void setYMin(double _value) {
 	super.setYMin(_value);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMax(double _value) {
+  @Override
+public void setYMax(double _value) {
     super.setYMax(_value);
 	grid.setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -149,7 +143,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return nx;
   }
 
@@ -157,7 +152,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return ny;
   }
 
@@ -171,7 +167,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param ymin
    * @param ymax
    */
-  public void setMinMax(double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setMinMax(double xmin, double xmax, double ymin, double ymax) {
     super.setMinMax(xmin, xmax, ymin, ymax);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -181,7 +178,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -214,7 +212,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
     setAll(val);
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -224,73 +223,84 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    *
    * @param val
    */
-  public void setBlock(byte val[][]) {
+  @Override
+public void setBlock(byte val[][]) {
     setBlock(0, 0, val);
   }
 
-  /**
-   * Sets a block of data to byte values.
-   *
-   * @param ix_offset  the x offset into the lattice
-   * @param iy_offset  the y offset into the lattice
-   * @param val the new values
-   */
-  public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
-    if((iy_offset<0)||(iy_offset+val[0].length>ny)) {
-      throw new IllegalArgumentException("Y index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
-    }
-    if((ix_offset<0)||(ix_offset+val.length>nx)) {
-      throw new IllegalArgumentException("X index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
-    }
-    for(int iy = iy_offset, my = val[0].length+iy_offset; iy<my; iy++) {
-      for(int ix = ix_offset, mx = val.length+ix_offset; ix<mx; ix++) {
-        data[ix][iy] = val[ix-ix_offset][iy-iy_offset];
-        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
-      }
-    }
-  }
+	/**
+	 * Sets a block of data to byte values.
+	 *
+	 * @param ix_offset the x offset into the lattice
+	 * @param iy_offset the y offset into the lattice
+	 * @param val       the new values
+	 */
+	@Override
+	public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
+		if ((iy_offset < 0) || (iy_offset + val[0].length > ny)) {
+			throw new IllegalArgumentException("Y index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
+		}
+		if ((ix_offset < 0) || (ix_offset + val.length > nx)) {
+			throw new IllegalArgumentException("X index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
+		}
+		for (int iy = iy_offset, my = val[0].length + iy_offset; iy < my; iy++) {
+			for (int ix = ix_offset, mx = val.length + ix_offset; ix < mx; ix++) {
+				data[ix][iy] = val[ix - ix_offset][iy - iy_offset];
+				int pt = (ny - iy - 1) * nx + ix;
+				rasterData[pt] = rgb[data[ix][iy] & 0xFF];
+//        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
+			}
+		}
+	}
 
-  /**
-   * Sets a block of data to integer values.
-   *
-   * @param ix_offset  the x offset into the lattice
-   * @param iy_offset  the y offset into the lattice
-   * @param val the new values
-   */
-  public void setBlock(int ix_offset, int iy_offset, int val[][]) {
-    if((iy_offset<0)||(iy_offset+val[0].length>ny)) {
-      throw new IllegalArgumentException("Y index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
-    }
-    if((ix_offset<0)||(ix_offset+val.length>nx)) {
-      throw new IllegalArgumentException("X index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
-    }
-    for(int iy = iy_offset, my = val[0].length+iy_offset; iy<my; iy++) {
-      for(int ix = ix_offset, mx = val.length+ix_offset; ix<mx; ix++) {
-        data[ix][iy] = (byte) val[ix-ix_offset][iy-iy_offset];
-        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
-      }
-    }
-  }
+	/**
+	 * Sets a block of data to integer values.
+	 *
+	 * @param ix_offset the x offset into the lattice
+	 * @param iy_offset the y offset into the lattice
+	 * @param val       the new values
+	 */
+	@Override
+	public void setBlock(int ix_offset, int iy_offset, int val[][]) {
+		if ((iy_offset < 0) || (iy_offset + val[0].length > ny)) {
+			throw new IllegalArgumentException("Y index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
+		}
+		if ((ix_offset < 0) || (ix_offset + val.length > nx)) {
+			throw new IllegalArgumentException("X index out of range in byte lattice setSiteBlock."); //$NON-NLS-1$
+		}
+		for (int iy = iy_offset, my = val[0].length + iy_offset; iy < my; iy++) {
+			for (int ix = ix_offset, mx = val.length + ix_offset; ix < mx; ix++) {
+				data[ix][iy] = (byte) val[ix - ix_offset][iy - iy_offset];
+				int pt = (ny - iy - 1) * nx + ix;
+				rasterData[pt] = rgb[data[ix][iy] & 0xFF];
+//        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
+			}
+		}
+	}
 
-  /**
-   * Sets a column to new values.
-   *
-   * @param ix the x index of the column
-   * @param iy_offset the y offset in the column
-   * @param val values in column
-   */
-  public void setCol(int ix, int iy_offset, byte val[]) {
-    if((iy_offset<0)||(iy_offset+val.length>ny)) {
-      throw new IllegalArgumentException("Y offset out of range in binary lattice setCol."); //$NON-NLS-1$
-    }
-    if((ix<0)||(ix>=nx)) {
-      throw new IllegalArgumentException("X index out of range in binary lattice setCol."); //$NON-NLS-1$
-    }
-    for(int iy = iy_offset, my = val.length+iy_offset; iy<my; iy++) {
-      data[ix][iy] = val[iy-iy_offset];
-      raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
-    }
-  }
+	/**
+	 * Sets a column to new values.
+	 *
+	 * @param ix        the x index of the column
+	 * @param iy_offset the y offset in the column
+	 * @param val       values in column
+	 */
+	@Override
+	public void setCol(int ix, int iy_offset, byte val[]) {
+		if ((iy_offset < 0) || (iy_offset + val.length > ny)) {
+			throw new IllegalArgumentException("Y offset out of range in binary lattice setCol."); //$NON-NLS-1$
+		}
+		if ((ix < 0) || (ix >= nx)) {
+			throw new IllegalArgumentException("X index out of range in binary lattice setCol."); //$NON-NLS-1$
+		}
+		for (int iy = iy_offset, my = val.length + iy_offset; iy < my; iy++) {
+			byte v = val[iy - iy_offset];
+			data[ix][iy] = v;
+			int pt = (ny - iy - 1) * nx + ix;
+			rasterData[pt] = rgb[data[ix][iy] & 0xFF];
+			// raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
+		}
+	}
 
   /**
    * Sets a row to new values.
@@ -299,16 +309,19 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param ix_offset the x offset in the row
    * @param val
    */
-  public void setRow(int iy, int ix_offset, byte val[]) {
+  @Override
+public void setRow(int iy, int ix_offset, byte val[]) {
     if((iy<0)||(iy>=ny)) {
       throw new IllegalArgumentException("Y index out of range in binary lattice setRow."); //$NON-NLS-1$
     }
     if((ix_offset<0)||(ix_offset+val.length>nx)) {
       throw new IllegalArgumentException("X offset out of range in binary lattice setRow."); //$NON-NLS-1$
     }
-    for(int xindex = ix_offset, mx = val.length+ix_offset; xindex<mx; xindex++) {
-      data[xindex][iy] = val[xindex-ix_offset];
-      raster.setPixel(xindex, ny-iy-1, rgb[data[xindex][iy]&0xFF]);
+    for(int ix = ix_offset, mx = val.length+ix_offset; ix<mx; ix++) {
+      data[ix][iy] = val[ix-ix_offset];
+		int pt = (ny - iy - 1) * nx + ix;
+		rasterData[pt] = rgb[data[ix][iy] & 0xFF];
+///      raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
     }
   }
 
@@ -319,9 +332,12 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param iy
    * @param val
    */
-  public void setValue(int ix, int iy, byte val) {
+  @Override
+public void setValue(int ix, int iy, byte val) {
     data[ix][iy] = val;
-    raster.setPixel(ix, ny-iy-1, rgb[val&0xFF]);
+	int pt = (ny - iy - 1) * nx + ix;
+	rasterData[pt] = rgb[data[ix][iy] & 0xFF];
+//    raster.setPixel(ix, ny-iy-1, rgb[val&0xFF]);
   }
 
   /**
@@ -331,7 +347,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param iy
    * @return the value.
    */
-  public byte getValue(int ix, int iy) {
+  @Override
+public byte getValue(int ix, int iy) {
     return data[ix][iy];
   }
 
@@ -343,7 +360,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
  * @param y
  * @return index
  */
-  public int indexFromPoint(double x, double y) {
+  @Override
+public int indexFromPoint(double x, double y) {
     int nx = getNx();
     int ny = getNy();
     double xMin = getXMin();
@@ -366,7 +384,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     int nx = getNx();
     double xMin = getXMin();
     double xMax = getXMax();
@@ -387,7 +406,8 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     int ny = getNy();
     double yMin = getYMin();
     double yMax = getYMax();
@@ -407,28 +427,33 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    *
    * @param showGridLines
    */
-  public void setShowGridLines(boolean showGridLines) {
+  @Override
+public void setShowGridLines(boolean showGridLines) {
     grid.setVisible(showGridLines);
   }
 
-  /**
-   * Randomizes the lattice values.
-   */
-  public void randomize() {
-    Random random = new Random();
-    for(int iy = 0, my = data[0].length; iy<my; iy++) {
-      for(int ix = 0, mx = data.length; ix<mx; ix++) {
-        data[ix][iy] = (byte) random.nextInt(256);
-        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]); // sets the image pixel
-      }
-    }
-  }
+	/**
+	 * Randomizes the lattice values.
+	 */
+	@Override
+	public void randomize() {
+		Random random = new Random();
+		for (int iy = 0; iy < ny; iy++) {
+			for (int ix = 0; ix < nx; ix++) {
+				data[ix][iy] = (byte) random.nextInt(256);
+				int pt = (ny - iy - 1) * nx + ix;
+				rasterData[pt] = rgb[data[ix][iy] & 0xFF];
+//      raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]); // sets the image pixel
+			}
+		}
+	}
 
   /**
    * Shows the color associated with each value.
    * @return the JFrame containing the legend
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     InteractivePanel dp = new InteractivePanel();
     dp.setPreferredSize(new java.awt.Dimension(300, 66));
     dp.setPreferredGutters(0, 0, 0, 35);
@@ -448,7 +473,7 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
     lattice.setBlock(0, 0, data);
     Color[] colors = new Color[256];
     for(int i = 0; i<256; i++) {
-      colors[i] = new Color(rgb[i][0], rgb[i][1], rgb[i][2]);
+      colors[i] = new Color(rgb[i]);
     }
     lattice.setColorPalette(colors);
     dp.addDrawable(lattice);
@@ -467,30 +492,24 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    *
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     for(int i = 0, n = Math.min(256, colors.length); i<n; i++) {
-      rgb[i][0] = colors[i].getRed();
-      rgb[i][1] = colors[i].getGreen();
-      rgb[i][2] = colors[i].getBlue();
+    	rgb[i] = colors[i].getRGB();
     }
     for(int i = colors.length; i<256; i++) {
-      rgb[i][0] = 0;
-      rgb[i][1] = 0;
-      rgb[i][2] = 0;
+    	rgb[i] = 0;
     }
     // set pixels in the raster to correspond to the new color
-    for(int ix = 0; ix<nx; ix++) {
-      for(int iy = 0; iy<ny; iy++) {
-        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
-      }
-    }
+    setRasterData();
   }
 
   /**
    * Sets the grid color.
    * @param color
    */
-  public void setGridLineColor(Color color) {
+  @Override
+public void setGridLineColor(Color color) {
     grid.setColor(color);
   }
 
@@ -499,36 +518,43 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
    * @param i
    * @param color
    */
-  public void setIndexedColor(int i, Color color) {
+  @Override
+public void setIndexedColor(int i, Color color) {
     // i = i % rgb.length;
     i = (i+256)%rgb.length;
-    rgb[i][0] = color.getRed();
-    rgb[i][1] = color.getGreen();
-    rgb[i][2] = color.getBlue();
+    rgb[i] = color.getRGB();
     // set pixels in the raster to correspond to the new color
-    for(int ix = 0; ix<nx; ix++) {
-      for(int iy = 0; iy<ny; iy++) {
-        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
-      }
-    }
+    setRasterData();
   }
 
-  /**
-   * Creates the default palette.
-   */
-  public void createDefaultColors() {
-    for(int i = 0; i<256; i++) {
-      double x = (i<128) ? (i-100)/255.0 : -1;
-      double val = Math.exp(-x*x*8);
-      rgb[i][0] = (int) (255*val); // red
-      x = (i<128) ? i/255.0 : (255-i)/255.0;
-      val = Math.exp(-x*x*8);
-      rgb[i][1] = (int) (255*val); // green
-      x = (i<128) ? -1 : (i-156)/255.0;
-      val = Math.exp(-x*x*8);
-      rgb[i][2] = (int) (255*val); // blue
-    }
-  }
+	private void setRasterData() {
+		for (int ix = 0; ix < nx; ix++) {
+			for (int iy = 0; iy < ny; iy++) {
+				int pt = (ny - iy - 1) * nx + ix;
+				rasterData[pt] = rgb[data[ix][iy] & 0xFF];
+//	        raster.setPixel(ix, ny-iy-1, rgb[data[ix][iy]&0xFF]);
+			}
+		}
+	}
+
+	/**
+	 * Creates the default palette.
+	 */
+	@Override
+	public void createDefaultColors() {
+		for (int i = 0; i < 256; i++) {
+			double x = (i < 128 ? (i - 100) / 255.0 : -1);
+			double val = Math.exp(-x * x * 8);
+			int r = (int) (255 * val); // red
+			x = (i < 128 ? i / 255.0 : (255 - i) / 255.0);
+			val = Math.exp(-x * x * 8);
+			int g = (int) (255 * val); // green
+			x = (i < 128 ? -1 : (i - 156) / 255.0);
+			val = Math.exp(-x * x * 8);
+			int b = (int) (255 * val); // blue
+			rgb[i] = 0xFF000000 | ((b & 0xFF) << 16) | ((g & 0xFF) << 8) | (r & 0xFF);
+		}
+	}
 
 }
 
@@ -552,6 +578,6 @@ public class CellLatticePC extends MeasuredImage implements ByteLattice {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

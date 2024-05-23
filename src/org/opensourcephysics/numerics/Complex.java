@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
@@ -10,9 +10,9 @@
     Adapted to OSP by Javier E. Hasbun (2009) with added functionality
     from the original JEP - Java Math Expression Parser 2.24 of Nathan Funk.
   <P>
-    @Copyright (c) 2019
+    @Copyright (c) 2024
     This software is to support the Open Source Physics library
-    https://www.compadre.org/osp under the terms of the GNU General Public
+    http://www.opensourcephysics.org under the terms of the GNU General Public
     License (GPL) as published by the Free Software Foundation.
 
  **/
@@ -166,7 +166,8 @@ public class Complex {
    * Returns the value of this complex number as a string in the format:
    * <pre>(real, imaginary)</pre>.
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "("+re+", "+im+")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
   }
 
@@ -382,6 +383,14 @@ public class Complex {
     double temp = exponent*arg();
     return new Complex(scalar*Math.cos(temp), scalar*Math.sin(temp));
   }
+  
+  /**
+  * Returns a <tt>Complex</tt> from real and imaginary parts.
+  **/
+
+  public static Complex cart (double re, double im) {
+      return  new Complex(re, im);
+  }//end cart(double,double)
 
   /**
    * Returns the value of this complex number raised to the power of
@@ -399,6 +408,7 @@ public class Complex {
     return new Complex(scalar*Math.cos(temp2Im), scalar*Math.sin(temp2Im));
   }
   
+<<<<<<< HEAD
   /**
    * Returns the base raised to the power of the <tt>Complex</tt> exponent.
    **/
@@ -452,6 +462,55 @@ public class Complex {
     public static Complex cart (double re, double im) {
         return  new Complex(re, im);
     }//end cart(double,double)
+=======
+  public static Complex pow (Complex base, double exponent) {
+      // return  base.log().scale(exponent).exp();
+
+      double re =  exponent * Math.log(base.abs());
+      double im =  exponent * base.arg();
+
+      double scalar =  Math.exp(re);
+
+      return cart( scalar * Math.cos(im), scalar * Math.sin(im) );
+  }//end pow(Complex,double)
+  
+  
+  /**
+  * Returns the base raised to the power of the <tt>Complex</tt> exponent.
+  **/
+
+  public static Complex pow (double base, Complex exponent) {
+      // return  real(base).log().mul(exponent).exp();
+
+      double re =  Math.log(Math.abs(base));
+      double im =  Math.atan2(0.0, base);
+
+      double re2 =  (re*exponent.re) - (im*exponent.im);
+      double im2 =  (re*exponent.im) + (im*exponent.re);
+
+      double scalar =  Math.exp(re2);
+
+      return cart(scalar * Math.cos(im2), scalar * Math.sin(im2));
+  }//end pow(double,Complex)
+  
+  /**
+  * Returns the <tt>Complex</tt> base raised to the power of the <tt>Complex</tt> exponent.
+  **/
+
+  public static Complex pow (Complex base, Complex exponent) {
+      // return  base.log().mul(exponent).exp();
+
+      double re =  Math.log(base.abs());
+      double im =  base.arg();
+
+      double re2 =  (re*exponent.re) - (im*exponent.im);
+      double im2 =  (re*exponent.im) + (im*exponent.re);
+
+      double scalar =  Math.exp(re2);
+
+      return  cart( scalar * Math.cos(im2), scalar * Math.sin(im2) );
+  }//end pow(Complex,Complex)
+>>>>>>> refs/remotes/origin/swingJS
 
   /**
    * Returns e to the power of the complex number
@@ -795,6 +854,6 @@ public class Complex {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

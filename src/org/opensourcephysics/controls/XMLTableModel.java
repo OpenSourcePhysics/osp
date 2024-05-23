@@ -2,13 +2,15 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
 import java.util.Collection;
 import java.util.HashSet;
+
 import javax.swing.table.AbstractTableModel;
+
 import org.opensourcephysics.tools.ArrayInspector;
 
 /**
@@ -37,7 +39,10 @@ public class XMLTableModel extends AbstractTableModel {
    *
    * @return the column count
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
+	  if (control == null)
+		  return 0;
     return 2;
   }
 
@@ -47,7 +52,8 @@ public class XMLTableModel extends AbstractTableModel {
    * @param column the column index
    * @return the column name
    */
-  public String getColumnName(int column) {
+  @Override
+public String getColumnName(int column) {
     return (column==0) ? ControlsRes.XML_NAME : ControlsRes.XML_VALUE;
   }
 
@@ -56,8 +62,11 @@ public class XMLTableModel extends AbstractTableModel {
    *
    * @return the row count
    */
-  public int getRowCount() {
-    return control.getPropertyContent().size();
+  @Override
+public int getRowCount() {
+	  if (control == null)
+		  return 0;
+    return control.getPropsRaw().size();
   }
 
   /**
@@ -70,9 +79,10 @@ public class XMLTableModel extends AbstractTableModel {
    * @param column the column index
    * @return the value
    */
-  public Object getValueAt(int row, int column) {
+  @Override
+public Object getValueAt(int row, int column) {
     try {
-      XMLProperty val = (XMLProperty) control.getPropertyContent().get(row);
+      XMLProperty val = control.getPropsRaw().get(row);
       Object content = val.getPropertyContent().get(0);
       if(content.toString().indexOf("![CDATA[")>-1) { //$NON-NLS-1$
         content = control.getString(val.getPropertyName());
@@ -90,7 +100,8 @@ public class XMLTableModel extends AbstractTableModel {
    * @param col the column index
    * @return true if editable
    */
-  public boolean isCellEditable(int row, int col) {
+  @Override
+public boolean isCellEditable(int row, int col) {
     // not editable if column 0
     if(col==0) {
       return false;
@@ -107,72 +118,77 @@ public class XMLTableModel extends AbstractTableModel {
     } else if(value instanceof XMLProperty) {
       XMLProperty prop = (XMLProperty) value;
       XMLProperty parent = prop.getParentProperty();
-      if(parent.getPropertyType().equals("array")) {      //$NON-NLS-1$
-        return ArrayInspector.canInspect(parent);
+      switch (parent.getPropertyType()) {
+      case XMLProperty.TYPE_ARRAY:
+    	  return ArrayInspector.canInspect(parent);
+      case XMLProperty.TYPE_COLLECTION:
+    	  return true;
+      default:
+    	  return false;
       }
-      if(parent.getPropertyType().equals("collection")) { //$NON-NLS-1$
-        return true;
-      }
-      return false;
     }
     // otherwise editable
     return true;
   }
 
-  /**
-   * Sets the value at the given cell. This method only sets values for
-   * int, double, boolean and string types.
-   *
-   * @param value the value
-   * @param row the row index
-   * @param col the column index
-   */
-  public void setValueAt(Object value, int row, int col) {
-    if(value==null) {
-      return;
-    }
-    boolean changed = false;
-    if(value instanceof String) {
-      String s = (String) value;
-      // determine class type at row and column
-      XMLProperty prop = (XMLProperty) control.getPropertyContent().get(row);
-      changed = !s.equals(control.getString(prop.getPropertyName()));
-      String type = prop.getPropertyType();
-      if(type.equals("string")) {                       //$NON-NLS-1$
-        control.setValue(prop.getPropertyName(), s);
-      } else if(type.equals("int")) {                   //$NON-NLS-1$
-        try {
-          int i = Integer.parseInt(s);
-          control.setValue(prop.getPropertyName(), i);
-        } catch(NumberFormatException ex) {
+	/**
+	 * Sets the value at the given cell. This method only sets values for int,
+	 * double, boolean and string types.
+	 *
+	 * @param value the value
+	 * @param row   the row index
+	 * @param col   the column index
+	 */
+	@Override
+	public void setValueAt(Object value, int row, int col) {
+		if (value == null) {
+			return;
+		}
+		boolean changed = false;
+		if (value instanceof String) {
+			String s = (String) value;
+			// determine class type at row and column
+			XMLProperty prop = (XMLProperty) control.getPropsRaw().get(row);
+			changed = !s.equals(control.getString(prop.getPropertyName()));
+			switch (prop.getPropertyType()) {
+			case XMLProperty.TYPE_STRING: //$NON-NLS-1$
+				control.setValue(prop.getPropertyName(), s);
+				break;
+			case XMLProperty.TYPE_INT:
+				try {
+					control.setValue(prop.getPropertyName(), Integer.parseInt(s));
+				} catch (NumberFormatException ex) {
 
-        /** empty block */
-        }
-      } else if(type.equals("double")) {                //$NON-NLS-1$
-        try {
-          double x = Double.parseDouble(s);
-          control.setValue(prop.getPropertyName(), x);
-        } catch(NumberFormatException ex) {
+					/** empty block */
+				}
+				break;
+			case XMLProperty.TYPE_DOUBLE: //$NON-NLS-1$
+				try {
+					control.setValue(prop.getPropertyName(), Double.parseDouble(s));
+				} catch (NumberFormatException ex) {
 
-        /** empty block */
-        }
-      } else if(type.equals("boolean")) {               //$NON-NLS-1$
-        boolean bool = s.toLowerCase().startsWith("t"); //$NON-NLS-1$
-        changed = bool!=control.getBoolean(prop.getPropertyName());
-        control.setValue(prop.getPropertyName(), bool);
-      } else if(type.equals("object")) {                //$NON-NLS-1$
-        XMLControl childControl = control.getChildControl(prop.getPropertyName());
-        if((childControl.getObjectClass()==Character.class)&&(s.length()==1)) {
-          Character c = new Character(s.charAt(0));
-          changed = !c.equals(control.getObject(prop.getPropertyName()));
-          control.setValue(prop.getPropertyName(), c);
-        }
-      }
-    }
-    if(changed) {
-      fireTableCellUpdated(row, col);
-    }
-  }
+					/** empty block */
+				}
+				break;
+			case XMLProperty.TYPE_BOOLEAN: //$NON-NLS-1$
+				boolean bool = s.toLowerCase().startsWith("t"); //$NON-NLS-1$
+				changed = bool != control.getBoolean(prop.getPropertyName());
+				control.setValue(prop.getPropertyName(), bool);
+				break;
+			case XMLProperty.TYPE_OBJECT: //$NON-NLS-1$
+				XMLControl childControl = control.getChildControl(prop.getPropertyName());
+				if ((childControl.getObjectClass() == Character.class) && (s.length() == 1)) {
+					Character c = new Character(s.charAt(0));
+					changed = !c.equals(control.getObject(prop.getPropertyName()));
+					control.setValue(prop.getPropertyName(), c);
+				}
+				break;
+			}
+		}
+		if (changed) {
+			fireTableCellUpdated(row, col);
+		}
+	}
 
 }
 
@@ -196,6 +212,6 @@ public class XMLTableModel extends AbstractTableModel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

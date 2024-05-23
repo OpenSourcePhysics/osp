@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics.specialfunctions;
@@ -325,7 +325,8 @@ public class Airy {
     /**
      * Evaluates the Airy function.
      */
-    public double evaluate(final double x) {
+    @Override
+	public double evaluate(final double x) {
       return Airy.airy(x);
     }
 
@@ -340,7 +341,8 @@ public class Airy {
     /**
      * Evaluates the derivative of the Airy function.
      */
-    public double evaluate(final double x) {
+    @Override
+	public double evaluate(final double x) {
       return Airy.airyDerivative(x);
     }
 
@@ -368,6 +370,6 @@ public class Airy {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

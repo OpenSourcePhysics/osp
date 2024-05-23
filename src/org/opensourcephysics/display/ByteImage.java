@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -17,10 +17,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import java.awt.image.MemoryImageSource;
-
-import org.opensourcephysics.display.DisplayRes;
-import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * A ByteImage contains an array of bytes int[row][col] 
@@ -38,6 +34,15 @@ public class ByteImage implements Measurable {
 	int nrow, ncol;    // number of rows and column in array
 	double xmin, xmax, ymin, ymax; // drawing scale
 	boolean visible = true;
+	
+	public void setVisible(boolean b) {
+		visible = b;
+	}
+	
+	public boolean getVisible() {
+		return visible;
+	}
+	
 	boolean dirtyImage=true;  // true if array elements have changed
 	
 	/**
@@ -227,6 +232,8 @@ public class ByteImage implements Measurable {
 		dirtyImage=true;
 	}
 
+	AffineTransform trBI = new AffineTransform();
+	
 	/**
 	 * Draws the image.
 	 * 
@@ -234,6 +241,7 @@ public class ByteImage implements Measurable {
 	 * @param g
 	 */
 
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		if (!visible) {
 			return;
@@ -245,10 +253,9 @@ public class ByteImage implements Measurable {
 			panel.setMessage(DisplayRes.getString("Null Image")); //$NON-NLS-1$
 			return;
 		}
-		Graphics2D g2 = (Graphics2D) g;
-		AffineTransform gat = g2.getTransform(); // save graphics transform
-		RenderingHints hints = g2.getRenderingHints();
-		if (!OSPRuntime.isMac()) { // Rendering hint bug in Mac Snow Leopard
+		Graphics2D g2 = (Graphics2D) g.create();
+		// BH 2020.03.04 no need for getting/setting rendering hints if not a mac
+		if (OSPRuntime.setRenderingHints) { // Rendering hint bug in Mac Snow Leopard
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING,
 					RenderingHints.VALUE_DITHER_DISABLE);
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -257,15 +264,16 @@ public class ByteImage implements Measurable {
 		double sx = (xmax - xmin) * panel.xPixPerUnit / ncol;
 		double sy = (ymax - ymin) * panel.yPixPerUnit / nrow;
 		// translate origin to pixel location of (xmin,ymax)
-		g2.transform(AffineTransform.getTranslateInstance(panel.leftGutter
+		trBI.setToTranslation(panel.leftGutter
 				+ panel.xPixPerUnit * (xmin - panel.xmin), panel.topGutter
-				+ panel.yPixPerUnit * (panel.ymax - ymax)));
-		g2.transform(AffineTransform.getScaleInstance(sx, sy));  // scales image to world units
+				+ panel.yPixPerUnit * (panel.ymax - ymax));
+		trBI.scale(sx, sy);
+		g2.transform(trBI);
 		g2.drawImage(image, 0, 0, panel);
-		g2.setTransform(gat); // restore graphics conext
-		g2.setRenderingHints(hints); // restore the hints
+		g2.dispose();
 	}
 
+	@Override
 	public boolean isMeasured() {
 		if (image == null) {
 			return false;
@@ -273,18 +281,22 @@ public class ByteImage implements Measurable {
 		return true;
 	}
 
+	@Override
 	public double getXMin() {
 		return xmin;
 	}
 
+	@Override
 	public double getXMax() {
 		return xmax;
 	}
 
+	@Override
 	public double getYMin() {
 		return ymin;
 	}
 
+	@Override
 	public double getYMax() {
 		return ymax;
 	}
@@ -333,6 +345,6 @@ public class ByteImage implements Measurable {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  * 
- * Copyright (c) 2019 The Open Source Physics project
- * https://www.compadre.org/osp
+ * Copyright (c) 2024 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

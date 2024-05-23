@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -29,7 +29,8 @@ public abstract class ControlDrawablesParent extends ControlSwingElement impleme
     super(_visual);
   }
 
-  public void update() { // Ensure it will be updated
+  @Override
+public void update() { // Ensure it will be updated
     // First prepare children that need to do something
     for(Enumeration<NeedsPreUpdate> e = preupdateList.elements(); e.hasMoreElements(); ) {
       e.nextElement().preupdate();
@@ -77,6 +78,6 @@ public abstract class ControlDrawablesParent extends ControlSwingElement impleme
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

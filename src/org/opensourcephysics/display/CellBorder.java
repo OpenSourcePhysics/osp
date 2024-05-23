@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -50,7 +50,8 @@ public class CellBorder extends AbstractBorder {
    * @param width the width of the painted border
    * @param height the height of the painted border
    */
-  public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+  @Override
+public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
     Color oldColor = g.getColor();
     g.setColor(lineColor);
     for(int i = 0; i<thickness; i++) {
@@ -65,7 +66,8 @@ public class CellBorder extends AbstractBorder {
    * Returns the insets of the border.
    * @param c the component for which this border insets value applies
    */
-  public Insets getBorderInsets(Component c) {
+  @Override
+public Insets getBorderInsets(Component c) {
     return new Insets(thickness+1, thickness+1, 1, 1);
   }
 
@@ -74,7 +76,8 @@ public class CellBorder extends AbstractBorder {
    * @param c the component for which this border insets value applies
    * @param insets the object to be reinitialized
    */
-  public Insets getBorderInsets(Component c, Insets insets) {
+  @Override
+public Insets getBorderInsets(Component c, Insets insets) {
     insets.left = insets.top = thickness+1;
     insets.right = insets.bottom = 1;
     return insets;
@@ -116,6 +119,6 @@ public class CellBorder extends AbstractBorder {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
@@ -22,6 +22,7 @@ import java.awt.geom.Point2D;
  * Class description
  *
 */
+@SuppressWarnings("serial")
 public final class FunctionTransform extends AffineTransform {
   double m00;
   double m10 = 1; // identity transform by default
@@ -97,67 +98,80 @@ public final class FunctionTransform extends AffineTransform {
     applyYFunction = b;
   }
 
-  public void translate(double tx, double ty) {
+  @Override
+public void translate(double tx, double ty) {
     super.translate(tx, ty);
     updateMatrix();
   }
 
-  public void rotate(double theta) {
+  @Override
+public void rotate(double theta) {
     super.rotate(theta);
     updateMatrix();
   }
 
-  public void rotate(double theta, double x, double y) {
+  @Override
+public void rotate(double theta, double x, double y) {
     super.rotate(theta, x, y);
     updateMatrix();
   }
 
-  public void scale(double sx, double sy) {
+  @Override
+public void scale(double sx, double sy) {
     super.scale(sx, sy);
     updateMatrix();
   }
 
-  public void shear(double shx, double shy) {
+  @Override
+public void shear(double shx, double shy) {
     super.shear(shx, shy);
     updateMatrix();
   }
 
-  public void setToIdentity() {
+  @Override
+public void setToIdentity() {
     super.setToIdentity();
     updateMatrix();
   }
 
-  public void setToTranslation(double tx, double ty) {
+  @Override
+public void setToTranslation(double tx, double ty) {
     super.setToTranslation(tx, ty);
     updateMatrix();
   }
 
-  public void setToRotation(double theta) {
+  @Override
+public void setToRotation(double theta) {
     super.setToRotation(theta);
     updateMatrix();
   }
 
-  public void setToRotation(double theta, double x, double y) {
+  @Override
+public void setToRotation(double theta, double x, double y) {
     super.setToRotation(theta, x, y);
     updateMatrix();
   }
 
-  public void setToScale(double sx, double sy) {
+  @Override
+public void setToScale(double sx, double sy) {
     super.setToScale(sx, sy);
     updateMatrix();
   }
 
-  public void setToShear(double shx, double shy) {
+  @Override
+public void setToShear(double shx, double shy) {
     super.setToShear(shx, shy);
     updateMatrix();
   }
 
-  public void setTransform(AffineTransform Tx) {
+  @Override
+public void setTransform(AffineTransform Tx) {
     super.setTransform(Tx);
     updateMatrix();
   }
 
-  public void setTransform(double m00, double m10, double m01, double m11, double m02, double m12) {
+  @Override
+public void setTransform(double m00, double m10, double m01, double m11, double m02, double m12) {
     super.setTransform(m00, m10, m01, m11, m02, m12);
     updateMatrix();
   }
@@ -165,7 +179,8 @@ public final class FunctionTransform extends AffineTransform {
   /*
       Concatenates this FunctionTransform with the given AffineTransform as specified in AffineTransform. Note-The if specified parameter is a FunctionTransform, the function is ignored.
     */
-  public void concatenate(AffineTransform Tx) {
+  @Override
+public void concatenate(AffineTransform Tx) {
     super.concatenate(Tx);
     updateMatrix();
   }
@@ -173,29 +188,35 @@ public final class FunctionTransform extends AffineTransform {
   /*
       Pre-concatenates this FunctionTransform with the given AffineTransform as specified in AffineTransform. Note-The if specified parameter is a FunctionTransform, the function is ignored.
     */
-  public void preConcatenate(AffineTransform Tx) {
+  @Override
+public void preConcatenate(AffineTransform Tx) {
     super.preConcatenate(Tx);
     updateMatrix();
   }
 
-  public AffineTransform createInverse() throws NoninvertibleTransformException { // FIX_ME
+  @Override
+public AffineTransform createInverse() throws NoninvertibleTransformException { // FIX_ME
     AffineTransform at = super.createInverse();
     FunctionTransform ft = new FunctionTransform();
     ft.setTransform(at);
     final InvertibleFunction xFunction = new InvertibleFunction() {
-      public double evaluate(double x) {
+      @Override
+	public double evaluate(double x) {
         return FunctionTransform.this.xFunction.getInverse(x);
       }
-      public double getInverse(double y) {
+      @Override
+	public double getInverse(double y) {
         return FunctionTransform.this.xFunction.evaluate(y);
       }
 
     };
     final InvertibleFunction yFunction = new InvertibleFunction() {
-      public double evaluate(double x) {
+      @Override
+	public double evaluate(double x) {
         return FunctionTransform.this.yFunction.getInverse(x);
       }
-      public double getInverse(double y) {
+      @Override
+	public double getInverse(double y) {
         return FunctionTransform.this.yFunction.evaluate(y);
       }
 
@@ -205,7 +226,8 @@ public final class FunctionTransform extends AffineTransform {
     return ft;
   }
 
-  public Point2D transform(Point2D ptSrc, Point2D ptDst) {
+  @Override
+public Point2D transform(Point2D ptSrc, Point2D ptDst) {
     if(ptDst==null) {
       if(ptSrc instanceof Point2D.Double) {
         ptDst = new Point2D.Double();
@@ -226,7 +248,8 @@ public final class FunctionTransform extends AffineTransform {
     return ptDst;
   }
 
-  public void transform(Point2D[] ptSrc, int srcOff, Point2D[] ptDst, int dstOff, int numPts) {
+  @Override
+public void transform(Point2D[] ptSrc, int srcOff, Point2D[] ptDst, int dstOff, int numPts) {
     while(--numPts>=0) {
       // Copy source coords into local variables in case src == dst
       Point2D src = ptSrc[srcOff++];
@@ -251,7 +274,8 @@ public final class FunctionTransform extends AffineTransform {
     }
   }
 
-  public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+  @Override
+public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
     double M00;
     double M01;
     double M02;
@@ -294,7 +318,8 @@ public final class FunctionTransform extends AffineTransform {
     }
   }
 
-  public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+  @Override
+public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
     double M00;
     double M01;
     double M02;
@@ -337,7 +362,8 @@ public final class FunctionTransform extends AffineTransform {
     }
   }
 
-  public void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+  @Override
+public void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
     double M00;
     double M01;
     double M02;
@@ -367,7 +393,8 @@ public final class FunctionTransform extends AffineTransform {
     }
   }
 
-  public void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+  @Override
+public void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
     double M00;
     double M01;
     double M02;
@@ -397,7 +424,8 @@ public final class FunctionTransform extends AffineTransform {
     }
   }
 
-  public Point2D inverseTransform(Point2D ptSrc, Point2D ptDst) throws NoninvertibleTransformException { // FIX_ME
+  @Override
+public Point2D inverseTransform(Point2D ptSrc, Point2D ptDst) throws NoninvertibleTransformException { // FIX_ME
     if(ptDst==null) {
       if(ptSrc instanceof Point2D.Double) {
         ptDst = new Point2D.Double();
@@ -409,7 +437,8 @@ public final class FunctionTransform extends AffineTransform {
     return ptDst;
   }
 
-  public void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) // FIX_ME
+  @Override
+public void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) // FIX_ME
     throws NoninvertibleTransformException {
     if((dstPts==srcPts)&&(dstOff>srcOff)&&(dstOff<srcOff+numPts*2)) {
       // If the arrays overlap partially with the destination higher
@@ -455,7 +484,8 @@ public final class FunctionTransform extends AffineTransform {
       */
   }
 
-  public Point2D deltaTransform(Point2D ptSrc, Point2D ptDst) {
+  @Override
+public Point2D deltaTransform(Point2D ptSrc, Point2D ptDst) {
     if(ptDst==null) {
       if(ptSrc instanceof Point2D.Double) {
         ptDst = new Point2D.Double();
@@ -476,7 +506,8 @@ public final class FunctionTransform extends AffineTransform {
     return ptDst;
   }
 
-  public void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+  @Override
+public void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
     double M00;
     double M01;
     double M10;
@@ -512,7 +543,8 @@ public final class FunctionTransform extends AffineTransform {
     }
   }
 
-  public boolean equals(Object obj) {
+  @Override
+public boolean equals(Object obj) {
     if(obj instanceof FunctionTransform) {
       FunctionTransform a = (FunctionTransform) obj;
       double[] matrix = new double[6];
@@ -562,6 +594,6 @@ public final class FunctionTransform extends AffineTransform {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

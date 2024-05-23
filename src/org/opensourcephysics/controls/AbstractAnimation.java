@@ -2,15 +2,23 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.text.DecimalFormat;
 import java.util.Collection;
+
 import javax.swing.JFrame;
+
 import org.opensourcephysics.display.OSPFrame;
+import org.opensourcephysics.display.OSPRuntime;
+
+import javajs.async.SwingJSUtils;
+import javajs.async.SwingJSUtils.StateHelper;
+import javajs.async.SwingJSUtils.StateMachine;
 
 /**
  * AbstractAnimation is a template for simple animations.
@@ -21,21 +29,24 @@ import org.opensourcephysics.display.OSPFrame;
  * @author       Wolfgang Christian
  * @version 1.0
  */
-public abstract class AbstractAnimation implements Animation, Runnable {
+public abstract class AbstractAnimation implements Animation, Runnable, StateMachine {
   protected OSPFrame mainFrame;                                        // the main frame that closed the program
   protected Control control;                                           // the model's control
   protected volatile Thread animationThread;
   protected int delayTime = 100;                                       // time between animation steps in milliseconds
+  long t0 = System.currentTimeMillis();                                // system clock at start of last time step
 
   /** Field decimalFormat can be used to display time and other numeric values. */
-  protected DecimalFormat decimalFormat = new DecimalFormat("0.00E0"); // default numeric format for messages //$NON-NLS-1$
-
+  protected DecimalFormat sciFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0"); // default numeric format for messages //$NON-NLS-1$
+  /** Field decimalFormat can be used to display time and other numeric values. */
+  protected DecimalFormat decimalFormat = sciFormat; // default numeric format for messages 
   /**
    * Sets the Control for this model and initializes the control's values.
    *
    * @param control
    */
-  public void setControl(Control control) {
+  @Override
+public void setControl(Control control) {
     this.control = control;
     mainFrame = null;
     if(control!=null) {
@@ -67,12 +78,27 @@ public abstract class AbstractAnimation implements Animation, Runnable {
     return delayTime;
   }
 
+
   /**
    * Gets the main OSPFrame.  The main frame will usually exit program when it is closed.
+   * 
+   *  @j2sAlias getMainFrame
+   * 
    * @return OSPFrame
    */
   public OSPFrame getMainFrame() {
     return mainFrame;
+  }
+  
+  /**
+   * Gets the Main Frame size. 
+   * 
+   * @j2sAlias getMainFrameSize
+   * 
+   */
+  public int[] getMainFrameSize(){
+ 	 Dimension d=mainFrame.getSize();
+ 	 return new int[] {d.width,d.height};
   }
 
   /**
@@ -129,7 +155,8 @@ public abstract class AbstractAnimation implements Animation, Runnable {
   /**
    * Initializes the animation by reading parameters from the control.
    */
-  public void initializeAnimation() {
+  @Override
+public void initializeAnimation() {
     control.clearMessages();
   }
 
@@ -143,18 +170,22 @@ public abstract class AbstractAnimation implements Animation, Runnable {
    *
    * Sets animationThread to null and waits for a join with the animation thread.
    */
-  public synchronized void stopAnimation() {
+  @Override
+public synchronized void stopAnimation() {
+  	if(stateHelper!=null)stateHelper.setState(STATE_DONE);
     if(animationThread==null) { // animation thread is already dead
       return;
     }
     Thread tempThread = animationThread; // local reference
     animationThread = null; // signal the animation to stop
+    if(stateHelper!=null)stateHelper.setState(STATE_DONE);
+	
     if(Thread.currentThread()==tempThread) {
       return; // cannot join with own thread so return
     }         // another thread has called this method in order to stop the animation thread
     try {                     // guard against an exception in applet mode
       tempThread.interrupt(); // get out of a sleep state
-      tempThread.join(1000);  // wait up to 1 second for animation thread to stop
+      if(!OSPRuntime.isJS)tempThread.join(1000);  // wait up to 1 second for animation thread to stop
     } catch(Exception e) {
       // System.out.println("excetpion in stop animation"+e);
     }
@@ -172,23 +203,28 @@ public abstract class AbstractAnimation implements Animation, Runnable {
   /**
    * Steps the animation.
    */
-  public synchronized void stepAnimation() {
+  @Override
+public synchronized void stepAnimation() {
     if(animationThread!=null) {
       stopAnimation();
+      return;
     }
     doStep();
   }
+  
 
   /**
    * Starts the animation.
    *
    * Use this method to start a timer or a thread.
    */
-  public synchronized void startAnimation() {
+  @Override
+public synchronized void startAnimation() {
     if(animationThread!=null) {
       return; // animation is running
     }
     animationThread = new Thread(this);
+    
     animationThread.setPriority(Thread.NORM_PRIORITY);
     //animationThread.setPriority(Thread.MAX_PRIORITY);   // for testing
     //animationThread.setPriority(Thread.MIN_PRIORITY);   // for testing
@@ -199,17 +235,52 @@ public abstract class AbstractAnimation implements Animation, Runnable {
   /**
    * Resets the animation to a predefined state.
    */
-  public void resetAnimation() {
+  @Override
+public void resetAnimation() {
     if(animationThread!=null) {
       stopAnimation(); // make sure animation is stopped
     }
     control.clearMessages();
   }
+  
+   StateHelper stateHelper;
+	//private int delay = (/** @j2sNative 20 || */ 20);
+	private final static int STATE_INIT = 0;
+	private final static int STATE_LOOP = 1;
+  final static int STATE_DONE = 2;
+  
+	@Override
+	public boolean stateLoop() {
+		while (animationThread != null && !animationThread.isInterrupted() && stateHelper.isAlive()) {
+			switch (stateHelper.getState()) {
+			default:
+			case STATE_INIT:
+				stateHelper.setState(STATE_LOOP);
+				stateHelper.sleep(delayTime);
+				return true;
+			case STATE_LOOP:
+				long currentTime = System.currentTimeMillis();
+				doStep();
+				int sleepTime = (int)Math.max(10, delayTime-(System.currentTimeMillis()-currentTime));
+				stateHelper.sleep(sleepTime);
+				return true;
+			case STATE_DONE:
+				return false;
+			}
+		}
+		return false;
+	}
 
   /**
    * Implementation of Runnable interface.  DO NOT access this method directly.
    */
-  public void run() {
+  @Override
+public void run() {
+
+  	stateHelper = new SwingJSUtils.StateHelper(this);  
+  	stateHelper.setState(STATE_INIT);
+  	stateHelper.sleep(0);
+  	/*
     long sleepTime = delayTime;
     while(animationThread==Thread.currentThread()) {
       long currentTime = System.currentTimeMillis();
@@ -220,7 +291,7 @@ public abstract class AbstractAnimation implements Animation, Runnable {
       try {
         Thread.sleep(sleepTime);
       } catch(InterruptedException ie) {}
-    }
+    }*/
   }
 
   /**
@@ -242,7 +313,8 @@ public abstract class AbstractAnimation implements Animation, Runnable {
      * @param control the control
      * @param obj the object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ((Animation) obj).initializeAnimation();
       return obj;
     }
@@ -271,6 +343,6 @@ public abstract class AbstractAnimation implements Animation, Runnable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

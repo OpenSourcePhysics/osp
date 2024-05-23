@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -21,10 +21,6 @@ import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.MemoryImageSource;
-
-import org.opensourcephysics.display.DisplayRes;
-import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPRuntime;
 
 /**
  * A IntegerImage contains an array of integers int[row][col] 
@@ -244,6 +240,7 @@ public class IntegerImage implements Measurable {
 	 * @param g
 	 */
 
+	@Override
 	public void draw(DrawingPanel panel, Graphics g) {
 		if (!visible) {
 			return;
@@ -257,8 +254,10 @@ public class IntegerImage implements Measurable {
 		}
 		Graphics2D g2 = (Graphics2D) g;
 		AffineTransform gat = g2.getTransform(); // save graphics transform
-		RenderingHints hints = g2.getRenderingHints();
-		if (!OSPRuntime.isMac()) { // Rendering hint bug in Mac Snow Leopard
+		// BH 2020.03.04 no need for getting/setting rendering hints if not a mac
+		RenderingHints hints = null;
+		if (OSPRuntime.setRenderingHints) { // Rendering hint bug in Mac Snow Leopard
+			hints = g2.getRenderingHints();
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING,
 					RenderingHints.VALUE_DITHER_DISABLE);
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -273,9 +272,11 @@ public class IntegerImage implements Measurable {
 		g2.transform(AffineTransform.getScaleInstance(sx, sy));  // scales image to world units
 		g2.drawImage(image, 0, 0, panel);
 		g2.setTransform(gat); // restore graphics conext
-		g2.setRenderingHints(hints); // restore the hints
+		if (hints != null)
+			g2.setRenderingHints(hints); // restore the hints
 	}
 
+	@Override
 	public boolean isMeasured() {
 		if (image == null) {
 			return false;
@@ -283,18 +284,22 @@ public class IntegerImage implements Measurable {
 		return true;
 	}
 
+	@Override
 	public double getXMin() {
 		return xmin;
 	}
 
+	@Override
 	public double getXMax() {
 		return xmax;
 	}
 
+	@Override
 	public double getYMin() {
 		return ymin;
 	}
 
+	@Override
 	public double getYMax() {
 		return ymax;
 	}
@@ -343,6 +348,6 @@ public class IntegerImage implements Measurable {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  * 
- * Copyright (c) 2019 The Open Source Physics project
- * https://www.compadre.org/osp
+ * Copyright (c) 2024 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

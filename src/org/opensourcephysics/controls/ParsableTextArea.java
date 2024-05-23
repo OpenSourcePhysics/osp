@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -99,7 +99,8 @@ public class ParsableTextArea extends JTextArea {
    */
   public void setValue(String variable, String val) {
     Runnable doLater = new Runnable() {
-      public void run() {
+      @Override
+	public void run() {
         updateText();
       }
 
@@ -185,7 +186,8 @@ public class ParsableTextArea extends JTextArea {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Map<CharSequence, CharSequence> map = ((ParsableTextArea) obj).getCurrentMap();
       Iterator<CharSequence> it = map.keySet().iterator();
       while(it.hasNext()) {
@@ -200,7 +202,8 @@ public class ParsableTextArea extends JTextArea {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ParsableTextArea();
     }
 
@@ -211,10 +214,11 @@ public class ParsableTextArea extends JTextArea {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ParsableTextArea pta = (ParsableTextArea) obj;
       // iterate over properties and add them to pts
-      Iterator<String> it = control.getPropertyNames().iterator();
+      Iterator<String> it = control.getPropertyNamesRaw().iterator();
       pta.setLockValues(true);
       while(it.hasNext()) {
         String variable = it.next();
@@ -248,6 +252,6 @@ public class ParsableTextArea extends JTextArea {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

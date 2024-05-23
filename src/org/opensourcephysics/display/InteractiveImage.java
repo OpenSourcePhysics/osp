@@ -2,15 +2,13 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.ImageObserver;
 
 /**
@@ -48,7 +46,8 @@ public class InteractiveImage extends InteractiveShape implements ImageObserver 
  * @param ypix int
  * @return boolean
  */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     if((image==null)||!enabled) {
       return false;
     }
@@ -59,27 +58,26 @@ public class InteractiveImage extends InteractiveShape implements ImageObserver 
     return false;
   }
 
-  /**
-   * Draws the image.
-   *
-   * @param panel  the world in which the arrow is viewed
-   * @param g  the graphics context upon which to draw
-   */
-  public void draw(DrawingPanel panel, Graphics g) {
-    toPixels = panel.getPixelTransform();
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
-    Graphics2D g2 = (Graphics2D) g;
-    g2.translate(pt.getX(), pt.getY());
-    AffineTransform trans = new AffineTransform();
-    trans.translate(-width/2, -height/2);
-    trans.rotate(-theta, width/2, height/2);
-    trans.scale(width/image.getWidth(null), height/image.getHeight(null));
-    g2.drawImage(image, trans, null);
-    g2.translate(-pt.getX(), -pt.getY());
-  }
+	/**
+	 * Draws the image.
+	 *
+	 * @param panel the world in which the image is viewed
+	 * @param g     the graphics context upon which to draw
+	 */
+	@Override
+	public void draw(DrawingPanel panel, Graphics g) {
+		getPixelPt(panel);
+		Graphics2D g2 = (Graphics2D) g;
+		g2.translate(pixelPt.x, pixelPt.y);
+		trIS.setToTranslation(-width / 2, -height / 2);
+		trIS.rotate(-theta, width / 2, height / 2);
+		trIS.scale(width / image.getWidth(null), height / image.getHeight(null));
+		g2.drawImage(image, trIS, null);
+		g2.translate(-pixelPt.x, -pixelPt.y);
+	}
 
-  public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
+  @Override
+public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
     if((infoflags&ImageObserver.WIDTH)==1) {
       this.width = width;
     }
@@ -114,6 +112,6 @@ public class InteractiveImage extends InteractiveShape implements ImageObserver 
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

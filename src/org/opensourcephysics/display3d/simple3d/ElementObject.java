@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -19,11 +19,13 @@ public class ElementObject extends ElementBox implements org.opensourcephysics.d
   private String file = null;
   private double angle = 0.0;
 
-  public void setObjectFile(String file) {
+  @Override
+public void setObjectFile(String file) {
     this.file = file;
   }
 
-  public String getObjectFile() {
+  @Override
+public String getObjectFile() {
     return this.file;
   }
 
@@ -48,7 +50,8 @@ public class ElementObject extends ElementBox implements org.opensourcephysics.d
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementObject.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementObject();
     }
 
@@ -76,6 +79,6 @@ public class ElementObject extends ElementBox implements org.opensourcephysics.d
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

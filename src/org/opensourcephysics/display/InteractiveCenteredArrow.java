@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -23,7 +23,7 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 
 public class InteractiveCenteredArrow extends BoundedShape {
-  Point2D[] hotSpots = new Point2D[2]; // shadows superclass field
+  Point2D.Double[] hotSpots = new Point2D.Double[2]; // shadows superclass field
   BasicStroke stroke = new BasicStroke(2);
   Shape head;
   static int HEAD = 1;
@@ -45,7 +45,7 @@ public class InteractiveCenteredArrow extends BoundedShape {
     width = w;
     height = h;
     for(int i = 0, n = hotSpots.length; i<n; i++) {
-      hotSpots[i] = new Point2D.Float(0, 0);
+      hotSpots[i] = new Point2D.Double();
     }
   }
 
@@ -65,7 +65,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    * @param ypix int
    * @return boolean
    */
-  public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public boolean isInside(DrawingPanel panel, int xpix, int ypix) {
     hotspot = NONE;
     if(!enabled) {
       return false;
@@ -85,7 +86,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    *
    * @param theta
    */
-  public void setTheta(double theta) {
+  @Override
+public void setTheta(double theta) {
     double len = Math.sqrt(width*width+height*height)/2.0;
     double dx = len*Math.cos(theta);
     double dy = len*Math.sin(theta);
@@ -101,7 +103,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
    *
    * @param y
    */
-  void setHotSpotXY(double x, double y) {
+  @Override
+void setHotSpotXY(double x, double y) {
     if(hideBounds) {
       setXY(x, y);
       return;
@@ -141,16 +144,16 @@ public class InteractiveCenteredArrow extends BoundedShape {
    * @param panel  the world in which the arrow is viewed
    * @param g  the graphics context upon which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     Graphics2D g2 = (Graphics2D) g;
-    toPixels = panel.getPixelTransform();
+    getPixelPt(panel);
+    pixelBounds = computePixelBounds(pixelPt);
     Shape temp;
-    Point2D pt = new Point2D.Double(x, y);
-    pt = toPixels.transform(pt, pt);
-    computePixelBounds(pt);
     if(pixelSized) {
       // translate the shape to correct pixel coordinates
-      temp = new AffineTransform(1, 0, 0, -1, -x+pt.getX(), y+pt.getY()).createTransformedShape(shape);
+    	trIC.setTransform(1, 0, 0, -1, -x+pixelPt.x, y+pixelPt.y);
+    	temp = trIC.createTransformedShape(shape);
     } else {
       temp = toPixels.createTransformedShape(shape);
     }
@@ -158,11 +161,12 @@ public class InteractiveCenteredArrow extends BoundedShape {
     Stroke oldStroke = g2.getStroke();
     g2.setStroke(stroke);
     g2.draw(temp);
-    hotSpots[0].setLocation(pt);
-    pt = new Point2D.Double(x+width/2, y+height/2);
-    pt = toPixels.transform(pt, pt);
-    hotSpots[1].setLocation(pt);
-    temp = AffineTransform.getTranslateInstance(pt.getX(), pt.getY()).createTransformedShape(head);
+    hotSpots[CENTER].setLocation(pixelPt);
+    pixelPt.setLocation(x+width/2, y+height/2);
+    toPixels.transform(pixelPt, pixelPt);
+    hotSpots[BOTTOM].setLocation(pixelPt);
+    trIC.setToTranslation(pixelPt.x, pixelPt.y);
+    temp = trIC.createTransformedShape(head);
     g2.fill(temp);
     g2.draw(temp);
     g2.setStroke(oldStroke);
@@ -179,30 +183,35 @@ public class InteractiveCenteredArrow extends BoundedShape {
     g2.setPaint(Color.BLACK);
   }
 
-  private void computePixelBounds(Point2D pt) {
-    double dx = toPixels.getScaleX()*width;
-    double dy = toPixels.getScaleY()*height;
-    double len = Math.sqrt(dx*dx+dy*dy)+delta;
-    Rectangle2D rect = new Rectangle2D.Double(pt.getX()-len/2, pt.getY()-delta, len, d2);
-    pixelBounds = AffineTransform.getRotateInstance(-theta, pt.getX(), pt.getY()).createTransformedShape(rect);
-  }
+  private AffineTransform trIC = new AffineTransform();
+  private Rectangle2D.Double rect = new Rectangle2D.Double();
+  
+	private Shape computePixelBounds(Point2D.Double pt) {
+		double dx = toPixels.getScaleX() * width;
+		double dy = toPixels.getScaleY() * height;
+		double len = Math.sqrt(dx * dx + dy * dy) + delta;
+		rect.setFrame(pt.x - len / 2, pt.y - delta, len, d2);
+		trIC.setToRotation(-theta, pt.x, pt.y);
+		return trIC.createTransformedShape(rect);
+	}
 
-  /**
-   * Gets the cursor depending on the current hot spot.
-   *
-   * @return Cursor
-   */
-  public java.awt.Cursor getPreferredCursor() {
-    if(xyDrag&&(hotspot==CENTER)) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-    } else if(rotateDrag&&(hotspot==HEAD)) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    } else if(selected) {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
-    } else {
-      return java.awt.Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-    }
-  }
+	/**
+	 * Gets the cursor depending on the current hot spot.
+	 *
+	 * @return Cursor
+	 */
+	@Override
+	public java.awt.Cursor getPreferredCursor() {
+		int c = Cursor.HAND_CURSOR;
+		if (xyDrag && (hotspot == CENTER)) {
+			c = Cursor.MOVE_CURSOR;
+		} else if (rotateDrag && (hotspot == HEAD)) {
+			// hand
+		} else if (selected) {
+			c = Cursor.CROSSHAIR_CURSOR;
+		}
+		return Cursor.getPredefinedCursor(c);		
+	}
 
   private Shape getHead(double theta) {
     float size = 4+2*stroke.getLineWidth();
@@ -211,9 +220,10 @@ public class InteractiveCenteredArrow extends BoundedShape {
     path.lineTo((-size), (-size/2));
     path.lineTo((-size), (+size/2));
     path.closePath();
-    AffineTransform rot = AffineTransform.getRotateInstance(-theta);
-    Shape head = rot.createTransformedShape(path);
-    return head;
+    if (theta == 0)
+    	return path;
+    trIC.setToRotation(-theta);
+    return trIC.createTransformedShape(path);
   }
 
   /**
@@ -228,7 +238,8 @@ public class InteractiveCenteredArrow extends BoundedShape {
   * A class to save and load InteractiveArrow in an XMLControl.
   */
   protected static class InteractiveCenteredArrowLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       InteractiveCenteredArrow arrow = (InteractiveCenteredArrow) obj;
       control.setValue("x", arrow.x);                      //$NON-NLS-1$
       control.setValue("y", arrow.y);                      //$NON-NLS-1$
@@ -239,11 +250,13 @@ public class InteractiveCenteredArrow extends BoundedShape {
       control.setValue("color", arrow.color);              //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new InteractiveCenteredArrow(0, 0, 0, 0);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       InteractiveCenteredArrow arrow = (InteractiveCenteredArrow) obj;
       double x = control.getDouble("x");      //$NON-NLS-1$
       double y = control.getDouble("y");      //$NON-NLS-1$
@@ -281,6 +294,6 @@ public class InteractiveCenteredArrow extends BoundedShape {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

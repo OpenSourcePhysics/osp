@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -85,7 +85,8 @@ class Object3D {
    * A comparator class to be used by DrawingPanel3D to sort Object3D s
    */
   static class Comparator3D implements java.util.Comparator<Object3D> {
-    public int compare(Object3D o1, Object3D o2) {
+    @Override
+	public int compare(Object3D o1, Object3D o2) {
       // try {
       if(o1.distance>o2.distance) {
         return -1;
@@ -121,6 +122,6 @@ class Object3D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

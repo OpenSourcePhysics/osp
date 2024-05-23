@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
@@ -53,7 +53,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setXLabel(String s, String font_name) {
+  @Override
+public void setXLabel(String s, String font_name) {
     xaxis.setTitle(s, font_name);
   }
 
@@ -65,7 +66,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setYLabel(String s, String font_name) {
+  @Override
+public void setYLabel(String s, String font_name) {
     yaxis.setTitle(s, font_name);
   }
 
@@ -74,7 +76,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    *
    * @return String
    */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return xaxis.axisLabel.getText();
   }
 
@@ -83,7 +86,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    *
    * @return String
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return yaxis.axisLabel.getText();
   }
 
@@ -92,7 +96,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    *
    * @return String
    */
-  public String getTitle() {
+  @Override
+public String getTitle() {
     return titleLine.getText();
   }
 
@@ -106,7 +111,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setTitle(String s, String font_name) {
+  @Override
+public void setTitle(String s, String font_name) {
     titleLine.setText(s);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;
@@ -119,7 +125,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    *
    * @param isLog true for log scale; false otherwise
    */
-  public void setXLog(boolean isLog) {
+  @Override
+public void setXLog(boolean isLog) {
     xlog = isLog; // Added by Paco
     if(isLog) {
       xaxis.setAxisType(XYAxis.LOG10);
@@ -133,7 +140,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    *
    * @param isLog true for log scale; false otherwise
    */
-  public void setYLog(boolean isLog) {
+  @Override
+public void setYLog(boolean isLog) {
     ylog = isLog; // Added by Paco
     if(isLog) {
       yaxis.setAxisType(XYAxis.LOG10);
@@ -142,11 +150,13 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
     }
   }
 
-  public boolean isXLog() {
+  @Override
+public boolean isXLog() {
     return xlog;
   }
 
-  public boolean isYLog() {
+  @Override
+public boolean isYLog() {
     return ylog;
   }
 
@@ -156,7 +166,8 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -183,14 +194,16 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
   /**
    * Sets the interior background color.
    */
-  public void setInteriorBackground(Color color) {
+  @Override
+public void setInteriorBackground(Color color) {
     interiorColor = color;
   }
 
   /**
    * Shows a grid line for every x axis major tickmark.
    */
-  public void setShowMajorXGrid(boolean showGrid) {
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {
     xaxis.setShowMajorGrid(showGrid);
     if(!showGrid) {
       setShowMinorXGrid(showGrid);
@@ -200,14 +213,16 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
   /**
    * Shows a grid line for every x axis minor tickmark.
    */
-  public void setShowMinorXGrid(boolean showGrid) {
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {
     // minor grids not yet implemented
   }
 
   /**
    * Shows a grid line for every y axis major tickmark.
    */
-  public void setShowMajorYGrid(boolean showGrid) {
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {
     yaxis.setShowMajorGrid(showGrid);
     if(!showGrid) {
       setShowMinorYGrid(showGrid);
@@ -217,19 +232,24 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
   /**
    * Shows a grid line for every y axis minor tickmark.
    */
-  public void setShowMinorYGrid(boolean showGrid) {
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {
     // minor grids not yet implemented
   }
 
-  public void setX(double x) {}
+  @Override
+public void setX(double x) {}
 
-  public void setY(double y) {}
+  @Override
+public void setY(double y) {}
 
-  public double getX() {
+  @Override
+public double getX() {
     return 0;
   }
 
-  public double getY() {
+  @Override
+public double getY() {
     return 0;
   }
 
@@ -255,6 +275,6 @@ public class CartesianType2 extends AbstractAxes implements CartesianAxes {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

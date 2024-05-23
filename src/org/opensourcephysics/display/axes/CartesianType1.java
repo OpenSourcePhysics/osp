@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
@@ -11,10 +11,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Shape;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.swing.JPanel;
@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 import org.opensourcephysics.display.Dimensioned;
 import org.opensourcephysics.display.DrawableTextLine;
 import org.opensourcephysics.display.DrawingPanel;
-import org.opensourcephysics.display.OSPLayout;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.TextLine;
@@ -94,7 +93,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
   /** If XTicks or YTicks are given/ */
   ArrayList<Double> xticks = null, yticks = null;
   ArrayList<String> xticklabels = null, yticklabels = null;
-  DecimalFormat numberFormat = new DecimalFormat();
+  DecimalFormat numberFormat =new DecimalFormat();
   DecimalFormat scientificFormat = new DecimalFormat("0.0E0");         //$NON-NLS-1$
 
   /** Whether to draw a background grid. */
@@ -211,7 +210,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  panel
    * @param  g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -241,8 +241,9 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
       leftGutter = Math.max(leftGutter, getLeftGutter(panel));
       if(leftGutter!=panel.getLeftGutter()) {
         panel.setGutters(leftGutter, topGutter, rightGutter, bottomGutter);
-        panel.recomputeTransform();
       }
+      panel.setPixelScale();
+//      panel.recomputeTransform();
     }
     numberFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
     scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
@@ -262,7 +263,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *   return;
    *   }
    *   legendStrings.add(legend);
-   *   legendDatasets.add(new Integer(dataset));
+   *   legendDatasets.add(Integer.valueOf(dataset));
    *   }
    */
 
@@ -324,7 +325,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  title the title
    * @param font_name an optional font name
    */
-  public void setTitle(String title, String font_name) {
+  @Override
+public void setTitle(String title, String font_name) {
     titleLine.setText(title);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       // resize fonts in order to adjust gutters
@@ -360,7 +362,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  label the label
    * @param font_name an optional font name
    */
-  public void setXLabel(String label, String font_name) {
+  @Override
+public void setXLabel(String label, String font_name) {
     xLine.setText(label);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;
@@ -374,7 +377,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  xlog  If true, logarithmic axis is used.
    */
-  public void setXLog(boolean xlog) {
+  @Override
+public void setXLog(boolean xlog) {
     this.xlog = xlog;
   }
 
@@ -386,7 +390,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param  label the label
    * @param font_name an optional font name
    */
-  public void setYLabel(String label, String font_name) {
+  @Override
+public void setYLabel(String label, String font_name) {
     yLine.setText(label);
     if((font_name==null)||font_name.equals("")) { //$NON-NLS-1$
       return;
@@ -400,7 +405,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  ylog  If true, logarithmic axis is used.
    */
-  public void setYLog(boolean ylog) {
+  @Override
+public void setYLog(boolean ylog) {
     this.ylog = ylog;
   }
 
@@ -409,7 +415,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    The title.
    */
-  public String getTitle() {
+  @Override
+public String getTitle() {
     return titleLine.getText();
   }
 
@@ -418,7 +425,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    The X label.
    */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return xLine.getText();
   }
 
@@ -427,7 +435,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    True if the X axis is logarithmic.
    */
-  public boolean isXLog() {
+  @Override
+public boolean isXLog() {
     return xlog;
   }
 
@@ -436,7 +445,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    The Y label.
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return yLine.getText();
   }
 
@@ -445,7 +455,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @return    True if the Y axis is logarithmic.
    */
-  public boolean isYLog() {
+  @Override
+public boolean isYLog() {
     return ylog;
   }
 
@@ -455,7 +466,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param factor the factor
    * @param panel the drawing panel on which these axes are drawn
    */
-  public void resizeFonts(double factor, DrawingPanel panel) {
+  @Override
+public void resizeFonts(double factor, DrawingPanel panel) {
     super.resizeFonts(factor, panel);
     if(xLine==null) {
       return;
@@ -479,6 +491,9 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     measureFonts(panel);
   }
 
+  public int getTickLength() {
+	  return tickLength;
+  }
   /**
    *  Draws the axes onto the specified panel
    *
@@ -489,8 +504,9 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     Color foreground = panel.getForeground();
     int panelHeight = panel.getHeight();
     int panelWidth = panel.getWidth();
-    Shape previousClip = graphics.getClip();
-    Font previousFont = graphics.getFont();
+//    Shape previousClip = graphics.getClip();
+//    Font previousFont = graphics.getFont();
+    graphics = graphics.create();
     graphics.clipRect(0, 0, panelWidth, panelHeight);
     graphics.setFont(labelFont);
     graphics.setColor(foreground);
@@ -504,7 +520,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     int halflabelheight = labelheight/2;
     // NOTE: 5 pixel padding on bottom.
     int yStartPosition = panelHeight-5;                 // starting position for axes, for y axis top, for x axis right
-    int xStartPosition = panelWidth-5-OSPLayout.macOffset;
+    int xStartPosition = panelWidth-5-OSPRuntime.macOffset;
     if(xlog) {
       xExponent = (int) Math.floor(xtickMin);
     }
@@ -533,8 +549,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
       graphics.setColor(interiorColor);
       graphics.fillRect(leftGutter, topGutter, width, height);
     }
-    int xCoord1 = leftGutter+tickLength;
-    int xCoord2 = lrx-tickLength;
+    int xCoord1 = leftGutter+this.getTickLength();
+    int xCoord2 = lrx-Math.abs(tickLength);
     int numfracdigits = numFracDigits(yTickSize);
     int yTickWidth = 12;
     if(yticks==null) {
@@ -577,14 +593,14 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
           offset = 0;                                             // changed by W. Christian
           // offset = -labelheight / 8;
         }
-        graphics.drawLine(leftGutter, yCoord1, xCoord1, yCoord1); // draw tick marks on both sides of plot, y tick marks are drawn horizontally
-        // graphics.drawLine(lrx, yCoord1, xCoord2, yCoord1);
-        graphics.drawLine(width+leftGutter-1, yCoord1, xCoord2, yCoord1);
         if(drawMajorYGrid&&(yCoord1>=topGutter)&&(yCoord1<=lry)) {                // draw grid line
           graphics.setColor(gridcolor);
           graphics.drawLine(xCoord1, yCoord1, xCoord2, yCoord1);
           graphics.setColor(foreground);
         }
+        graphics.drawLine(leftGutter, yCoord1, xCoord1, yCoord1); // draw tick marks on both sides of plot, y tick marks are drawn horizontally
+        // graphics.drawLine(lrx, yCoord1, xCoord2, yCoord1);
+        graphics.drawLine(width+leftGutter-1, yCoord1, xCoord2, yCoord1);
         int labelWidth = labelFontMetrics.stringWidth(yticklabel);
         // NOTE: 4 pixel spacing between axis and labels.
         graphics.drawString(yticklabel, leftGutter-labelWidth-4, yCoord1+offset); // draw tick label
@@ -650,7 +666,7 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
       }
     }
     // ////////////////// horizontal axis
-    int yCoord1 = topGutter+tickLength;
+    int yCoord1 = topGutter+Math.abs(tickLength);
     int yCoord2 = lry-tickLength;
     int charwidth = labelFontMetrics.stringWidth("8"); //$NON-NLS-1$
     if(xticks==null) { // auto-ticks
@@ -739,6 +755,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
           graphics.drawLine(xCoord1, yCoord1, xCoord1, yCoord2);
           graphics.setColor(foreground);
         }
+        // lower tick
+        graphics.drawLine(xCoord1, lry, xCoord1, yCoord2);
         int labxpos = xCoord1-labelFontMetrics.stringWidth(xticklabel)/2;
         if(hasExponent) {
           graphics.drawString(xticklabel, labxpos+7, lry+3+labelheight); // draw tick label
@@ -802,16 +820,16 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
           // Draw the label.
           // NOTE: 3 pixel spacing between axis and labels.
           graphics.drawString(label, labxpos, lry+3+labelheight);
-          // Draw the label mark on the axis
-          graphics.drawLine(xCoord1, topGutter, xCoord1, yCoord1);
-          // graphics.drawLine(xCoord1, bottomGutterY, xCoord1, yCoord2);
-          graphics.drawLine(xCoord1, height+topGutter-1, xCoord1, yCoord2);
           // Draw the grid line
           if(drawMajorXGrid&&(xCoord1>=leftGutter)&&(xCoord1<=lrx)) {
             graphics.setColor(gridcolor);
             graphics.drawLine(xCoord1, yCoord1, xCoord1, yCoord2);
-            graphics.setColor(foreground);
           }
+          graphics.setColor(foreground);
+          // Draw the label mark on the axis
+          graphics.drawLine(xCoord1, topGutter, xCoord1, yCoord1);
+          // graphics.drawLine(xCoord1, bottomGutterY, xCoord1, yCoord2);
+          graphics.drawLine(xCoord1, height+topGutter-1, xCoord1, yCoord2);
         }
       }
     }
@@ -853,8 +871,9 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     }
     graphics.setColor(foreground);
     graphics.drawRect(leftGutter, topGutter, width-1, height-1);
-    graphics.setFont(previousFont);
-    graphics.setClip(previousClip);
+//    graphics.setFont(previousFont);
+//    graphics.setClip(previousClip);
+    graphics.dispose(); // BH 2020.02.26
   }
 
   // /////////////////////////////////////////////////////////////////
@@ -943,6 +962,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     return results;
   }
 
+  protected Hashtable<String,String> htFormats = new Hashtable<>();
+  
   /**
    *  Return a string for displaying the specified number using the specified
    *  number of digits after the decimal point. NOTE: java.text.NumberFormat in
@@ -958,6 +979,10 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     if(num==0) {
       return "0"; //$NON-NLS-1$
     }
+    String key = "" + numfracdigits + " " + chop + " " + num;
+    String val = htFormats.get(key);
+    if (val != null)
+    	return val;
     NumberFormat numberFormat;
     if((Math.abs(num)<0.01)&&(Math.abs(num)>chop)) {
       numberFormat = this.scientificFormat;
@@ -968,7 +993,16 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
       numberFormat.setMinimumFractionDigits(numfracdigits);
       numberFormat.setMaximumFractionDigits(numfracdigits);
     }
-    return numberFormat.format(num);
+    // check that DecimalSeparator is current
+    DecimalFormat df = (DecimalFormat)numberFormat;
+  	char c = OSPRuntime.getCurrentDecimalSeparator();
+  	char cc = df.getDecimalFormatSymbols().getDecimalSeparator();
+  	if (!Character.valueOf(c).equals(Character.valueOf(cc))) {
+  		df.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+  	}
+		
+    htFormats.put(key, val = numberFormat.format(num));
+    return val;
   }
 
   /**
@@ -1258,7 +1292,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMajorXGrid value
    */
-  public void setShowMajorXGrid(boolean showGrid) {
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {
     drawMajorXGrid = showGrid;
     if(!showGrid) {
       drawMinorXGrid = showGrid;
@@ -1270,7 +1305,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMinorXGrid value
    */
-  public void setShowMinorXGrid(boolean showGrid) {
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {
     drawMinorXGrid = showGrid;
   }
 
@@ -1280,7 +1316,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMajorYGrid value
    */
-  public void setShowMajorYGrid(boolean showGrid) {
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {
     drawMajorYGrid = showGrid;
     if(!showGrid) {
       drawMinorYGrid = showGrid;
@@ -1292,19 +1329,24 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    *
    * @param  showGrid  The new drawMinorYGrid value
    */
-  public void setShowMinorYGrid(boolean showGrid) {
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {
     drawMinorYGrid = showGrid;
   }
 
-  public void setX(double x) {}
+  @Override
+public void setX(double x) {}
 
-  public void setY(double y) {}
+  @Override
+public void setY(double y) {}
 
-  public double getX() {
+  @Override
+public double getX() {
     return 0;
   }
 
-  public double getY() {
+  @Override
+public double getY() {
     return 0;
   }
 
@@ -1314,7 +1356,8 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
    * @param panel DrawingPanel
    * @return Dimension
    */
-  public Dimension getInterior(DrawingPanel panel) {
+  @Override
+public Dimension getInterior(DrawingPanel panel) {
     if(panel.getDimensionSetter()==null) {
       adjustGutters = true;
     } else {
@@ -1322,6 +1365,10 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
     }
     return null;
   }
+
+	public void setTickLength(int len) {
+		tickLength = len;
+	}
 
 }
 
@@ -1345,6 +1392,6 @@ public class CartesianType1 extends AbstractAxes implements CartesianAxes, Dimen
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.BasicStroke;
@@ -96,7 +96,8 @@ public class TLine extends TShape {
    *
    * @param stroke the desired stroke
    */
-  public void setStroke(BasicStroke stroke) {
+  @Override
+public void setStroke(BasicStroke stroke) {
     if(stroke!=null) {
       this.stroke = stroke;
     }
@@ -108,7 +109,8 @@ public class TLine extends TShape {
    * @param x the x position
    * @param y the y position
    */
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     double dx = x-getX();
     double dy = y-getY();
     end1.translate(dx, dy);
@@ -124,7 +126,8 @@ public class TLine extends TShape {
    * @param ypix the y pixel position on the panel
    * @return the interactive drawable object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(end1Rect.contains(xpix, ypix)) {
       return end1;
     }
@@ -146,7 +149,8 @@ public class TLine extends TShape {
    * @param vidPanel the video panel
    * @return the line shape
    */
-  protected Shape getShape(VideoPanel vidPanel) {
+  @Override
+protected Shape getShape(VideoPanel vidPanel) {
     this.center(end1, end2);
     Point p1 = end1.getScreenPosition(vidPanel);
     Point p2 = end2.getScreenPosition(vidPanel);
@@ -164,7 +168,8 @@ public class TLine extends TShape {
      * @param vidPanel the video panel
      * @return the bounding rectangle
      */
-    public Rectangle getBounds(VideoPanel vidPanel) {
+    @Override
+	public Rectangle getBounds(VideoPanel vidPanel) {
       return TLine.this.getBounds(vidPanel);
     }
 
@@ -192,6 +197,6 @@ public class TLine extends TShape {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

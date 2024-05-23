@@ -67,6 +67,7 @@ public class AsyncFileChooser extends JFileChooser implements PropertyChangeList
 	@Override
 	public int showSaveDialog(Component frame) {
 		isAsyncSave  = false;
+		ok = cancel = null;
 		return super.showSaveDialog(frame);
 	}
 
@@ -188,6 +189,7 @@ public class AsyncFileChooser extends JFileChooser implements PropertyChangeList
 		switch (evt.getPropertyName()) {
 		case "SelectedFile":
 		case "SelectedFiles":
+			
 			process(optionSelected = (evt.getNewValue() == null ? CANCEL_OPTION : APPROVE_OPTION));
 			break;
 		}

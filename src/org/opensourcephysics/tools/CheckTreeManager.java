@@ -2,10 +2,11 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.tools;
+
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,86 +22,90 @@ import javax.swing.tree.TreePath;
  *
  * @author Douglas Brown
  *
- * Based on code by Santhosh Kumar T - santhosh@in.fiorano.com
- * See http://www.jroller.com/page/santhosh/20050610
+ *         Based on code by Santhosh Kumar T - santhosh@in.fiorano.com See
+ *         http://www.jroller.com/page/santhosh/20050610
  */
 public class CheckTreeManager extends MouseAdapter implements TreeSelectionListener, MouseMotionListener {
-  private CheckTreeSelectionModel selectionModel;
-  private JTree tree = new JTree();
-  int hotspot = new JCheckBox().getPreferredSize().width;
-  boolean ignoreEvents = false;
+	private CheckTreeSelectionModel selectionModel;
+	private JTree tree = new JTree();
+	int hotspot = new JCheckBox().getPreferredSize().width;
+	boolean ignoreEvents = false;
 
-  /**
-   * Constructor.
-   *
-   * @param tree a JTree
-   */
-  public CheckTreeManager(JTree tree) {
-    this.tree = tree;
-    selectionModel = new CheckTreeSelectionModel(tree.getModel());
-    tree.setCellRenderer(new CheckTreeCellRenderer(tree.getCellRenderer(), selectionModel));
-    tree.addMouseListener(this);
-    tree.addMouseMotionListener(this);
-    selectionModel.addTreeSelectionListener(this);
-  }
+	/**
+	 * Constructor.
+	 *
+	 * @param tree a JTree
+	 */
+	public CheckTreeManager(JTree tree) {
+		this.tree = tree;
+		selectionModel = new CheckTreeSelectionModel(tree.getModel());
+		tree.setCellRenderer(new CheckTreeCellRenderer(tree.getCellRenderer(), selectionModel));
+		tree.addMouseListener(this);
+		tree.addMouseMotionListener(this);
+		selectionModel.addTreeSelectionListener(this);
+	}
 
-  /**
-   * Handles mouse moved events.
-   *
-   * @param e the mouse event
-   */
-  public void mouseMoved(MouseEvent e) {
-    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-    if(path==null) {
-      return;
-    }
-    if((e.getX()>tree.getPathBounds(path).x+hotspot-3)||(e.getX()<tree.getPathBounds(path).x+2)) {
-      tree.setCursor(Cursor.getDefaultCursor());
-    } else {
-      tree.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }
-  }
+	/**
+	 * Handles mouse moved events.
+	 *
+	 * @param e the mouse event
+	 */
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+		if (path == null) {
+			return;
+		}
+		if ((e.getX() > tree.getPathBounds(path).x + hotspot - 3) || (e.getX() < tree.getPathBounds(path).x + 2)) {
+			tree.setCursor(Cursor.getDefaultCursor());
+		} else {
+			tree.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		}
+	}
 
-  /**
-   * Handles mouse click events.
-   *
-   * @param e the mouse event
-   */
-  public void mouseClicked(MouseEvent e) {
-    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-    if(path==null) {
-      return;
-    }
-    if(e.getX()>tree.getPathBounds(path).x+hotspot) {
-      return;
-    }
-    boolean selected = selectionModel.isPathOrAncestorSelected(path);
-    try {
-      ignoreEvents = true;
-      if(selected) {
-        selectionModel.removeSelectionPath(path);
-      } else {
-        selectionModel.addSelectionPath(path);
-      }
-    } finally {
-      ignoreEvents = false;
-      tree.treeDidChange();
-    }
-  }
+	/**
+	 * Handles mouse click events.
+	 *
+	 * @param e the mouse event
+	 */
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+		if (path == null) {
+			return;
+		}
+		if (e.getX() > tree.getPathBounds(path).x + hotspot) {
+			return;
+		}
+		boolean selected = selectionModel.isPathOrAncestorSelected(path);
+		try {
+			ignoreEvents = true;
+			if (selected) {
+				selectionModel.removeSelectionPath(path);
+			} else {
+				selectionModel.addSelectionPath(path);
+			}
+		} finally {
+			ignoreEvents = false;
+			tree.treeDidChange();
+		}
+	}
 
-  public CheckTreeSelectionModel getSelectionModel() {
-    return selectionModel;
-  }
+	public CheckTreeSelectionModel getSelectionModel() {
+		return selectionModel;
+	}
 
-  public void valueChanged(TreeSelectionEvent e) {
-    if(!ignoreEvents) {
-      tree.treeDidChange();
-    }
-  }
+	@Override
+	public void valueChanged(TreeSelectionEvent e) {
+		if (!ignoreEvents) {
+			tree.treeDidChange();
+		}
+	}
 
-  public void mouseDragged(MouseEvent e) {
-    /** empty block */
-  }
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		/** empty block */
+	}
 
 }
 
@@ -124,6 +129,6 @@ public class CheckTreeManager extends MouseAdapter implements TreeSelectionListe
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019 The Open Source Physics project
- * https://www.compadre.org/osp
+ * Copyright (c) 2024 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

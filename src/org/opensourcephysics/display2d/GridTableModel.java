@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -28,7 +28,8 @@ public class GridTableModel extends AbstractTableModel {
    *
    * @return int
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     return griddata.getNx()+1;
   }
 
@@ -37,7 +38,8 @@ public class GridTableModel extends AbstractTableModel {
    *
    * @return int
    */
-  public String getColumnName(int c) {
+  @Override
+public String getColumnName(int c) {
     if(c==0) {
       return "j\\i"; //$NON-NLS-1$
     }
@@ -49,7 +51,8 @@ public class GridTableModel extends AbstractTableModel {
    *
    * @return int
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     return griddata.getNx();
   }
 
@@ -60,10 +63,11 @@ public class GridTableModel extends AbstractTableModel {
    * @param columnIndex int
    * @return Object
    */
-  public Object getValueAt(int rowIndex, int columnIndex) {
+  @Override
+public Object getValueAt(int rowIndex, int columnIndex) {
     // return new Double(griddata.getValue(rowIndex,columnIndex,0));
     if(columnIndex==0) {
-      return new Integer(rowIndex);
+      return Integer.valueOf(rowIndex);
     }
     return ControlUtils.f3(griddata.getValue(columnIndex-1, rowIndex, component));
   }
@@ -90,6 +94,6 @@ public class GridTableModel extends AbstractTableModel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

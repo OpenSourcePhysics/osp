@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -37,19 +37,19 @@ public class ArrayData implements GridData {
   /**
    * Constructor ArrayData
    *
-   * @param ix
-   * @param iy
+   * @param nx
+   * @param ny
    * @param nsamples
    */
-  public ArrayData(int ix, int iy, int nsamples) {
-    if((iy<1)||(ix<1)) {
-      throw new IllegalArgumentException("Number of dataset rows and columns must be positive. Your row="+iy+"  col="+ix); //$NON-NLS-1$ //$NON-NLS-2$
+  public ArrayData(int nx, int ny, int nsamples) {
+    if((ny<1)||(nx<1)) {
+      throw new IllegalArgumentException("Number of dataset rows and columns must be positive. Your row="+ny+"  col="+nx); //$NON-NLS-1$ //$NON-NLS-2$
     }
     if((nsamples<1)) {
       throw new IllegalArgumentException("Number of 2d data components must be positive. Your ncomponents="+nsamples); //$NON-NLS-1$
     }
-    data = new double[nsamples][ix][iy]; // x, y, and components
-    setScale(0, ix, 0, iy);
+    data = new double[nsamples][nx][ny]; // x, y, and components
+    setScale(0, nx, 0, ny);
     names = new String[nsamples];
     for(int i = 0; i<nsamples; i++) {
       names[i] = "Component_"+i; //$NON-NLS-1$
@@ -62,7 +62,8 @@ public class ArrayData implements GridData {
    * @param i int the component index
    * @param name String
    */
-  public void setComponentName(int i, String name) {
+  @Override
+public void setComponentName(int i, String name) {
     names[i] = name;
   }
 
@@ -71,7 +72,8 @@ public class ArrayData implements GridData {
    * @param i int the component index
    * @return String the name
    */
-  public String getComponentName(int i) {
+  @Override
+public String getComponentName(int i) {
     return names[i];
   }
 
@@ -80,7 +82,8 @@ public class ArrayData implements GridData {
    *
    * @return int
    */
-  public int getComponentCount() {
+  @Override
+public int getComponentCount() {
     return data.length;
   }
 
@@ -93,7 +96,8 @@ public class ArrayData implements GridData {
    * @param _bottom
    * @param _top
    */
-  public void setScale(double _left, double _right, double _bottom, double _top) {
+  @Override
+public void setScale(double _left, double _right, double _bottom, double _top) {
     cellData = false;
     left = _left;
     right = _right;
@@ -124,7 +128,8 @@ public class ArrayData implements GridData {
    *
    * @return true if cell data.
    */
-  public boolean isCellData() {
+  @Override
+public boolean isCellData() {
     return cellData;
   }
 
@@ -136,7 +141,8 @@ public class ArrayData implements GridData {
    * @param component
    * @return the value.
    */
-  public double getValue(int ix, int iy, int component) {
+  @Override
+public double getValue(int ix, int iy, int component) {
     return data[component][ix][iy];
   }
 
@@ -148,7 +154,8 @@ public class ArrayData implements GridData {
    * @param component
    * @param value
    */
-  public void setValue(int ix, int iy, int component, double value) {
+  @Override
+public void setValue(int ix, int iy, int component, double value) {
     data[component][ix][iy] = value;
   }
 
@@ -156,7 +163,8 @@ public class ArrayData implements GridData {
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return data[0].length;
   }
 
@@ -164,7 +172,8 @@ public class ArrayData implements GridData {
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return data[0][0].length;
   }
 
@@ -178,7 +187,8 @@ public class ArrayData implements GridData {
    * @param _bottom
    * @param _top
    */
-  public void setCellScale(double _left, double _right, double _bottom, double _top) {
+  @Override
+public void setCellScale(double _left, double _right, double _bottom, double _top) {
     cellData = true;
     int nx = data[0].length;
     int ny = data[0][0].length;
@@ -206,7 +216,8 @@ public class ArrayData implements GridData {
    * @param ymin
    * @param ymax
    */
-  public void setCenteredCellScale(double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setCenteredCellScale(double xmin, double xmax, double ymin, double ymax) {
     int nx = data[0].length;
     int ny = data[0][0].length;
     double delta = (nx>1) ? (xmax-xmin)/(nx-1)/2 : 0;
@@ -230,7 +241,8 @@ public class ArrayData implements GridData {
    * @param index
    * @return the interpolated sample
    */
-  public double interpolate(double x, double y, int index) {
+  @Override
+public double interpolate(double x, double y, int index) {
     int ix = (int) ((x-left)/dx);
     ix = Math.max(0, ix);
     ix = Math.min(data[0].length-2, ix);
@@ -261,7 +273,8 @@ public class ArrayData implements GridData {
    * @param values array will contain the interpolated values
    * @return the interpolated array
    */
-  public double[] interpolate(double x, double y, int[] indexes, double[] values) {
+  @Override
+public double[] interpolate(double x, double y, int[] indexes, double[] values) {
     int ix = (int) ((x-left)/dx);
     ix = Math.max(0, ix);
     ix = Math.min(data[0].length-2, ix);
@@ -301,38 +314,54 @@ public class ArrayData implements GridData {
    *
    * @return the data
    */
-  public double[][][] getData() {
+  @Override
+public double[][][] getData() {
     return data;
   }
 
-  /**
-   * Gets the minimum and maximum values of the n-th component.
-   *
-   * @param n the component
-   * @return {zmin,zmax}
-   */
-  public double[] getZRange(int n) {
-    double zmin = data[n][0][0];
-    double zmax = zmin;
-    for(int i = 0, mx = data[0].length; i<mx; i++) {
-      for(int j = 0, my = data[0][0].length; j<my; j++) {
-        double v = data[n][i][j];
-        if(v>zmax) {
-          zmax = v;
-        }
-        if(v<zmin) {
-          zmin = v;
-        }
-      }
-    }
-    return new double[] {zmin, zmax};
-  }
+	/**
+	 * Gets the minimum and maximum values of the n-th component.
+	 *
+	 * @param n the component
+	 * @return {zmin,zmax}
+	 */
+	@Override
+	public double[] getZRange(int n) {
+		return getZRange(n, new double[2]);
+	}
+
+	/**
+	 * Gets the minimum and maximum values of the n-th component.
+	 *
+	 * @param n      the component
+	 * @param minmax array to fill
+	 * @return minmax
+	 */
+	@Override
+	public double[] getZRange(int n, double[] minmax) {
+		double zmin = data[n][0][0];
+		double zmax = zmin;
+		for (int i = 0, mx = data[0].length; i < mx; i++) {
+			for (int j = 0, my = data[0][0].length; j < my; j++) {
+				double v = data[n][i][j];
+				if (v > zmax) {
+					zmax = v;
+				} else if (v < zmin) {
+					zmin = v;
+				}
+			}
+		}
+		minmax[0] = zmin;
+		minmax[1] = zmax;
+		return minmax;
+	}
 
   /**
    * Gets the x value for the first column in the grid.
    * @return  the leftmost x value
    */
-  public final double getLeft() {
+  @Override
+public final double getLeft() {
     return left;
   }
 
@@ -340,7 +369,8 @@ public class ArrayData implements GridData {
    * Gets the x value for the right column in the grid.
    * @return  the rightmost x value
    */
-  public final double getRight() {
+  @Override
+public final double getRight() {
     return right;
   }
 
@@ -348,7 +378,8 @@ public class ArrayData implements GridData {
    * Gets the y value for the first row of the grid.
    * @return  the topmost y value
    */
-  public final double getTop() {
+  @Override
+public final double getTop() {
     return top;
   }
 
@@ -356,7 +387,8 @@ public class ArrayData implements GridData {
    * Gets the y value for the last row of the grid.
    * @return the bottommost y value
    */
-  public final double getBottom() {
+  @Override
+public final double getBottom() {
     return bottom;
   }
 
@@ -364,7 +396,8 @@ public class ArrayData implements GridData {
    * Gets the change in x between grid columns.
    * @return the bottommost y value
    */
-  public final double getDx() {
+  @Override
+public final double getDx() {
     return dx;
   }
 
@@ -372,7 +405,8 @@ public class ArrayData implements GridData {
    * Gets the change in y between grid rows.
    * @return the bottommost y value
    */
-  public final double getDy() {
+  @Override
+public final double getDy() {
     return dy;
   }
 
@@ -382,7 +416,8 @@ public class ArrayData implements GridData {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return(data==null) ? Double.NaN : left+dx*i;
   }
 
@@ -392,7 +427,8 @@ public class ArrayData implements GridData {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return(data==null) ? Double.NaN : top+dy*i;
   }
 
@@ -402,7 +438,8 @@ public class ArrayData implements GridData {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     if(data==null) {
       return 0;
     }
@@ -424,7 +461,8 @@ public class ArrayData implements GridData {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     if(data==null) {
       return 0;
     }
@@ -453,7 +491,8 @@ public class ArrayData implements GridData {
    * A class to save and load Dataset data in an XMLControl.
    */
   private static class Loader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       ArrayData gpd = (ArrayData) obj;
       control.setValue("left", gpd.left);             //$NON-NLS-1$
       control.setValue("right", gpd.right);           //$NON-NLS-1$
@@ -465,11 +504,13 @@ public class ArrayData implements GridData {
       control.setValue("data", gpd.data);             //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ArrayData(1, 1, 1);
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       ArrayData gpd = (ArrayData) obj;
       double[][][] data = (double[][][]) control.getObject("data"); //$NON-NLS-1$
       gpd.data = data;
@@ -507,6 +548,6 @@ public class ArrayData implements GridData {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

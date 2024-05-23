@@ -15,6 +15,8 @@ import org.opensourcephysics.display.DataClip;
  */
 public interface DataTrack extends Trackable {
 
+	String PROPERTY_DATATRACK_STARTFRAME = "startframe";
+	
 	/**
 	 * Sets the video start frame at which the first data point is displayed.
 	 * 
@@ -28,6 +30,20 @@ public interface DataTrack extends Trackable {
 	 * @return the start frame number
 	 */
 	public int getStartFrame();
+	
+	/**
+	 * Sets the step in the videoclip at which the first data point is displayed.
+	 * 
+	 * @param start the start step number
+	 */
+	public void setStartStep(int start);
+
+	/**
+	 * Gets the step in the videoclip at which the first data point is displayed.
+	 * 
+	 * @return the start step number
+	 */
+	public int getStartStep();
 	
 	/**
 	 * Sets the Data for the track. Data must define "x" and "y" positions,
@@ -71,7 +87,7 @@ public interface DataTrack extends Trackable {
 	 * 
 	 * @param listener the PropertyChangeListener
 	 */
-	public void addPropertyChangeListener(PropertyChangeListener listener);
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
 	
 	/**
 	 * Determines if time is defined by the Data.
@@ -93,5 +109,13 @@ public interface DataTrack extends Trackable {
 	 * @return the frame duration, or Double.NaN if undefined
 	 */
   public double getFrameDuration();
+  
+	/**
+	 * Determines if autopaste is enabled for this DataTrack.
+	 * 
+	 * @return true if autopaste is enabled
+	 */
+	public boolean isAutoPasteEnabled();
+
 
 }

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -14,6 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -23,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * This modal dialog lets the user choose items from a tree view of an XMLControl.
@@ -33,6 +36,9 @@ public class XMLTreeChooser extends JDialog {
   private XMLTree tree;
   private JLabel textLabel;
   private boolean applyChanges = false;
+  
+  private Class<?> classType;
+  private Runnable whenClosed;
 
   /**
    * Constructs a dialog with the specified title and text.
@@ -44,6 +50,15 @@ public class XMLTreeChooser extends JDialog {
     this(title, text, null);
   }
 
+	@Override
+	public void setVisible(boolean b) {
+		super.setVisible(b);
+		if (!b) {
+			dispose(); // BH 2020.02.13 -- Java bug -- need to dispose of this.
+			if (whenClosed != null)
+				SwingUtilities.invokeLater(whenClosed);
+		}
+	}
   /**
    * Constructs a dialog with the specified title, text and owner.
    *
@@ -61,20 +76,23 @@ public class XMLTreeChooser extends JDialog {
     JButton okButton = new JButton(ControlsRes.getString("Chooser.Button.OK"));               //$NON-NLS-1$
     JButton selectAllButton = new JButton(ControlsRes.getString("Chooser.Button.SelectAll")); //$NON-NLS-1$
     cancelButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
 
     });
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         applyChanges = true;
         setVisible(false);
       }
 
     });
     selectAllButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         tree.selectHighlightedProperties();
       }
 
@@ -121,8 +139,7 @@ public class XMLTreeChooser extends JDialog {
    * @param type the class to be highlighted
    * @return a list of selected objects
    */
-  public java.util.List<XMLProperty> choose(XMLControl control, Class<?> type) {
-    ArrayList<XMLProperty> list = new ArrayList<XMLProperty>();
+  public List<XMLProperty> choose(XMLControl control, Class<?> type) {
     tree = new XMLTree(control);
     tree.setHighlightedClass(type);
     // tree.showHighlightedProperties();
@@ -132,20 +149,48 @@ public class XMLTreeChooser extends JDialog {
     scrollPane.add(tree.getScrollPane(), BorderLayout.CENTER);
     validate();
     applyChanges = false;
+    // BH SwingJS this is the asynchronous part in JavaScript
+	classType = type;
+	whenClosed = null;
     setVisible(true);
-    if(applyChanges) {
-      java.util.List<XMLProperty> props = tree.getSelectedProperties();
-      Iterator<XMLProperty> it = props.iterator();
-      while(it.hasNext()) {
-        XMLProperty prop = it.next();
-        Class<?> propClass = prop.getPropertyClass();
-        if((propClass!=null)&&type.isAssignableFrom(propClass)) {
-          list.add(prop);
-        }
-      }
-    }
-    return list;
+    return getList();
   }
+
+	public void chooseAsync(XMLControl control, Class<?> type, Runnable whenClosed) {
+		tree = new XMLTree(control);
+		tree.setHighlightedClass(type);
+		// tree.showHighlightedProperties();
+		tree.selectHighlightedProperties();
+		textLabel.setIcon(XMLTree.hiliteIcon);
+		scrollPane.removeAll();
+		scrollPane.add(tree.getScrollPane(), BorderLayout.CENTER);
+		validate();
+		applyChanges = false;
+		// BH SwingJS this is the asynchronous part in JavaScript
+		classType = type;
+		this.whenClosed = whenClosed;
+		setVisible(true);
+	}
+
+	/**
+	 * Allow for asynchronous getting of the list.
+	 * @return
+	 */
+	public List<XMLProperty> getList() {
+		ArrayList<XMLProperty> list = new ArrayList<XMLProperty>();
+		if (applyChanges) {
+			java.util.List<XMLProperty> props = tree.getSelectedProperties();
+			Iterator<XMLProperty> it = props.iterator();
+			while (it.hasNext()) {
+				XMLProperty prop = it.next();
+				Class<?> propClass = prop.getPropertyClass();
+				if ((propClass != null) && classType.isAssignableFrom(propClass)) {
+					list.add(prop);
+				}
+			}
+		}
+		return list;
+	}
 
 }
 
@@ -169,6 +214,6 @@ public class XMLTreeChooser extends JDialog {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

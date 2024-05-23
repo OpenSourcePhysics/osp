@@ -2,29 +2,25 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
-import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
+
 import javax.swing.JFrame;
-import org.opensourcephysics.controls.OSPLog;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.Grid;
 import org.opensourcephysics.display.MeasuredImage;
+import org.opensourcephysics.display.OSPRuntime;
+
+import swingjs.api.JSUtilI;
 
 /**
  * InterpolatedPlot creates an image of a scalar field by interpolating every
@@ -37,7 +33,6 @@ import org.opensourcephysics.display.MeasuredImage;
  */
 public class InterpolatedPlot extends MeasuredImage implements Plot2D {
   GridData griddata;
-  byte[][] rgbData;
   Grid grid;
   ColorMapper colorMap;
   boolean autoscaleZ = true;
@@ -46,6 +41,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
   int leftPix, rightPix, topPix, bottomPix;
   int ixsize, iysize;
   double top, left, bottom, right;
+protected int imageType;
+protected byte[] pixelData;
 
   /**
    * Constructs an InterpolatedPlot without data.
@@ -72,18 +69,11 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
   }
 
   /**
-   * Gets the byte array of rgb colors
-   * @return byte[][]
-   */
-  public byte[][] getRGBData() {
-    return this.rgbData;
-  }
-
-  /**
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -93,7 +83,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -103,7 +94,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -113,7 +105,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -123,7 +116,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -134,7 +128,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][] val = (double[][]) obj;
     copyData(val);
     update();
@@ -151,7 +146,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][] val = (double[][]) obj;
     copyData(val);
     if(griddata.isCellData()) {
@@ -182,7 +178,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param _griddata
    */
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
     if(this.griddata==null) {
       return;
@@ -210,7 +207,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     autoscaleZ = isAutoscale;
     if(!autoscaleZ) {
       colorMap.setScale(floor, ceil);
@@ -224,14 +222,16 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 	  symmetricZ=symmetric;
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return symmetricZ;
   }
 
@@ -240,7 +240,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -248,7 +249,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return colorMap.getFloor();
   }
 
@@ -256,7 +258,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return colorMap.getCeil();
   }
 
@@ -265,7 +268,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param  showGrid
    */
-  public void setShowGridLines(boolean showGrid) {
+  @Override
+public void setShowGridLines(boolean showGrid) {
     grid.setVisible(showGrid);
   }
 
@@ -274,7 +278,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param  c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     grid.setColor(c);
   }
 
@@ -283,7 +288,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param indexes the sample-component
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
   }
 
@@ -291,7 +297,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * Determines the palette type that will be used.
    * @param type
    */
-  public void setPaletteType(int type) {
+  @Override
+public void setPaletteType(int type) {
     colorMap.setPaletteType(type);
   }
 
@@ -300,7 +307,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    *
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     colorMap.setColorPalette(colors);
   }
 
@@ -310,7 +318,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     colorMap.setFloorCeilColor(floorColor, ceilColor);
   }
 
@@ -320,7 +329,8 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
  * @param expanded boolean
  * @param expansionFactor double
  */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       ZExpansion zMap = new ZExpansion(expansionFactor);
       colorMap.setZMap(zMap);
@@ -332,12 +342,13 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
   /**
    * Updates the buffered image using the data array.
    */
-  public synchronized void update() {
+  @Override
+public synchronized void update() {
     if(griddata==null) {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       double ceil = minmax[1];
       double floor = minmax[0];
       if(symmetricZ){
@@ -378,32 +389,32 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
     rightPix = Math.min(rightPix, panel.getWidth());
     topPix = Math.max(0, topPix);
     bottomPix = Math.min(bottomPix, panel.getHeight());
-    int row = bottomPix-topPix+1;
-    int col = rightPix-leftPix+1;
-    if((image!=null)&&(image.getWidth()==col)&&(image.getHeight()==row)&&(left==panel.pixToX(leftPix))&&(top==panel.pixToY(topPix))&&(bottom==panel.pixToX(bottomPix))&&(right==panel.pixToY(rightPix))) {
+    
+    int height = bottomPix-topPix+1;
+    int width = rightPix-leftPix+1;
+    
+    if((image!=null)&&(image.getWidth()==width)&&(image.getHeight()==height)&&(left==panel.pixToX(leftPix))&&(top==panel.pixToY(topPix))&&(bottom==panel.pixToX(bottomPix))&&(right==panel.pixToY(rightPix))) {
       return; // image exists, has the correct location, and is the correct size
     }
     left = panel.pixToX(leftPix);
     top = panel.pixToY(topPix);
     bottom = panel.pixToX(bottomPix);
     right = panel.pixToY(rightPix);
-    if((image!=null)&&(image.getWidth()==col)&&(image.getHeight()==row)) {
+    if((image!=null)&&(image.getWidth()==width)&&(image.getHeight()==height)) {
       recolorImage();
       return; // image exists and is the correct size so recolor it
     }
-    int size = row*col;
-    if((size<4)||(row>4000)||(col>4000)) {
+    int size = height*width;
+    if((size<4)||(height>4000)||(width>4000)) {
       image = null;
       return;
     }
-    OSPLog.finer("InterpolatedPlot image created with row="+row+" and col="+col); //$NON-NLS-1$ //$NON-NLS-2$
-    ComponentColorModel ccm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), new int[] {8, 8, 8}, false, // hasAlpha
-      false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-    BandedSampleModel csm = new BandedSampleModel(DataBuffer.TYPE_BYTE, col, row, col, new int[] {0, 1, 2}, new int[] {0, 0, 0});
-    rgbData = new byte[3][size];
-    DataBuffer databuffer = new DataBufferByte(rgbData, size);
-    WritableRaster raster = Raster.createWritableRaster(csm, databuffer, new Point(0, 0));
-    image = new BufferedImage(ccm, raster, false, null);
+    //OSPLog.finer("InterpolatedPlot image created with row="+height+" and col="+width); //$NON-NLS-1$ //$NON-NLS-2$
+    imageType = 
+    		(OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5
+    				: BufferedImage.TYPE_4BYTE_ABGR);
+    image = new BufferedImage(width, height, imageType);
+    pixelData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();
     recolorImage();
   }
 
@@ -417,7 +428,6 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
     // local reference for thread safety
     GridData griddata = this.griddata;
     BufferedImage image = this.image;
-    byte[][] rgbData = this.rgbData;
     if(griddata==null) {
       return;
     }
@@ -438,10 +448,9 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
     if(image==null) {
       return;
     }
-    if(rgbData[0].length!=image.getWidth()*image.getHeight()) {
+    if(pixelData.length != image.getWidth()*image.getHeight() * 4) {
       return;
     }
-    byte[] rgb = new byte[3];
     double y = top;
     double dx = (xmax-xmin)/(ixsize-1);
     double dy = (ymin-ymax)/(iysize-1);
@@ -451,29 +460,48 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
     if(griddata.getDy()>0) {
       dy = -dy;
     }
-    int iw = image.getWidth();
-    for(int i = 0, row = image.getHeight(); i<row; i++) {
-      double x = left;
-      for(int j = 0; j<iw; j++) {
-        colorMap.doubleToComponents(griddata.interpolate(x, y, ampIndex), rgb);
-        int index = i*iw+j;
-        rgbData[0][index] = rgb[0]; // red
-        rgbData[1][index] = rgb[1]; // green
-        rgbData[2][index] = rgb[2]; // blue
-        x += dx;
-      }
-      y += dy;
-    }
+    writeToRaster(left, y, dx, dy);
   }
 
-  /**
+  
+  protected void writeToRaster(double x0, double y, double dx, double dy) {
+	    int width = image.getWidth();
+	    int height = image.getHeight();
+		byte[] pixels = pixelData;
+		boolean isABGR = (imageType == BufferedImage.TYPE_4BYTE_ABGR);
+	    for(int i = 0; i<height; i++, y += dy) {
+	      double x = x0;
+	      for(int j = 0; j<width; j++, x += dx) {
+	        byte[] ret = colorMap.doubleToComponents(griddata.interpolate(x, y, ampIndex));
+	        int pt = (i*width+j)<<2;
+			// note that -1 here will become UInt8 255 for the canvas by anding with 0xFF
+			if (isABGR) {
+				// Java BufferedImage.TYPE_4BYTE_ABGR
+				pixels[pt++] = -1;//a;
+				pixels[pt++] = ret[2];//b;
+				pixels[pt++] = ret[1];//g;
+				pixels[pt++] = ret[0];//r;
+			} else {
+				// SwingJS BufferedImage.TYPE_4BYTE_HTML5
+				pixels[pt++] = ret[0];//r;
+				pixels[pt++] = ret[1];//g;
+				pixels[pt++] = ret[2];//b;
+				pixels[pt++] = -1;//a;
+			}
+	      }
+	    }
+  	}
+
+/**
    * Shows how values map to colors.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend();
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return griddata!=null;
   }
 
@@ -482,12 +510,14 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible||(griddata==null)) {
       return;
     }
     checkImage(panel);
     if(image!=null) {
+  	  // Note that the image in this case extends beyond the clipping range.
       g.drawImage(image, leftPix, topPix, panel);
     }
     grid.draw(panel, g);
@@ -500,15 +530,18 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new InterpolatedPlot(null);
       }
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         super.saveObject(control, obj);
         InterpolatedPlot plot = (InterpolatedPlot) obj;
         control.setValue("color map", plot.colorMap); //$NON-NLS-1$
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         super.loadObject(control, obj);
         InterpolatedPlot plot = (InterpolatedPlot) obj;
         plot.colorMap = (ColorMapper) control.getObject("color map"); //$NON-NLS-1$
@@ -540,6 +573,6 @@ public class InterpolatedPlot extends MeasuredImage implements Plot2D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

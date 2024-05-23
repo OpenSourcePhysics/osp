@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -14,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,7 +22,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
-import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -33,6 +33,7 @@ import javax.swing.event.ChangeListener;
  * @author Wolfgang Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
   JTabbedPane tabbedPane = new JTabbedPane();
   ArrayTable[] tables;
@@ -128,7 +129,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     // forward event to listeners
     changed = true;
     firePropertyChange(e.getPropertyName(), e.getOldValue(), e.getNewValue());
@@ -228,48 +230,46 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
     }
   }
 
-  /**
-   * Sets the alignment of the contents of the given column along the X axis.
-   * The alignment constants are defined in the SwingConstants class.
-   *
-   * @param ncol the column
-   * @param align  One of the following constants defined in <code>SwingConstants</code>:
-   *           <code>LEFT</code>,
-   *           <code>CENTER</code> (the default for image-only labels),
-   *           <code>RIGHT</code>,
-   *           <code>LEADING</code> (the default for text-only labels) or
-   *           <code>TRAILING</code>.
-   */
-  public void setColumnAlignment(int ncol, int align) {
-    for(int table = 0; table<tables.length; table++) {
-      for(int row = 0; row<tables[table].getRowCount(); row++) {
-        javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, ncol);
-        ((JLabel) renderer).setHorizontalAlignment(align);
-      }
-    }
-  }
+	/**
+	 * Sets the alignment of the contents of the given column along the X axis. The
+	 * alignment constants are defined in the SwingConstants class.
+	 *
+	 * @param ncol  the column
+	 * @param align One of the following constants defined in
+	 *              <code>SwingConstants</code>: <code>LEFT</code>,
+	 *              <code>CENTER</code> (the default for image-only labels),
+	 *              <code>RIGHT</code>, <code>LEADING</code> (the default for
+	 *              text-only labels) or <code>TRAILING</code>.
+	 */
+	public void setColumnAlignment(int ncol, int align) {
+		for (int table = 0; table < tables.length; table++) {
+			for (int row = 0, n = tables[table].getRowCount(); row < n; row++) {
+				javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, ncol);
+				((JLabel) renderer).setHorizontalAlignment(align);
+			}
+		}
+	}
 
-  /**
-   * Sets the alignment of the contents of all table columns along the X axis.
-   * The alignment constants are defined in the SwingConstants class.
-   *
-   * @param align  One of the following constants defined in <code>SwingConstants</code>:
-   *           <code>LEFT</code>,
-   *           <code>CENTER</code> (the default for image-only labels),
-   *           <code>RIGHT</code>,
-   *           <code>LEADING</code> (the default for text-only labels) or
-   *           <code>TRAILING</code>.
-   */
-  public void setColumnAlignment(int align) {
-    for(int table = 0; table<tables.length; table++) {
-      for(int row = 0; row<tables[table].getRowCount(); row++) {
-        for(int col = 0; col<tables[table].getColumnCount(); col++) {
-          javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, col);
-          ((JLabel) renderer).setHorizontalAlignment(align);
-        }
-      }
-    }
-  }
+	/**
+	 * Sets the alignment of the contents of all table columns along the X axis. The
+	 * alignment constants are defined in the SwingConstants class.
+	 *
+	 * @param align One of the following constants defined in
+	 *              <code>SwingConstants</code>: <code>LEFT</code>,
+	 *              <code>CENTER</code> (the default for image-only labels),
+	 *              <code>RIGHT</code>, <code>LEADING</code> (the default for
+	 *              text-only labels) or <code>TRAILING</code>.
+	 */
+	public void setColumnAlignment(int align) {
+		for (int table = 0; table < tables.length; table++) {
+			for (int row = 0, n = tables[table].getRowCount(); row < n; row++) {
+				for (int col = 0; col < tables[table].getColumnCount(); col++) {
+					javax.swing.table.TableCellRenderer renderer = tables[table].getCellRenderer(row, col);
+					((JLabel) renderer).setHorizontalAlignment(align);
+				}
+			}
+		}
+	}
 
   // End of changes by Willy Gerber
   public int getFirstRowIndex() {
@@ -353,7 +353,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * @param font the desired <code>Font</code> for this component
    * @see java.awt.Component#getFont
    */
-  public void setFont(Font font){ // Added by Paco
+  @Override
+public void setFont(Font font){ // Added by Paco
     super.setFont(font);
     if (tables!=null) for(int i = 0; i<tables.length; i++) tables[i].setFont(font);
   }
@@ -366,7 +367,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * @param fg  the desired foreground <code>Color</code> 
    * @see java.awt.Component#getForeground
    */
-  public void setForeground(Color color){ // Added by Paco
+  @Override
+public void setForeground(Color color){ // Added by Paco
     super.setForeground(color);
     if (tables!=null) for(int i = 0; i<tables.length; i++) tables[i].setForeground(color);
   }
@@ -379,7 +381,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * @param fg  the desired background <code>Color</code> 
    * @see java.awt.Component#getBackground
    */
-  public void setBackground(Color color){ // Added by Paco
+  @Override
+public void setBackground(Color color){ // Added by Paco
     super.setBackground(color);
     if (tables!=null) for(int i = 0; i<tables.length; i++) tables[i].setBackground(color);
   }
@@ -467,13 +470,13 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
     scrollpane = new JScrollPane(tables[0]);
     if(tables.length>1) {
       // create spinner
-      SpinnerModel model = new SpinnerNumberModel(0, 0, tables.length-1, 1);
-      spinner = new JSpinner(model);
+      spinner = new JSpinner(new SpinnerNumberModel(0, 0, tables.length-1, 1));
       JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner);
       editor.getTextField().setFont(tables[0].indexRenderer.getFont());
       spinner.setEditor(editor);
       spinner.addChangeListener(new ChangeListener() {
-        public void stateChanged(ChangeEvent e) {
+        @Override
+		public void stateChanged(ChangeEvent e) {
           int i = ((Integer) spinner.getValue()).intValue();
           scrollpane.setViewportView(tables[i]);
         }
@@ -672,37 +675,41 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
     createGUI();
   }
 
-  // The following methods were added to implement the Data interface for double[][] arrays.
+	// The following methods were added to implement the Data interface for
+	// double[][] arrays.
 
-  /**
-   * Gets column names from Table Model.
-   * Implementation of Data interface.
-   */
-  public String[] getColumnNames() {
-    double[][] data = getData2D();
-    if(data==null) {
-      return null; // no data
-    }
-    int n = data.length;
-    if((colNames==null)||(n!=colNames.length)) { // every array columns should have a name
-      colNames = new String[n];
-    }
-    String[] modelNames = tables[0].tableModel.columnNames;
-    int stop = (modelNames==null) ? 0 : Math.min(n, modelNames.length-1);
-    for(int i = 0; i<stop; i++) {    // assign model names to Data columns
-      colNames[i] = modelNames[i+1]; // skip zero column name because it is the row index
-    }
-    for(int i = stop; i<n; i++) { // assign default column names
-      colNames[i] = "C"+(i+1);    //$NON-NLS-1$
-    }
-    return colNames;
-  }
+	/**
+	 * Gets column names from Table Model. Implementation of Data interface.
+	 */
+	@Override
+	public String[] getColumnNames() {
+		double[][] data = getData2D();
+		if (data == null) {
+			return null; // no data
+		}
+		int n = data.length;
+		if ((colNames == null) || (n != colNames.length)) { // every array columns should have a name
+			colNames = new String[n];
+		}
+		String[] modelNames = tables[0].tableModel.columnNames;
+		if (modelNames != null) {
+			int stop = Math.min(n, modelNames.length - 1);
+			for (int i = 0; i < stop; i++) { // assign model names to Data columns
+				colNames[i] = modelNames[i + 1]; // skip zero column name because it is the row index
+			}
+			for (int i = stop; i < n; i++) { // assign default column names
+				colNames[i] = "C" + (i + 1); //$NON-NLS-1$
+			}
+		}
+		return colNames;
+	}
 
   /**
    * Gets double[][] data from the Table Model and transposes this array if necessary.
    * Implementation of Data interface.
    */
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     if((tables==null)||(tables[0]==null)) {
       return null;
     }
@@ -733,7 +740,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Not used because double[][][] is not used in any OSP Tools.
    * Implementation of Data interface method.
    */
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
@@ -741,7 +749,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Not used because Data is stored in this object, not in a list of Data objects.
    * Implementation of Data interface.
    */
-  public List<Data> getDataList() {
+  @Override
+public List<Data> getDataList() {
     return null;
   }
 
@@ -749,7 +758,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Not used Data because is stored in 2D arrays.
    * Implementation of Data interface.
    */
-  public ArrayList<Dataset> getDatasets() {
+  @Override
+public ArrayList<Dataset> getDatasets() {
     return null;
   }
 
@@ -757,7 +767,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Fill colors for columns are not specified. Client should assign colors.
    * Implementation of Data interface.
    */
-  public Color[] getFillColors() {
+  @Override
+public Color[] getFillColors() {
     return null;
   }
 
@@ -765,14 +776,16 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
    * Lines colors for columns are not specified.  Client should assign colors.
    * Implementation of Data interface.
    */
-  public Color[] getLineColors() {
+  @Override
+public Color[] getLineColors() {
     return null;
   }
 
   /**
    * Gets the Data ID.
    */
-  public int getID() {
+  @Override
+public int getID() {
     boolean transposed = tables[0].tableModel.transposed;
     if(transposed) {
       return ID^0xffff; // exclusive OR to reverse and produce new ID
@@ -783,7 +796,8 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
   /**
    * Sets the Data ID.
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     ID = id;
   }
 
@@ -809,6 +823,6 @@ public class ArrayPanel extends JPanel implements PropertyChangeListener, Data {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

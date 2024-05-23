@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -97,16 +97,20 @@ public class PrintUtils {
     JDialog dialog = pane.createDialog(c, DisplayRes.getString("PrintUtils.PrintDialog.Title")); //$NON-NLS-1$
     // This listener object updates the dialog as the status changes
     job.addPrintJobListener(new PrintJobAdapter() {
-      public void printJobCompleted(PrintJobEvent e) {
+      @Override
+	public void printJobCompleted(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.PrintComplete.Message")); //$NON-NLS-1$
       }
-      public void printDataTransferCompleted(PrintJobEvent e) {
+      @Override
+	public void printDataTransferCompleted(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.PrintTransferred.Message")); //$NON-NLS-1$
       }
-      public void printJobRequiresAttention(PrintJobEvent e) {
+      @Override
+	public void printJobRequiresAttention(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.OutOfPaper.Message")); //$NON-NLS-1$
       }
-      public void printJobFailed(PrintJobEvent e) {
+      @Override
+	public void printJobFailed(PrintJobEvent e) {
         pane.setMessage(DisplayRes.getString("PrintUtils.PrintFailed.Message")); //$NON-NLS-1$
       }
 
@@ -125,7 +129,7 @@ public class PrintUtils {
 
   /*
    * PrintableComponent copied from Java Examples in a Nutshell.
-   * Copyright (c) 2019 David Flanagan.  All rights reserved.
+   * Copyright (c) 2024 David Flanagan.  All rights reserved.
    * This code is from the book Java Examples in a Nutshell, 3nd Edition.
    * It is provided AS-IS, WITHOUT ANY WARRANTY either expressed or implied.
    * You may study, use, and modify it for any non-commercial purpose,
@@ -151,7 +155,8 @@ public class PrintUtils {
     // pages of the print job.  If pagenum is greater than the last page,
     // it should return NO_SUCH_PAGE to indicate that it is done.  The
     // printing system may call this method multiple times per page.
-    public int print(Graphics g, PageFormat format, int pagenum) {
+    @Override
+	public int print(Graphics g, PageFormat format, int pagenum) {
       // This implemenation is always a single page
       if(pagenum>0) {
         return Printable.NO_SUCH_PAGE;
@@ -220,6 +225,6 @@ public class PrintUtils {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

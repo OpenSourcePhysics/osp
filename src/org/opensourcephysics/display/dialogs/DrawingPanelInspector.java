@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.dialogs;
@@ -11,7 +11,8 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
-import java.util.Iterator;
+import java.util.List;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -28,7 +29,7 @@ import org.opensourcephysics.display.DrawingPanel;
 public class DrawingPanelInspector extends JDialog {
   static DrawingPanelInspector inspector;
   DrawingPanel drawingPanel;
-  DecimalFormat format = new DecimalFormat("0.00000E00"); //$NON-NLS-1$
+  DecimalFormat format = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00000E00"); //$NON-NLS-1$
   JPanel panel1 = new JPanel();
   BorderLayout borderLayout1 = new BorderLayout();
   JTabbedPane jTabbedPane1 = new JTabbedPane();
@@ -105,11 +106,10 @@ public class DrawingPanelInspector extends JDialog {
   }
 
   void getContent() {
-    Iterator<Drawable> it = drawingPanel.getDrawables().iterator();
     StringBuffer buffer = new StringBuffer();
-    while(it.hasNext()) {
-      Object obj = it.next();
-      buffer.append(obj.toString());
+	  List<Drawable> list = drawingPanel.getDrawablesNoClone();
+	  for (int i = 0, n = list.size(); i < n; i++) {
+      buffer.append(list.get(i).toString());
       buffer.append('\n');
     }
     contentTextPane.setText(buffer.toString());
@@ -203,21 +203,24 @@ public class DrawingPanelInspector extends JDialog {
     xminmaxpanel.setToolTipText(DisplayRes.getString("DrawingPanelInspector.ScalePanel.Tooltip")); //$NON-NLS-1$
     applyButton.setText(DisplayRes.getString("DrawingPanelInspector.ApplyButton.Text"));           //$NON-NLS-1$
     applyButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         applyButton_actionPerformed(e);
       }
 
     });
     cancelButton.setText(DisplayRes.getString("GUIUtils.Cancel")); //$NON-NLS-1$
     cancelButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         cancelButton_actionPerformed(e);
       }
 
     });
     okButton.setText(DisplayRes.getString("GUIUtils.Ok")); //$NON-NLS-1$
     okButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         okButton_actionPerformed(e);
       }
 
@@ -225,7 +228,8 @@ public class DrawingPanelInspector extends JDialog {
     measureButton.setFont(new java.awt.Font("Dialog", 0, 10));                               //$NON-NLS-1$
     measureButton.setText(DisplayRes.getString("DrawingPanelInspector.MeasureButton.Text")); //$NON-NLS-1$
     measureButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         measureButton_actionPerformed(e);
       }
 
@@ -233,7 +237,8 @@ public class DrawingPanelInspector extends JDialog {
     snapButton.setFont(new java.awt.Font("Dialog", 0, 10));                                //$NON-NLS-1$
     snapButton.setText(DisplayRes.getString("DrawingPanelInspector.SnapshotButton.Text")); //$NON-NLS-1$
     snapButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         snapButton_actionPerformed(e);
       }
 
@@ -314,6 +319,6 @@ public class DrawingPanelInspector extends JDialog {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

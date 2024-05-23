@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -59,7 +59,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -69,7 +70,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -79,7 +81,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -89,7 +92,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -99,7 +103,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -110,7 +115,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][][] val = (double[][][]) obj;
     copyComplexData(val);
     update();
@@ -127,7 +133,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][][] val = (double[][][]) obj;
     copyComplexData(val);
     if(griddata.isCellData()) {
@@ -160,7 +167,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
     }
   }
 
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
     int nx = griddata.getNx();
     int ny = griddata.getNy();
@@ -180,7 +188,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
   /**
    * Shows a legend of phase angle and color.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend();
   }
 
@@ -196,7 +205,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param floor not supported
    * @param ceil  ceiling value
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     autoscaleZ = isAutoscale;
     if(autoscaleZ) {
       update();
@@ -211,14 +221,16 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return false;
   }
 
@@ -227,7 +239,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -235,7 +248,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return 0;
   }
 
@@ -243,7 +257,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return colorMap.getCeil();
   }
 
@@ -253,7 +268,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param floorColor  not supported
    * @param ceilColor   ceiling color
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     colorMap.setCeilColor(ceilColor);
   }
 
@@ -261,7 +277,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * Shows the grid lines if set to true.
    * @param  showGrid
    */
-  public void setShowGridLines(boolean showGrid) {
+  @Override
+public void setShowGridLines(boolean showGrid) {
     if(grid==null) {
       grid = new Grid(1, 1);
     }
@@ -271,9 +288,10 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
   /**
    * Updates in response to changes in the data.
    */
-  public void update() {
+  @Override
+public void update() {
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+        griddata.getZRange(ampIndex, minmax);
       colorMap.setScale(minmax[1]);
     }
     recolorImage();
@@ -285,7 +303,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param expanded boolean
    * @param expansionFactor double
    */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       ZExpansion zMap = new ZExpansion(expansionFactor);
       colorMap.setZMap(zMap);
@@ -293,6 +312,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
       colorMap.setZMap(null);
     }
   }
+
+  private double[] samples = new double[3];
 
   /**
    * Recolors the image pixels using the data array.
@@ -318,7 +339,6 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
     double[][][] data = griddata.getData();
     int nx = griddata.getNx();
     int ny = griddata.getNy();
-    double[] samples = new double[3];
     if(griddata instanceof GridPointData) {
       int ampIndex = this.ampIndex+2;
       int reIndex = this.reIndex+2;
@@ -351,7 +371,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible||(griddata==null)) {
       return;
     }
@@ -363,24 +384,28 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    * Setting the color palette is not supported.  The complex palette always maps phase to color.
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {}
+  @Override
+public void setColorPalette(Color[] colors) {}
 
   /**
    * Setting the palette is not supported.   The complex palette always maps phase to color.
    * @param type
    */
-  public void setPaletteType(int type) {
+  @Override
+public void setPaletteType(int type) {
     // only phase phase palette is available
   }
 
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     if(grid==null) {
       grid = new Grid(1, 1);
     }
     grid.setColor(c);
   }
 
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0]; // amplitude index
     reIndex = indexes[1];  // real index
     imIndex = indexes[2];  // imaginary index
@@ -393,7 +418,8 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new ComplexGridPlot(null);
       }
 
@@ -422,6 +448,6 @@ public class ComplexGridPlot extends MeasuredImage implements Plot2D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

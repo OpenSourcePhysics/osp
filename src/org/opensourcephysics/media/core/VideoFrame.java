@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,15 +27,17 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
+import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import org.opensourcephysics.display.DrawingFrame;
 import org.opensourcephysics.display.OSPRuntime;
@@ -46,6 +48,7 @@ import org.opensourcephysics.display.OSPRuntime;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class VideoFrame extends DrawingFrame {
   // instance fields
   protected Action openAction;
@@ -79,6 +82,12 @@ public class VideoFrame extends DrawingFrame {
     if(!OSPRuntime.appletMode) {
       createActions();
       modifyMenuBar();
+      JToolBar playerBar = new JToolBar();
+      playerBar.setFloatable(false);
+      add(playerBar, BorderLayout.SOUTH);
+//      vidPanel.getPlayer().setBorder(null);
+      vidPanel.setPlayerVisible(false);
+      playerBar.add(vidPanel.getPlayer());
     }
   }
 
@@ -94,7 +103,8 @@ public class VideoFrame extends DrawingFrame {
     saveAsItem = new JMenuItem(MediaRes.getString("VideoFrame.MenuItem.SaveAs")); //$NON-NLS-1$
     fileMenu.insert(saveAsItem, 1);
     saveAsItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         VideoIO.save(null, (VideoPanel) drawingPanel);
       }
 
@@ -111,7 +121,8 @@ public class VideoFrame extends DrawingFrame {
     fileMenu.add(exitItem);
     exitItem.setAccelerator(KeyStroke.getKeyStroke('Q', keyMask));
     exitItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         System.exit(0);
       }
 
@@ -120,14 +131,16 @@ public class VideoFrame extends DrawingFrame {
   }
 
   protected void createActions() {
-    openAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Open"), null) { //$NON-NLS-1$
-      public void actionPerformed(ActionEvent e) {
-        VideoIO.open(null, (VideoPanel) drawingPanel);
+    openAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Open")) { //$NON-NLS-1$
+      @Override
+	public void actionPerformed(ActionEvent e) {
+        VideoIO.openVideoPanelFileAsync(null, (VideoPanel) drawingPanel);
       }
 
     };
-    saveAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Save"), null) { //$NON-NLS-1$
-      public void actionPerformed(ActionEvent e) {
+    saveAction = new AbstractAction(MediaRes.getString("VideoFrame.MenuItem.Save")) { //$NON-NLS-1$
+      @Override
+	public void actionPerformed(ActionEvent e) {
         VideoPanel vidPanel = (VideoPanel) drawingPanel;
         VideoIO.save(vidPanel.getDataFile(), vidPanel);
       }
@@ -157,6 +170,6 @@ public class VideoFrame extends DrawingFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,16 +2,18 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics.specialfunctions;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
+import org.opensourcephysics.tools.ResourceLoader;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 public class Messages {
-  private static final String BUNDLE_NAME = "org.opensourcephysics.resources.numerics.specialfunctions"; //$NON-NLS-1$
-  private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
+
+  private static final Bundle RESOURCE_BUNDLE = ResourceLoader.getBundle("org.opensourcephysics.resources.numerics.specialfunctions", null);
 
   private Messages() {}
 
@@ -45,6 +47,6 @@ public class Messages {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

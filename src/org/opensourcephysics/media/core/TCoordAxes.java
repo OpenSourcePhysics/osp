@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.BasicStroke;
@@ -80,7 +80,8 @@ public class TCoordAxes extends TShape {
    * @param panel the drawing panel requesting the drawing
    * @param g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(panel==vidPanel) {
       super.draw(panel, g);
     }
@@ -92,7 +93,8 @@ public class TCoordAxes extends TShape {
    * @param x the x position
    * @param y the y position
    */
-  public void setXY(double x, double y) {
+  @Override
+public void setXY(double x, double y) {
     super.setXY(x, y);
     double cos = origin.cos(this);
     double sin = origin.sin(this);
@@ -105,7 +107,8 @@ public class TCoordAxes extends TShape {
    *
    * @param stroke the desired stroke
    */
-  public void setStroke(BasicStroke stroke) {
+  @Override
+public void setStroke(BasicStroke stroke) {
     if(stroke!=null) {
       this.stroke = stroke;
     }
@@ -155,7 +158,8 @@ public class TCoordAxes extends TShape {
    * @param ypix the y pixel position on the panel
    * @return the interactive drawable object
    */
-  public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
+  @Override
+public Interactive findInteractive(DrawingPanel panel, int xpix, int ypix) {
     if(panel!=vidPanel) {
       return null;
     }
@@ -177,7 +181,8 @@ public class TCoordAxes extends TShape {
    *
    * @return a descriptive string
    */
-  public String toString() {
+  @Override
+public String toString() {
     return "Coordinate axes"; //$NON-NLS-1$
   }
 
@@ -189,7 +194,8 @@ public class TCoordAxes extends TShape {
    * @param vidPanel the video panel
    * @return the axes shape
    */
-  protected Shape getShape(VideoPanel vidPanel) {
+  @Override
+protected Shape getShape(VideoPanel vidPanel) {
     ImageCoordSystem coords = vidPanel.getCoords();
     int n = getFrameNumber(vidPanel);
     int w = vidPanel.getWidth();
@@ -246,7 +252,8 @@ public class TCoordAxes extends TShape {
      * @param x the x position
      * @param y the y position
      */
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       super.setXY(x, y);
       int n = getFrameNumber(vidPanel);
       vidPanel.getCoords().setOriginXY(n, x, y);
@@ -276,6 +283,6 @@ public class TCoordAxes extends TShape {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

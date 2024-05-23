@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -17,7 +17,6 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,14 +29,22 @@ import java.util.Map;
  * @version 1.0
  */
 public class XML {
-  // static constants
+  public interface NonStaticLoader {
+	  // VideoPanel and VideoClip
+
+	}
+
+// static constants
   @SuppressWarnings("javadoc")
 	public static String NEW_LINE = System.getProperty("line.separator", "\n"); //$NON-NLS-1$ //$NON-NLS-2$
   @SuppressWarnings("javadoc")
 	public static final String CDATA_PRE = "<![CDATA["; //$NON-NLS-1$
+	public static final int CDATA_PRE_LEN = 9;
   @SuppressWarnings("javadoc")
 	public static final String CDATA_POST = "]]>";      //$NON-NLS-1$
-  @SuppressWarnings("javadoc")
+	public static final int CDATA_POST_LEN = 3;
+	public static final String CDATA_POST_PROP = XML.CDATA_POST + "</property>";
+	@SuppressWarnings("javadoc")
 	public static final int INDENT = 4;
   // static fields
   private static Map<Class<?>, ObjectLoader> loaders = new HashMap<Class<?>, ObjectLoader>();
@@ -72,7 +79,8 @@ public class XML {
    * @param loader the ObjectLoader
    */
   public static void setLoader(Class<?> classtype, XML.ObjectLoader loader) {
-    loaders.put(classtype, loader);
+	  if (!(loader instanceof NonStaticLoader))
+		  loaders.put(classtype, loader);
   }
 
   /**
@@ -119,50 +127,10 @@ public class XML {
     defaultLoader = loader;
   }
 
-  /**
-   * Gets the datatype of the object.
-   *
-   * @param obj the object
-   * @return the type
-   */
-  public static String getDataType(Object obj) {
-    if(obj==null) {
-      return null;
-    }
-    if(obj instanceof String) {
-      return "string";                                                      //$NON-NLS-1$
-    } else if(obj instanceof Collection<?>) {
-      return "collection";                                                  //$NON-NLS-1$
-    } else if(obj.getClass().isArray()) {
-      // make sure ultimate component class is acceptable
-      Class<?> componentType = obj.getClass().getComponentType();
-      while(componentType.isArray()) {
-        componentType = componentType.getComponentType();
-      }
-      String type = componentType.getName();
-      if((type.indexOf(".")==-1)&&("intdoubleboolean".indexOf(type)==-1)) { //$NON-NLS-1$ //$NON-NLS-2$
-        return null;
-      }
-      return "array";                                                       //$NON-NLS-1$
-    } else if(obj instanceof Double) {
-      return "double";                                                      //$NON-NLS-1$
-    } else if(obj instanceof Integer) {
-      return "int";                                                         //$NON-NLS-1$
-    } else {
-      return "object";                                                      //$NON-NLS-1$
-    }
-  }
-
-  /**
-   * Gets an array containing all supported data types.
-   *
-   * @return an array of types
-   */
-  public static String[] getDataTypes() {
-    return new String[] {
-      "object", "array", "collection", "string", "int", "double", "boolean" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
-    };
-  }
+  public static String getAttr(String xml, String attr, String def) {
+		int i = xml.indexOf(attr + "=\""); //$NON-NLS-1$
+		return (i < 0 ? def : xml.substring(i = i + attr.length() + 2, xml.indexOf('"', i)));
+	}
 
   /**
    * Determines whether the specified string requires CDATA tags.
@@ -339,6 +307,7 @@ public class XML {
     if(fileName==null) {
       return null;
     }
+    fileName = XML.forwardSlash(fileName);
     int n = XML.forwardSlash(fileName).lastIndexOf("/"); //$NON-NLS-1$
     String name = getName(fileName);
     int i = name.lastIndexOf('.');
@@ -456,70 +425,71 @@ public class XML {
     return ""; //$NON-NLS-1$
   }
 
-  /**
-   * Gets the absolute path of the specified file.
-   *
-   * @param file the file
-   * @return the absolute path, with forward slashes
-   */
-  public static String getAbsolutePath(File file) {
-    if(file==null) {
-      return null;
-    }
-    String path = forwardSlash(file.getAbsolutePath());
-    int n = path.indexOf("/../"); //$NON-NLS-1$
-    while (n>-1) {
-    	String pre = path.substring(0, n);
-    	int m = pre.lastIndexOf("/"); //$NON-NLS-1$
-    	if (m>-1) {
-      	String post = path.substring(n+3);
-    		path = pre.substring(0, m)+post;
-    		n = path.indexOf("/../"); //$NON-NLS-1$
-    	}
-    }
-    n = path.indexOf("/./"); //$NON-NLS-1$
-    while (n>-1) {
-    	path = path.substring(0, n)+path.substring(n+2);
-    	n = path.indexOf("/./"); //$NON-NLS-1$
-    }
-    return path;
-  }
+	/**
+	 * Gets the absolute path of the specified file.
+	 *
+	 * @param file the file
+	 * @return the absolute path, with forward slashes
+	 */
+	public static String getAbsolutePath(File file) {
+		if (file == null) {
+			return null;
+		}
+		String path = forwardSlash(file.getAbsolutePath());
+		int n = path.indexOf("/../"); //$NON-NLS-1$
+		while (n >= 0) {
+			String pre = path.substring(0, n);
+			int m = pre.lastIndexOf("/"); //$NON-NLS-1$
+			if (m < 0)
+				break;
+			String post = path.substring(n + 3);
+			path = pre.substring(0, m) + post;
+			n = path.indexOf("/../"); //$NON-NLS-1$
+		}
+		n = path.indexOf("/./"); //$NON-NLS-1$
+		while (n >= 0) {
+			path = path.substring(0, n) + path.substring(n + 2);
+			n = path.indexOf("/./"); //$NON-NLS-1$
+		}
+		return path;
+	}
 
-  /**
-   * Resolves the name of a file specified relative to a base path.
-   *
-   * @param relativePath the relative file name
-   * @param base the absolute base path
-   * @return the resolved file name with forward slashes
-   */
-  public static String getResolvedPath(String relativePath, String base) {
-  	if (base!=null && base.endsWith("/")) //$NON-NLS-1$
-  		base = base.substring(0, base.length()-1);
-    relativePath = forwardSlash(relativePath);
-    // return relativePath if it is really absolute
-    if(relativePath.startsWith("/")||(relativePath.indexOf(":/")!=-1)) { //$NON-NLS-1$ //$NON-NLS-2$
-      return relativePath;
-    }
-    base = forwardSlash(base);
-    while(relativePath.startsWith("../")&&!base.equals("")) { //$NON-NLS-1$ //$NON-NLS-2$
-      if(base.indexOf("/")==-1) {                             //$NON-NLS-1$
-        base = "/"+base;                                      //$NON-NLS-1$
-      }
-      relativePath = relativePath.substring(3);
-      base = base.substring(0, base.lastIndexOf("/"));        //$NON-NLS-1$
-    }
-    if (relativePath.startsWith("./")) //$NON-NLS-1$
-    	relativePath = relativePath.substring(2);
-    if (relativePath.equals(".")) //$NON-NLS-1$
-    	relativePath = ""; //$NON-NLS-1$
-    if(base.equals("")) { //$NON-NLS-1$
-      return relativePath;
-    }
-    if(base.endsWith("/")) { //$NON-NLS-1$
-      return base+relativePath;
-    }
-    return base+"/"+relativePath; //$NON-NLS-1$
-  }
+	/**
+	 * Resolves the name of a file specified relative to a base path.
+	 *
+	 * @param relativePath the relative file name
+	 * @param base         the absolute base path
+	 * @return the resolved file name with forward slashes
+	 */
+	public static String getResolvedPath(String relativePath, String base) {
+		if (base != null && base.endsWith("/")) //$NON-NLS-1$
+			base = base.substring(0, base.length() - 1);
+		relativePath = forwardSlash(relativePath);
+		// return relativePath if it is really absolute
+		if (relativePath.startsWith("/") || (relativePath.indexOf(":/") >= 0)) { //$NON-NLS-1$ //$NON-NLS-2$
+			return relativePath;
+		}
+		base = forwardSlash(base);
+		while (relativePath.startsWith("../") && !base.equals("")) { //$NON-NLS-1$ //$NON-NLS-2$
+			if (base.indexOf("/") == -1) { //$NON-NLS-1$
+				base = "/" + base; //$NON-NLS-1$
+			}
+			relativePath = relativePath.substring(3);
+			base = base.substring(0, base.lastIndexOf("/")); //$NON-NLS-1$
+		}
+		if (relativePath.startsWith("./")) //$NON-NLS-1$
+			relativePath = relativePath.substring(2);
+		if (relativePath.equals(".")) //$NON-NLS-1$
+			relativePath = ""; //$NON-NLS-1$
+		if (base.equals("")) { //$NON-NLS-1$
+			return relativePath;
+		}
+		// BH 2020.11.15 "&" check here is for https DL library calls
+		if (base.endsWith("/") || relativePath.startsWith("&")) { //$NON-NLS-1$ $NON-NLS-2$
+			return base + relativePath;
+		}
+		return base + "/" + relativePath; //$NON-NLS-1$
+	}
 
   /**
    * Creates any missing folders in the specified path.
@@ -590,21 +560,24 @@ public class XML {
   // static initializer defines loaders for commonly used classes
   static {
     setLoader(Color.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         java.awt.Color color = (java.awt.Color) obj;
         control.setValue("red", color.getRed());     //$NON-NLS-1$
         control.setValue("green", color.getGreen()); //$NON-NLS-1$
         control.setValue("blue", color.getBlue());   //$NON-NLS-1$
         control.setValue("alpha", color.getAlpha()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         int r = control.getInt("red");               //$NON-NLS-1$
         int g = control.getInt("green");             //$NON-NLS-1$
         int b = control.getInt("blue");              //$NON-NLS-1$
         int a = control.getInt("alpha");             //$NON-NLS-1$
         return new java.awt.Color(r, g, b, a);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         int r = control.getInt("red");   //$NON-NLS-1$
         int g = control.getInt("green"); //$NON-NLS-1$
         int b = control.getInt("blue");  //$NON-NLS-1$
@@ -613,68 +586,80 @@ public class XML {
       }
     });
     setLoader(Double.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         Double dbl = (Double) obj;
         control.setValue("value", dbl.doubleValue()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         double val = control.getDouble("value"); //$NON-NLS-1$
-        return new Double(val);
+        return Double.valueOf(val);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         Double dbl = (Double) obj;
         double val = control.getDouble("value"); //$NON-NLS-1$
         if(dbl.doubleValue()==val) {
           return dbl;
         }
-        return new Double(val);
+        return Double.valueOf(val);
       }
     });
     setLoader(Integer.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         Integer i = (Integer) obj;
         control.setValue("value", i.intValue()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         int val = control.getInt("value"); //$NON-NLS-1$
-        return new Integer(val);
+        return Integer.valueOf(val);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         Integer i = (Integer) obj;
         int val = control.getInt("value"); //$NON-NLS-1$
         if(i.intValue()==val) {
           return i;
         }
-        return new Integer(val);
+        return Integer.valueOf(val);
       }
     });
     setLoader(Boolean.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         Boolean bool = (Boolean) obj;
         control.setValue("value", bool.booleanValue()); //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         boolean val = control.getBoolean("value"); //$NON-NLS-1$
-        return new Boolean(val);
+        return Boolean.valueOf(val);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         Boolean bool = (Boolean) obj;
         boolean val = control.getBoolean("value"); //$NON-NLS-1$
         if(bool.booleanValue()==val) {
           return bool;
         }
-        return new Boolean(val);
+        return Boolean.valueOf(val);
       }
     });
     setLoader(Dimension.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
       	Dimension dim = (Dimension) obj;
         control.setValue("dimensions", new int[] {dim.width, dim.height});     //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new Dimension();
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
       	Dimension dim = (Dimension) obj;
       	int[] dimensions = (int[]) control.getObject("dimensions"); //$NON-NLS-1$
         dim.width = dimensions[0];
@@ -683,14 +668,17 @@ public class XML {
       }
     });
     setLoader(Point.class, new XML.ObjectLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
       	Point p = (Point) obj;
         control.setValue("location", new int[] {p.x, p.y});     //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new Point();
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
       	Point p = (Point) obj;
       	int[] location = (int[]) control.getObject("location"); //$NON-NLS-1$
       	p.x = location[0];
@@ -699,6 +687,11 @@ public class XML {
       }
     });
   }
+
+	public static String removeCDATA(String content) {
+		int pt = content.indexOf(XML.CDATA_PRE);
+		return (pt >= 0 ? content.substring(pt + XML.CDATA_PRE_LEN, content.indexOf(XML.CDATA_POST)) : content);
+	}
 
 }
 
@@ -722,6 +715,6 @@ public class XML {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

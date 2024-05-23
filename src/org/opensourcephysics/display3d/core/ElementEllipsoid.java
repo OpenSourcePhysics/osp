@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.core;
@@ -119,7 +119,8 @@ public interface ElementEllipsoid extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementEllipsoid element = (ElementEllipsoid) obj;
       control.setValue("closed top", element.isClosedTop());           //$NON-NLS-1$
@@ -132,7 +133,8 @@ public interface ElementEllipsoid extends Element {
       control.setValue("maximum v angle", element.getMaximumAngleV()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementEllipsoid element = (ElementEllipsoid) obj;
       element.setClosedTop(control.getBoolean("closed top"));       //$NON-NLS-1$
@@ -170,6 +172,6 @@ public interface ElementEllipsoid extends Element {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

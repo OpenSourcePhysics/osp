@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -33,7 +33,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * Sets the fixed property of the given parameter.
    * Fixed parameters can only be changed before initialization.
    */
-  public void setParameterToFixed(String name, boolean fixed) {
+  @Override
+public void setParameterToFixed(String name, boolean fixed) {
     if(fixed) {
       this.fixedParameters.add(name);
     } else {
@@ -58,7 +59,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * @param name
    * @param val
    */
-  public void setValue(String name, Object val) {
+  @Override
+public void setValue(String name, Object val) {
     super.setValue(name, val);
     fixedParameters.add(name);
   }
@@ -69,7 +71,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
  * @param name
  * @param val
  */
-  public void setAdjustableValue(String name, Object val) {
+  @Override
+public void setAdjustableValue(String name, Object val) {
     super.setValue(name, val);
     fixedParameters.remove(name);
   }
@@ -81,7 +84,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * @param name
    * @param val
    */
-  public void setValue(String name, double val) {
+  @Override
+public void setValue(String name, double val) {
     super.setValue(name, val);
     fixedParameters.add(name);
   }
@@ -92,7 +96,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * @param name
    * @param val
    */
-  public void setAdjustableValue(String name, double val) {
+  @Override
+public void setAdjustableValue(String name, double val) {
     super.setValue(name, val);
     fixedParameters.remove(name);
   }
@@ -104,7 +109,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * @param name
    * @param val
    */
-  public void setValue(String name, int val) {
+  @Override
+public void setValue(String name, int val) {
     super.setValue(name, val);
     fixedParameters.add(name);
   }
@@ -115,7 +121,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * @param name
    * @param val
    */
-  public void setAdjustableValue(String name, int val) {
+  @Override
+public void setAdjustableValue(String name, int val) {
     super.setValue(name, val);
     fixedParameters.remove(name);
   }
@@ -127,7 +134,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * @param name
    * @param val
    */
-  public void setValue(String name, boolean val) {
+  @Override
+public void setValue(String name, boolean val) {
     super.setValue(name, val);
     fixedParameters.add(name);
   }
@@ -137,7 +145,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
  *
  * @param name
  */
-  public void removeParameter(String name) {
+  @Override
+public void removeParameter(String name) {
     super.removeParameter(name);
     fixedParameters.remove(name);
   }
@@ -148,7 +157,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    * @param name
    * @param val
    */
-  public void setAdjustableValue(String name, boolean val) {
+  @Override
+public void setAdjustableValue(String name, boolean val) {
     super.setValue(name, val);
     fixedParameters.remove(name);
   }
@@ -160,7 +170,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    *
    * @param e
    */
-  void resetBtnActionPerformed(ActionEvent e) {
+  @Override
+void resetBtnActionPerformed(ActionEvent e) {
     Iterator<String> it = fixedParameters.iterator();
     while(it.hasNext()) {
       String par = it.next();
@@ -176,7 +187,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
    *
    * @param e
    */
-  void startBtnActionPerformed(ActionEvent e) {
+  @Override
+void startBtnActionPerformed(ActionEvent e) {
     if(e.getActionCommand().equals(initText)) {
       // animation is being initialized and fixed parameters are no longer editable
       table.setEditable(true);
@@ -187,14 +199,14 @@ public class SimulationControl extends AnimationControl implements SimControl {
         table.setBackgroundColor(par, Control.NOT_EDITABLE_BACKGROUND);
       }
     } else if(e.getActionCommand().equals(startText)) {
-      Iterator<String> it = table.getPropertyNames().iterator();
+      Iterator<String> it = table.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String par = it.next();
         table.setEditable(par, false);
         table.setBackgroundColor(par, Control.NOT_EDITABLE_BACKGROUND);
       }
     } else if(e.getActionCommand().equals(stopText)) {
-      Iterator<String> it = table.getPropertyNames().iterator();
+      Iterator<String> it = table.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String par = it.next();
         if(fixedParameters.contains(par)) {
@@ -227,7 +239,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new SimulationControl(null);
     }
 
@@ -238,7 +251,8 @@ public class SimulationControl extends AnimationControl implements SimControl {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       SimulationControl sc = (SimulationControl) obj;
       String[] fixedParm = sc.fixedParameters.toArray(new String[0]);
       super.loadObject(control, obj); // load the control's parameters and the model
@@ -246,7 +260,7 @@ public class SimulationControl extends AnimationControl implements SimControl {
       for(int i = 0, n = fixedParm.length; i<n; i++) {
         sc.fixedParameters.add(fixedParm[i]);
       }
-      Iterator<String> it = sc.table.getPropertyNames().iterator();
+      Iterator<String> it = sc.table.getPropertyNamesRaw().iterator();
       while(it.hasNext()) {
         String parm = it.next();
         if(sc.fixedParameters.contains(parm)) {
@@ -314,6 +328,6 @@ public class SimulationControl extends AnimationControl implements SimControl {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

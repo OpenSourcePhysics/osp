@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.frames;
@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.border.EtchedBorder;
 import org.opensourcephysics.analysis.FourierSinCosAnalysis;
+import org.opensourcephysics.display.DataTable;
 import org.opensourcephysics.display.Dataset;
 import org.opensourcephysics.display.DisplayRes;
 import org.opensourcephysics.display.PlottingPanel;
@@ -65,7 +66,7 @@ public class FFTRealFrame extends PlotFrame {
     setXYColumnNames(2, DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$ 
       DisplayRes.getString("FourierAnalysis.Column.Imaginary"),                   //$NON-NLS-1$  
         DisplayRes.getString("FourierAnalysis.ImaginaryCoefficients"));           //$NON-NLS-1$
-    dataTable.setRowNumberVisible(true);
+    getDataTable().setRowNumberVisible(true);
     buildUserInterface();
     showPower();
   }
@@ -133,7 +134,8 @@ public class FFTRealFrame extends PlotFrame {
    *
    * @param xlabel String
    */
-  public void setXLabel(String xlabel) {
+  @Override
+public void setXLabel(String xlabel) {
     setXYColumnNames(0, xlabel, DisplayRes.getString("FourierSinCosAnalysis.Column.Power"), //$NON-NLS-1$
       DisplayRes.getString("FourierSinCosAnalysis.PowerSpectrum"));                         //$NON-NLS-1$
     if(drawingPanel instanceof PlottingPanel) {
@@ -144,7 +146,8 @@ public class FFTRealFrame extends PlotFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     super.addMenuItems();
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
@@ -164,7 +167,8 @@ public class FFTRealFrame extends PlotFrame {
     menubarGroup.add(postItem);
     postItem.setSelected(true);
     ActionListener actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToPostView();
       }
 
@@ -175,7 +179,8 @@ public class FFTRealFrame extends PlotFrame {
     connectedItem = new JRadioButtonMenuItem(DisplayRes.getString("FFTRealFrame.MenuItem.ConnectedView")); //$NON-NLS-1$
     menubarGroup.add(connectedItem);
     actionListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         convertToConnectedView();
       }
 
@@ -259,9 +264,7 @@ public class FFTRealFrame extends PlotFrame {
     append(0, arrayData[0], arrayData[1]); // power
     append(1, arrayData[0], arrayData[2]); // cos coef
     append(2, arrayData[0], arrayData[3]); // sin coef
-    if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
-    }
+    updateTable(DataTable.MODE_CREATE);
     invalidateImage();
     repaint();
   }
@@ -269,7 +272,8 @@ public class FFTRealFrame extends PlotFrame {
   /**
    * Sets the axes to use a logarithmetic scale.
    */
-  public void setLogScale(boolean xlog, boolean ylog) {
+  @Override
+public void setLogScale(boolean xlog, boolean ylog) {
     if(drawingPanel instanceof PlottingPanel) {
       ((PlottingPanel) drawingPanel).setLogScale(xlog, ylog);
     }
@@ -297,6 +301,6 @@ public class FFTRealFrame extends PlotFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

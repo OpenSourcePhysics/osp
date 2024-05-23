@@ -2,15 +2,15 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /**
     Adapted to OSP by Javier E. Hasbun, 2009.
   <P>
-    @Copyright (c) 2019
+    @Copyright (c) 2024
     This software is to support the Open Source Physics library
-    https://www.compadre.org/osp under the terms of the GNU General Public
+    http://www.opensourcephysics.org under the terms of the GNU General Public
     License (GPL) as published by the Free Software Foundation.
  **/
 
@@ -83,7 +83,7 @@ public strictfp class ComplexMatrix {
     Complex pivot;                     // pivot element value
     double abs_pivot;
     if((A[0].length!=n)||(Y.length!=n)||(X.length!=n)) {
-      System.out.println("Error in ComplexMatrix.solve inconsistent array sizes."); //$NON-NLS-1$
+      err("Error in ComplexMatrix.solve inconsistent array sizes."); //$NON-NLS-1$
     }
     // build working data structure
     for(int i = 0; i<n; i++) {
@@ -118,7 +118,7 @@ public strictfp class ComplexMatrix {
         for(int j = k+1; j<n+1; j++) {
           B[row[k]][j] = new Complex(0.0, 0.0);
         }
-        System.out.println("redundant row (singular) "+row[k]); //$NON-NLS-1$
+        err("redundant row (singular) "+row[k]); //$NON-NLS-1$
       }                                                         // singular, delete row
         else {
         // reduce about pivot
@@ -152,7 +152,7 @@ public strictfp class ComplexMatrix {
     Complex pivot;
     double abs_pivot;
     if(A[0].length!=n) {
-      System.out.println("Error in Complex.Matrix.invert,"+ //$NON-NLS-1$
+      err("Error in Complex.Matrix.invert,"+ //$NON-NLS-1$
         " matrix not square.");                             //$NON-NLS-1$
     }
     // set up row and column interchange vectors
@@ -177,7 +177,7 @@ public strictfp class ComplexMatrix {
         }
       }
       if(pivot.abs()<1.0E-10) {
-        System.out.println("ComplexMatrix is singular !"); //$NON-NLS-1$
+        err("ComplexMatrix is singular !"); //$NON-NLS-1$
         return;
       }
       hold = row[k];
@@ -235,7 +235,7 @@ public strictfp class ComplexMatrix {
     Complex pivot;                     // pivot element value
     double abs_pivot;
     if(A[0].length!=n) {
-      System.out.println("Error in ComplexMatrix.determinant,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.determinant,"+ //$NON-NLS-1$
         " inconsistent array sizes.");                          //$NON-NLS-1$
     }
     // build working matrix
@@ -300,7 +300,7 @@ public strictfp class ComplexMatrix {
     Complex c = new Complex(1.0, 0.0);
     Complex s = new Complex(0.0, 0.0);
     if((A[0].length!=n)||(V.length!=n)||(V[0].length!=n)||(Y.length!=n)) {
-      System.out.println("Error in ComplexMatrix.eigenvalues,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.eigenvalues,"+ //$NON-NLS-1$
         " inconsistent array sizes.");                          //$NON-NLS-1$
     }
     identity(V); // start V as identity matrix
@@ -335,7 +335,7 @@ public strictfp class ComplexMatrix {
     Complex T[] = new Complex[n];
     double norm = 0.0;
     if((A[0].length!=n)||(V.length!=n)||(V[0].length!=n)||(Y.length!=n)) {
-      System.out.println("Error in ComplexMatrix.eigenCheck,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.eigenCheck,"+ //$NON-NLS-1$
         " inconsistent array sizes.");                         //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -346,16 +346,16 @@ public strictfp class ComplexMatrix {
       for(int j = 0; j<n; j++) {
         Z[j] = T[j].subtract(Y[i].mul(X[j]));
       }
-      System.out.println("check for near zero norm of Z["+i+"]="+Z[i]); //$NON-NLS-1$ //$NON-NLS-2$
+      err("check for near zero norm of Z["+i+"]="+Z[i]); //$NON-NLS-1$ //$NON-NLS-2$
     }
     norm = norm2(Z);
-    System.out.println("norm ="+norm+" is eigen vector error indication 1."); //$NON-NLS-1$ //$NON-NLS-2$
-    System.out.println("det V = "+ComplexMatrix.determinant(V));              //$NON-NLS-1$
+    err("norm ="+norm+" is eigen vector error indication 1."); //$NON-NLS-1$ //$NON-NLS-2$
+    err("det V = "+ComplexMatrix.determinant(V));              //$NON-NLS-1$
     for(int i = 0; i<n; i++) {
       for(int j = 0; j<n; j++) {
         Z[j] = V[j][i];
       }
-      System.out.println("check for 1.0 = "+norm2(Z)); //$NON-NLS-1$
+      err("check for 1.0 = "+norm2(Z)); //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
       identity(B);
@@ -364,7 +364,7 @@ public strictfp class ComplexMatrix {
       Z[i] = determinant(B);
     }
     norm = norm2(Z);
-    System.out.println("norm ="+norm+" is eigen value error indication."); //$NON-NLS-1$ //$NON-NLS-2$
+    err("norm ="+norm+" is eigen value error indication."); //$NON-NLS-1$ //$NON-NLS-2$
   }                                                                        // end eigenCheck
 
   static void schur2(final Complex A[][], final int p, final int q, Complex c, Complex s) {
@@ -372,7 +372,7 @@ public strictfp class ComplexMatrix {
     Complex tau_tau_1;
     Complex t;
     if(A[0].length!=A.length) {
-      System.out.println("Error in schur2 of Complex jacobi,"+ //$NON-NLS-1$
+      err("Error in schur2 of Complex jacobi,"+ //$NON-NLS-1$
         " inconsistent array sizes.");                         //$NON-NLS-1$
     }
     if(A[p][q].abs()!=0.0) {
@@ -393,7 +393,7 @@ public strictfp class ComplexMatrix {
 
   static void mat22(final Complex c, final Complex s, final Complex A[][], Complex B[][]) {
     if((A.length!=2)||(A[0].length!=2)||(B.length!=2)||(B[0].length!=2)) {
-      System.out.println("Error in mat22 of Jacobi, not both 2 by 2"); //$NON-NLS-1$
+      err("Error in mat22 of Jacobi, not both 2 by 2"); //$NON-NLS-1$
     }
     Complex T[][] = new Complex[2][2];
     T[0][0] = c.mul(A[0][0]).subtract(s.mul(A[0][1]));
@@ -411,7 +411,7 @@ public strictfp class ComplexMatrix {
     Complex B[][] = new Complex[n][n];
     Complex J[][] = new Complex[n][n];
     if((A[0].length!=n)||(V.length!=n)||(V[0].length!=n)) {
-      System.out.println("Error in mat44 of Complex Jacobi,"+ //$NON-NLS-1$
+      err("Error in mat44 of Complex Jacobi,"+ //$NON-NLS-1$
         " A or V not same and square");                       //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -438,7 +438,7 @@ public strictfp class ComplexMatrix {
     int nr = A[0].length;
     double nrm = 0.0;
     if(n!=nr) {
-      System.out.println("Error in Complex norm4, non square A["+ //$NON-NLS-1$
+      err("Error in Complex norm4, non square A["+ //$NON-NLS-1$
         n+"]["+nr+"]");                                           //$NON-NLS-1$ //$NON-NLS-2$
     }
     for(int i = 0; i<n-1; i++) {
@@ -454,7 +454,7 @@ public strictfp class ComplexMatrix {
     int nk = A[0].length;
     int nj = B[0].length;
     if((B.length!=nk)||(C.length!=ni)||(C[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.mul,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.mul,"+ //$NON-NLS-1$
         " incompatible sizes");                         //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -471,7 +471,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((C.length!=ni)||(C[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.mul,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.mul,"+ //$NON-NLS-1$
         " incompatible sizes");                         //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -485,7 +485,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((B.length!=ni)||(C.length!=ni)||(B[0].length!=nj)||(C[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.add,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.add,"+ //$NON-NLS-1$
         " incompatible sizes");                         //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -499,7 +499,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((C.length!=ni)||(C[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.add,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.add,"+ //$NON-NLS-1$
         " incompatible sizes");                         //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -513,7 +513,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((B.length!=ni)||(C.length!=ni)||(B[0].length!=nj)||(C[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.subtract,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.subtract,"+ //$NON-NLS-1$
         " incompatible sizes");                              //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -527,7 +527,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((C.length!=ni)||(C[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.subtract,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.subtract,"+ //$NON-NLS-1$
         " incompatible sizes");                              //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -585,7 +585,7 @@ public strictfp class ComplexMatrix {
     Complex V[][] = new Complex[n][n];
     Complex BI[] = new Complex[n];
     if(A[0].length!=n) {
-      System.out.println("Error in ComplexMatrix.norm2,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.norm2,"+ //$NON-NLS-1$
         " matrix not square.");                           //$NON-NLS-1$
     }
     for(int i = 0; i<n;
@@ -609,7 +609,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((B.length!=ni)||(B[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.copy,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.copy,"+ //$NON-NLS-1$
         " inconsistent sizes.");                         //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -624,7 +624,7 @@ public strictfp class ComplexMatrix {
     int nj = A[0].length;
     boolean same = true;
     if((B.length!=ni)||(B[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.equals,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.equals,"+ //$NON-NLS-1$
         " inconsistent sizes.");                           //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -639,7 +639,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((C.length!=ni)||(C[0].length!=nj)||(B.length!=ni)||(B[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
         " inconsistent sizes.");                               //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -653,7 +653,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((C.length!=ni)||(C[0].length!=nj)) {
-      System.out.println("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
         " inconsistent sizes.");                               //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -666,7 +666,7 @@ public strictfp class ComplexMatrix {
   public static final void identity(Complex A[][]) {
     int n = A.length;
     if(n!=A[0].length) {
-      System.out.println("Error in ComplexMatrix.identity,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.identity,"+ //$NON-NLS-1$
         " inconsistent sizes.");                             //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -692,7 +692,7 @@ public strictfp class ComplexMatrix {
     int nj = A[0].length;
     for(int i = 0; i<ni; i++) {
       for(int j = 0; j<nj; j++) {
-        System.out.println("A["+i+"]["+j+"]="+A[i][j]); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        err("A["+i+"]["+j+"]="+A[i][j]); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
       }
     }
   }                                                     // end print
@@ -701,7 +701,7 @@ public strictfp class ComplexMatrix {
     int ni = A.length;
     int nj = A[0].length;
     if((B.length!=nj)||(C.length!=ni)) {
-      System.out.println("Error in ComplexMatrix.mul,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.mul,"+ //$NON-NLS-1$
         " incompatible sizes.");                        //$NON-NLS-1$
     }
     for(int i = 0; i<ni; i++) {
@@ -715,7 +715,7 @@ public strictfp class ComplexMatrix {
   public static final void add(final Complex X[], final Complex Y[], Complex Z[]) {
     int n = X.length;
     if((Y.length!=n)||(Z.length!=n)) {
-      System.out.println("Error in ComplexMatrix.add,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.add,"+ //$NON-NLS-1$
         " incompatible sizes.");                        //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -726,7 +726,7 @@ public strictfp class ComplexMatrix {
   public static final void subtract(final Complex X[], final Complex Y[], Complex Z[]) {
     int n = X.length;
     if((Y.length!=n)||(Z.length!=n)) {
-      System.out.println("Error in ComplexMatrix.subtract,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.subtract,"+ //$NON-NLS-1$
         " incompatible sizes.");                             //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -764,7 +764,7 @@ public strictfp class ComplexMatrix {
   public static final void copy(final Complex X[], Complex Y[]) {
     int n = X.length;
     if(Y.length!=n) {
-      System.out.println("Error in ComplexMatrix.copy,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.copy,"+ //$NON-NLS-1$
         " incompatible sizes");                          //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -776,7 +776,7 @@ public strictfp class ComplexMatrix {
     int n = X.length;
     boolean same = true;
     if(Y.length!=n) {
-      System.out.println("Error in ComplexMatrix.equals,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.equals,"+ //$NON-NLS-1$
         " incompatible sizes");                            //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -788,7 +788,7 @@ public strictfp class ComplexMatrix {
   public static final void fromDouble(final double X[], Complex Z[]) {
     int n = X.length;
     if(Z.length!=n) {
-      System.out.println("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
         " incompatible sizes");                                //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -799,7 +799,7 @@ public strictfp class ComplexMatrix {
   public static final void fromDouble(final double X[], final double Y[], Complex Z[]) {
     int n = X.length;
     if((Z.length!=n)||(Y.length!=n)) {
-      System.out.println("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.fromDouble,"+ //$NON-NLS-1$
         " incompatible sizes");                                //$NON-NLS-1$
     }
     for(int i = 0; i<n; i++) {
@@ -810,7 +810,7 @@ public strictfp class ComplexMatrix {
   public static void fromRoots(Complex X[], Complex Y[]) {
     int n = X.length;
     if(Y.length!=n+1) {
-      System.out.println("Error in ComplexMatrix.fromRoots,"+ //$NON-NLS-1$
+      err("Error in ComplexMatrix.fromRoots,"+ //$NON-NLS-1$
         " incompatible sizes");                               //$NON-NLS-1$
     }
     Y[0] = X[0].neg();
@@ -845,7 +845,7 @@ public strictfp class ComplexMatrix {
   public static final void print(final Complex X[]) {
     int n = X.length;
     for(int i = 0; i<n; i++) {
-      System.out.println("X["+i+"]="+X[i]); //$NON-NLS-1$ //$NON-NLS-2$
+      err("X["+i+"]="+X[i]); //$NON-NLS-1$ //$NON-NLS-2$
     }
   }                                         // end print
 
@@ -869,7 +869,7 @@ public strictfp class ComplexMatrix {
       try {
         in = new BufferedReader(new FileReader(file_name));
       } catch(Exception e) {
-        System.out.println("ComplexMatrix.read unable to open file "+file_name); //$NON-NLS-1$
+        err("ComplexMatrix.read unable to open file "+file_name); //$NON-NLS-1$
         return;
       }
     }
@@ -886,7 +886,7 @@ public strictfp class ComplexMatrix {
           continue;                                                                   // skip blank lines
         }
         if(input_line.charAt(0)=='(') {
-          System.out.println("ComplexMatrix.readSize unable to get size "+file_name); //$NON-NLS-1$
+          err("ComplexMatrix.readSize unable to get size "+file_name); //$NON-NLS-1$
           break;
         }
         index = 0;
@@ -913,7 +913,7 @@ public strictfp class ComplexMatrix {
         break;
       }                                                                               // end while
     } catch(Exception e) {
-      System.out.println("ComplexMatrix.readSize unable to get size "+file_name);     //$NON-NLS-1$
+      err("ComplexMatrix.readSize unable to get size "+file_name);     //$NON-NLS-1$
     }
     rowCol[0] = ni;
     rowCol[1] = nj;
@@ -934,7 +934,7 @@ public strictfp class ComplexMatrix {
       try {
         in = new BufferedReader(new FileReader(file_name));
       } catch(Exception e) {
-        System.out.println("ComplexMatrix.read unable to open file "+file_name); //$NON-NLS-1$
+        err("ComplexMatrix.read unable to open file "+file_name); //$NON-NLS-1$
         return;
       }
     }
@@ -980,13 +980,13 @@ public strictfp class ComplexMatrix {
         break;
       }                                                                       // end while
     } catch(Exception e) {
-      System.out.println("ComplexMatrix.read unable to get size "+file_name); //$NON-NLS-1$
+      err("ComplexMatrix.read unable to get size "+file_name); //$NON-NLS-1$
     }
     // now read complex numbers
     i = 0;
     j = 0;
     if((A.length!=ni)||(A[0].length!=nj)) {
-      System.out.println("incompatible size in ComplexMatrix.read"); //$NON-NLS-1$
+      err("incompatible size in ComplexMatrix.read"); //$NON-NLS-1$
       return;
     }
     try {
@@ -1020,7 +1020,7 @@ public strictfp class ComplexMatrix {
         input_line = input_line.substring(last+1);
       }                                                                        // end while
     } catch(Exception e) {
-      System.out.println("ComplexMatrix.read unable to read data "+file_name); //$NON-NLS-1$
+      err("ComplexMatrix.read unable to read data "+file_name); //$NON-NLS-1$
     }
   }                                                                            // end read
 
@@ -1028,7 +1028,7 @@ public strictfp class ComplexMatrix {
     try {
       in.close();
     } catch(Exception e) {
-      System.out.println("ComplexMatrix.closeInput not closed"); //$NON-NLS-1$
+      err("ComplexMatrix.closeInput not closed"); //$NON-NLS-1$
     }
     input_file_name = null;
   } // end closeInput
@@ -1042,7 +1042,7 @@ public strictfp class ComplexMatrix {
         out = new BufferedWriter(new FileWriter(file_name));
         file_out = new PrintWriter(out);
       } catch(Exception e) {
-        System.out.println("ComplexMatrix.write unable to open file "+file_name); //$NON-NLS-1$
+        err("ComplexMatrix.write unable to open file "+file_name); //$NON-NLS-1$
         return;
       }
     }
@@ -1061,9 +1061,13 @@ public strictfp class ComplexMatrix {
       }
       file_out.println();
     } catch(Exception e) {
-      System.out.println("ComplexMatrix.write unable to write data "+file_name); //$NON-NLS-1$
+      err("ComplexMatrix.write unable to write data "+file_name); //$NON-NLS-1$
     }
   }                                                                              // end write
+
+  private static void err(String msg) {
+	  System.out.println( "ComplexMatrix: "+msg); 
+  }
 
   public static final void closeOutput() {
     file_out.close();
@@ -1092,6 +1096,6 @@ public strictfp class ComplexMatrix {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

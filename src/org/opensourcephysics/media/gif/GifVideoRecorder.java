@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.gif package provides GIF services
  * including implementations of the Video and VideoRecorder interfaces.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.gif;
 import java.awt.Dimension;
@@ -58,7 +58,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
    *
    * @param millis the duration per frame in milliseconds
    */
-  public void setFrameDuration(double millis) {
+  @Override
+public void setFrameDuration(double millis) {
     super.setFrameDuration(millis);
     encoder.setDelay((int) frameDuration);
   }
@@ -79,7 +80,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
   /**
    * Saves the video to the current scratchFile.
    */
-  protected void saveScratch() {
+  @Override
+protected void saveScratch() {
     encoder.finish();
   }
 
@@ -88,7 +90,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
    *
    * @return true if video recording successfully started
    */
-  protected boolean startRecording() {
+  @Override
+protected boolean startRecording() {
     if((dim==null)&&(frameImage!=null)) {
       dim = new Dimension(frameImage.getWidth(null), frameImage.getHeight(null));
     }
@@ -105,7 +108,8 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
    * @param image the image to append
    * @return true if image successfully appended
    */
-  protected boolean append(Image image) {
+  @Override
+protected boolean append(Image image) {
     BufferedImage bi;
     if(image instanceof BufferedImage) {
       bi = (BufferedImage) image;
@@ -117,10 +121,16 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
       bi = new BufferedImage(dim.width, dim.height, BufferedImage.TYPE_INT_RGB);
       Graphics2D g = bi.createGraphics();
       g.drawImage(image, 0, 0, null);
+      g.dispose();
     }
     encoder.addFrame(bi);
     return true;
   }
+
+	@Override
+	public String getCodec() {
+		return null;
+	}
 
 }
 
@@ -144,6 +154,6 @@ public class GifVideoRecorder extends ScratchVideoRecorder {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

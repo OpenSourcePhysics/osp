@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -81,7 +81,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    * Sets the tolerance of the adaptive ODE solver.
    * @param tol the tolerance
    */
-  public void setTolerance(double tol) {
+  @Override
+public void setTolerance(double tol) {
     tol = Math.abs(tol);
     odeEngine.setTolerance(tol);
   }
@@ -90,7 +91,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    * Gets the tolerance of the adaptive ODE solver.
    * @return
    */
-  public double getTolerance() {
+  @Override
+public double getTolerance() {
     return odeEngine.getTolerance();
   }
 
@@ -102,7 +104,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *   ODEAdaptiveSolver.BISECTION_EVENT_NOT_FOUND=2;
    * @return int
    */
-  public int getErrorCode() {
+  @Override
+public int getErrorCode() {
     return err_code;
   }
 
@@ -115,7 +118,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @return the actual step
    */
-  public double step() {
+  @Override
+public double step() {
     err_code = NO_ERROR;
     internalODE.setInitialConditions(); // stores the ode's initial conditions
     double remainder = 0;
@@ -164,7 +168,7 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
         }
         if(maxMessages>0) {
           maxMessages--;
-          System.out.println(err_msg);
+          System.out.println("ODEMultistepSolver " + err_msg);
           //OSPLog.warning(err_msg);
         }
         break;
@@ -209,7 +213,7 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
         }
         if(maxMessages>0) {
           maxMessages--;
-          System.out.println(err_msg);
+          System.out.println("ODEMultistepSolver " + err_msg);
           //OSPLog.warning(err_msg);
         }
       }
@@ -224,7 +228,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @param stepSize
    */
-  public void initialize(double stepSize) {
+  @Override
+public void initialize(double stepSize) {
     maxMessages = 4; // reset the message counter to produce more messages
     err_msg = "";    //$NON-NLS-1$
     err_code = NO_ERROR;
@@ -239,7 +244,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @param stepSize
    */
-  public void setStepSize(double stepSize) {
+  @Override
+public void setStepSize(double stepSize) {
     maxMessages = 4;          // reset the message counter to produce more messages
     fixedStepSize = stepSize; // the fixed step size
     if(stepSize<0) {
@@ -263,7 +269,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
    *
    * @return the step size
    */
-  public double getStepSize() {
+  @Override
+public double getStepSize() {
     return fixedStepSize;
   }
 
@@ -286,7 +293,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
      * @param state double[]
      * @param rate double[]
      */
-    public void getRate(double[] state, double[] rate) {
+    @Override
+	public void getRate(double[] state, double[] rate) {
       ode.getRate(state, rate);
     }
 
@@ -295,7 +303,8 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
      *
      * @return double[]
      */
-    public double[] getState() {
+    @Override
+	public double[] getState() {
       return engineState;
     }
 
@@ -346,6 +355,6 @@ public class ODEMultistepSolver implements ODEAdaptiveSolver {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

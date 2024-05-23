@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  * Author J E Hasbun 2007.
  */
 
@@ -34,7 +34,7 @@ public class LevenbergMarquardt {
    *   tol - the tolerance level
    *
    */
-  public double minimize(MultiVarFunction Veq, double[] x, int max, double tol) {
+  public boolean minimize(MultiVarFunction Veq, double[] x, int max, double tol) {
     int m = x.length;
     H = new double[m][m];
     double[] xxn = new double[m];
@@ -92,11 +92,16 @@ public class LevenbergMarquardt {
         System.arraycopy(xtmp1, 0, x, 0, m);
         Lambda = 10.*Lambda;
       }
+
       err = Math.sqrt(err);   //the error
       relerr = err/(relerr+tol);
     }
+    if (err > tol*1.e-6 && relerr > tol*1.e-6) {
+    	// failed to find fit after max iterations
+    	return false;
+    }
     check_rmsd(Veq, xtmp, x, m); //check if x is better, else keep old one
-    return err;
+    return true;
   }
 
   void check_rmsd(MultiVarFunction Veq, double[] xtmp, double[] xx, int mx) {
@@ -142,6 +147,6 @@ public class LevenbergMarquardt {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

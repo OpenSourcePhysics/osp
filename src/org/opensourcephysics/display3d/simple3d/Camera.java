@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -58,7 +58,8 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
   // -----------------------------
   // Implementation of Camera
   // ----------------------------
-  public void setProjectionMode(int mode) {
+  @Override
+public void setProjectionMode(int mode) {
     projectionMode = mode;
     if(panel!=null) {
       panelMaxSizeConstant = panel.getMaximum3DSize()*0.01;
@@ -66,11 +67,13 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
     }
   }
 
-  final public int getProjectionMode() {
+  @Override
+final public int getProjectionMode() {
     return projectionMode;
   }
 
-  public void reset() {
+  @Override
+public void reset() {
     double[] center = panel.getCenter();
     focusX = center[0];
     focusY = center[1];
@@ -97,86 +100,103 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
     panel.cameraChanged(CHANGE_ANY);
   }
 
-  public void setXYZ(double x, double y, double z) {
+  @Override
+public void setXYZ(double x, double y, double z) {
     posX = x;
     posY = y;
     posZ = z;
     updateCamera(CHANGE_POSITION);
   }
 
-  public void setXYZ(double[] point) {
+  @Override
+public void setXYZ(double[] point) {
     setXYZ(point[0], point[1], point[2]);
   }
 
-  final public double getX() {
+  @Override
+final public double getX() {
     return posX;
   }
 
-  final public double getY() {
+  @Override
+final public double getY() {
     return posY;
   }
 
-  final public double getZ() {
+  @Override
+final public double getZ() {
     return posZ;
   }
 
-  public void setFocusXYZ(double x, double y, double z) {
+  @Override
+public void setFocusXYZ(double x, double y, double z) {
     focusX = x;
     focusY = y;
     focusZ = z;
     updateCamera(CHANGE_FOCUS);
   }
 
-  public void setFocusXYZ(double[] point) {
+  @Override
+public void setFocusXYZ(double[] point) {
     setFocusXYZ(point[0], point[1], point[2]);
   }
 
-  final public double getFocusX() {
+  @Override
+final public double getFocusX() {
     return focusX;
   }
 
-  final public double getFocusY() {
+  @Override
+final public double getFocusY() {
     return focusY;
   }
 
-  final public double getFocusZ() {
+  @Override
+final public double getFocusZ() {
     return focusZ;
   }
 
-  public void setRotation(double angle) {
+  @Override
+public void setRotation(double angle) {
     rotationAngle = angle;
     cosRot = Math.cos(rotationAngle/2);
     sinRot = Math.sin(rotationAngle/2);
     updateCamera(CHANGE_ROTATION);
   }
 
-  final public double getRotation() {
+  @Override
+final public double getRotation() {
     return rotationAngle;
   }
 
-  public void setDistanceToScreen(double distance) {
+  @Override
+public void setDistanceToScreen(double distance) {
     distanceToScreen = distance;
     if(panel!=null) {
       panel.cameraChanged(CHANGE_SCREEN);
     }
   }
 
-  final public double getDistanceToScreen() {
+  @Override
+final public double getDistanceToScreen() {
     return distanceToScreen;
   }
 
-  public void setAzimuth(double angle) {
+  @Override
+public void setAzimuth(double angle) {
     alpha = angle;
     cosAlpha = Math.cos(alpha);
     sinAlpha = Math.sin(alpha);
     updateCamera(CHANGE_ANGLES);
   }
 
-  final public double getAzimuth() {
+  @Override
+final public double getAzimuth() {
     return alpha;
   }
 
-  public void setAltitude(double angle) {
+  @Override
+public void setAltitude(double angle) {
     beta = angle;
     if(beta<-Math.PI/2) {
       beta = -Math.PI/2;
@@ -188,11 +208,13 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
     updateCamera(CHANGE_ANGLES);
   }
 
-  final public double getAltitude() {
+  @Override
+final public double getAltitude() {
     return beta;
   }
 
-  public void setAzimuthAndAltitude(double azimuth, double altitude) {
+  @Override
+public void setAzimuthAndAltitude(double azimuth, double altitude) {
     alpha = azimuth;
     beta = altitude;
     if(beta<-Math.PI/2) {
@@ -207,11 +229,13 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
     updateCamera(CHANGE_ANGLES);
   }
 
-  final public Transformation getTransformation() {
+  @Override
+final public Transformation getTransformation() {
     return projection;
   }
 
-  public void copyFrom(org.opensourcephysics.display3d.core.Camera camera) {
+  @Override
+public void copyFrom(org.opensourcephysics.display3d.core.Camera camera) {
     projectionMode = camera.getProjectionMode();
     if(panel!=null) {
       panelMaxSizeConstant = panel.getMaximum3DSize()*0.01;
@@ -349,7 +373,8 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
   }
 
   private class Projection implements org.opensourcephysics.numerics.Transformation {
-    public Object clone() {
+    @Override
+	public Object clone() {
       try {
         return super.clone();
       } catch(CloneNotSupportedException exc) {
@@ -358,7 +383,8 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
       }
     }
 
-    public double[] direct(double[] p) {
+    @Override
+	public double[] direct(double[] p) {
       switch(projectionMode) {
          case MODE_PLANAR_XY :
            p[0] = p[0]-focusX;
@@ -412,7 +438,8 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
       }
     }
 
-    public double[] inverse(double[] point) throws UnsupportedOperationException {
+    @Override
+	public double[] inverse(double[] point) throws UnsupportedOperationException {
       throw new UnsupportedOperationException();
     }
 
@@ -426,7 +453,8 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
   }
 
   protected static class CameraLoader extends org.opensourcephysics.display3d.core.Camera.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Camera((DrawingPanel3D) null);
     }
 
@@ -454,6 +482,6 @@ public class Camera implements org.opensourcephysics.display3d.core.Camera {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

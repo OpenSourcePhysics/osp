@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -37,7 +37,7 @@ public class Legendre {
     Polynomial p1 = getPolynomial(n-1).multiply(part1);
     Polynomial p2 = getPolynomial(n-2).multiply(n-1);
     Polynomial p = p1.subtract(p2).multiply(1.0/n);
-    System.out.println("n="+n); //$NON-NLS-1$
+    //System.out.println("n="+n); //$NON-NLS-1$
     legendreList.add(p);
     return p;
   }
@@ -77,6 +77,6 @@ public class Legendre {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

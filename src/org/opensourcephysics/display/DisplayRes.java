@@ -2,13 +2,15 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
+import org.opensourcephysics.tools.ResourceLoader;
+import org.opensourcephysics.tools.ResourceLoader.Bundle;
 
 /**
  * DisplayRes provides access to internationalized string resources for objects in the display package.
@@ -17,14 +19,15 @@ import java.util.ResourceBundle;
  * @version 1.0
  */
 public class DisplayRes {
-  private static String BUNDLE_NAME = "org.opensourcephysics.resources.display.display_res"; //$NON-NLS-1$
-  private static ResourceBundle res = ResourceBundle.getBundle(BUNDLE_NAME);
+  private static Bundle res;
+  public static void setLocale(Locale locale) {
+	  res = ResourceLoader.getBundle("org.opensourcephysics.resources.display.display_res", locale);  //$NON-NLS-1$
+  }
+  static {
+	  setLocale(null);
+  }
 
   private DisplayRes() {}
-
-  public static void setLocale(Locale locale) {
-    res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
-  }
 
   public static String getString(String key) {
     try {
@@ -56,6 +59,6 @@ public class DisplayRes {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

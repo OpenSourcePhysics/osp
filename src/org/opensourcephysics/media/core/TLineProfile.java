@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,13 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+
 import org.opensourcephysics.display.DrawingPanel;
 
 /**
@@ -65,7 +66,8 @@ public class TLineProfile extends TLine {
    * @param panel the drawing panel requesting the drawing
    * @param g the graphics context on which to draw
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!(panel instanceof VideoPanel)) {
       return;
     }
@@ -143,7 +145,8 @@ public class TLineProfile extends TLine {
      * @param x the x position
      * @param y the y position
      */
-    public void setXY(double x, double y) {
+    @Override
+	public void setXY(double x, double y) {
       setLocation(x, getY());
     }
 
@@ -154,7 +157,8 @@ public class TLineProfile extends TLine {
      * @param dx the x displacement
      * @param dy the y displacement
      */
-    public void translate(double dx, double dy) {
+    @Override
+	public void translate(double dx, double dy) {
       setLocation(getX()+dx, getY()+dy);
     }
 
@@ -164,7 +168,8 @@ public class TLineProfile extends TLine {
      * @param vidPanel the video panel
      * @return the bounding rectangle
      */
-    public Rectangle getBounds(VideoPanel vidPanel) {
+    @Override
+	public Rectangle getBounds(VideoPanel vidPanel) {
       return TLineProfile.this.getBounds(vidPanel);
     }
 
@@ -192,6 +197,6 @@ public class TLineProfile extends TLine {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

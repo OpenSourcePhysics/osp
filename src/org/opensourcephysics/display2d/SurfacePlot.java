@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -33,7 +33,7 @@ import org.opensourcephysics.display.axes.XYAxis;
  */
 public class SurfacePlot implements Plot2D, False3D {
   protected boolean visible = true;
-  protected DecimalFormat labelFormat = new DecimalFormat("0.00"); //$NON-NLS-1$
+  protected DecimalFormat labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00"); //$NON-NLS-1$
   private static final int TOP = 0;
   private static final int CENTER = 1;
   //   // for splitting polygons
@@ -108,7 +108,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -118,7 +119,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -128,7 +130,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -138,7 +141,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -149,7 +153,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][] val = (double[][]) obj;
     copyData(val);
     update();
@@ -166,7 +171,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][] val = (double[][]) obj;
     copyData(val);
     if(griddata.isCellData()) {
@@ -196,7 +202,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -205,7 +212,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @param _griddata
    */
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
   }
 
@@ -294,7 +302,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(griddata==null) {
       return;
     }
@@ -1028,7 +1037,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Determines the palette type that will be used.
    * @param type
    */
-  public void setPaletteType(int type) {
+  @Override
+public void setPaletteType(int type) {
     plot_mode = type;
   }
 
@@ -1037,7 +1047,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @param indexes the sample-component
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
   }
 
@@ -1049,7 +1060,7 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param _format the format string
    */
   public void setLabelFormat(String _format) {
-    labelFormat = new DecimalFormat(_format);
+    labelFormat = org.opensourcephysics.numerics.Util.newDecimalFormat(_format);
   }
 
   /**
@@ -1076,7 +1087,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     autoscaleZ = isAutoscale;
     if(autoscaleZ) {
       update();
@@ -1095,14 +1107,16 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 	  symmetricZ=symmetric;
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return symmetricZ;
   }
 
@@ -1111,7 +1125,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -1119,7 +1134,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return zmin;
   }
 
@@ -1127,7 +1143,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return zmax;
   }
 
@@ -1137,7 +1154,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param expanded boolean
    * @param expansionFactor double
    */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       zMap = new ZExpansion(expansionFactor);
       zMap.setMinMax(zmin, zmax);
@@ -1146,15 +1164,18 @@ public class SurfacePlot implements Plot2D, False3D {
     }
   }
 
+  double[] minmax = new double[2];
+
   /**
    * Updates the surface plot using the current data.
    */
-  public synchronized void update() {
+  @Override
+public synchronized void update() {
     if(griddata==null) {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
           zmax=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
           zmin=-zmax;
@@ -1302,7 +1323,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @param show
    */
-  public void setShowGridLines(boolean show) {
+  @Override
+public void setShowGridLines(boolean show) {
     isMesh = show;
   }
 
@@ -1311,7 +1333,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @param  c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     line_color = c;
   }
 
@@ -1326,7 +1349,8 @@ public class SurfacePlot implements Plot2D, False3D {
   /**
    * Shows the color legend.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     InteractivePanel dp = new InteractivePanel();
     dp.setPreferredSize(new java.awt.Dimension(300, 66));
     dp.setPreferredGutters(0, 0, 0, 35);
@@ -1414,7 +1438,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Not implemented.   Color always maps to phase.
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     // Not implemented.   Color always maps to phase.
   }
 
@@ -1424,7 +1449,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @param isVisible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
@@ -1435,7 +1461,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     // not implemented
   }
 
@@ -1445,7 +1472,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Gets the minimum x needed to draw this object.
    * @return minimum
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return 0;
   }
 
@@ -1453,7 +1481,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Gets the maximum x needed to draw this object.
    * @return maximum
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return 0;
   }
 
@@ -1461,7 +1490,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Gets the minimum y needed to draw this object.
    * @return minimum
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return 0;
   }
 
@@ -1469,7 +1499,8 @@ public class SurfacePlot implements Plot2D, False3D {
    * Gets the maximum y needed to draw this object.
    * @return minimum
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return 0;
   }
 
@@ -1479,7 +1510,8 @@ public class SurfacePlot implements Plot2D, False3D {
    *
    * @return false
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return false;
   }
 
@@ -1490,7 +1522,8 @@ public class SurfacePlot implements Plot2D, False3D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new SurfacePlot(null);
       }
 
@@ -1519,6 +1552,6 @@ public class SurfacePlot implements Plot2D, False3D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

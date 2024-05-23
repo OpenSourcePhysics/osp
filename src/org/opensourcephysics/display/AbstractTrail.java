@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -107,7 +107,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    *
    * @return boolean
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return enableMeasure&&(this.numpts>0);
   }
 
@@ -115,7 +116,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the minimum x value in the trail.
    * @return double
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
@@ -123,7 +125,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the maximum x value in the trail.
    * @return double
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
@@ -131,7 +134,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the minimum y value in the trail.
    * @return double
    */
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
@@ -139,7 +143,8 @@ public abstract class AbstractTrail implements Drawable, Measurable {
    * Gets the maximum y value in the trail.
    * @return double
    */
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -197,6 +202,6 @@ public abstract class AbstractTrail implements Drawable, Measurable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

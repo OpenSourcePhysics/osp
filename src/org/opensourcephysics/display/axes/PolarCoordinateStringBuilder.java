@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
@@ -47,7 +47,8 @@ public class PolarCoordinateStringBuilder extends CoordinateStringBuilder {
     this.phiLabel = phiLabel;
   }
 
-  public void setCoordinateLabels(String rLabel, String phiLabel) {
+  @Override
+public void setCoordinateLabels(String rLabel, String phiLabel) {
     this.rLabel = rLabel;
     this.phiLabel = phiLabel;
   }
@@ -59,10 +60,11 @@ public class PolarCoordinateStringBuilder extends CoordinateStringBuilder {
    * @param e the mouse event
    * @return the coordinate string
    */
-  public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
+  @Override
+public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
     double x = panel.pixToX(e.getPoint().x);
     double y = panel.pixToY(e.getPoint().y);
-    if((panel instanceof InteractivePanel)&&((InteractivePanel) panel).getCurrentDraggable()!=null) {
+    if((panel.isInteractive)&&((InteractivePanel) panel).getCurrentDraggable()!=null) {
       x = ((InteractivePanel) panel).getCurrentDraggable().getX();
       y = ((InteractivePanel) panel).getCurrentDraggable().getY();
     }
@@ -99,6 +101,6 @@ public class PolarCoordinateStringBuilder extends CoordinateStringBuilder {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

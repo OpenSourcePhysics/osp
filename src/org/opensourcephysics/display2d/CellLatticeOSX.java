@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -38,21 +38,11 @@ import org.opensourcephysics.display.axes.XYAxis;
  * @created    May 21, 2003
  * @version    1.0
  */
-public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
+public class CellLatticeOSX extends Grid implements Measurable, CellLattice.OSLattice {
   boolean visible = true; // shadow super.visible
   Color[] colors = new Color[256];
   byte[][] data;
   private JFrame legendFrame;
-
-  /**
-   * Constructs a cell lattice.
-   *
-   * Cell values are -128 to 127.
-   *
-   */
-  public CellLatticeOSX() {
-    this(1, 1);
-  }
 
   /**
    *  Constructs a Cell lattice with the given size. Site values are -128 to 127.
@@ -70,7 +60,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
   /**
    * Creates a new SiteLattice containing the same data as this lattice.
    */
-  public SiteLattice createSiteLattice() {
+  @Override
+public SiteLattice createSiteLattice() {
     SiteLattice lattice = new SiteLattice(nx, ny);
     lattice.setBlock(data);
     lattice.setMinMax(getXMin(), getXMax(), getYMin(), getYMax());
@@ -78,7 +69,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
     return lattice;
   }
 
-  public void resizeLattice(int _nx, int _ny) {
+  @Override
+public void resizeLattice(int _nx, int _ny) {
     nx = _nx;
     ny = _ny;
     setMinMax(xmin, xmax, ymin, ymax);
@@ -89,7 +81,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return nx;
   }
 
@@ -97,7 +90,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return ny;
   }
 
@@ -109,7 +103,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param y
    * @return index
    */
-  public int indexFromPoint(double x, double y) {
+  @Override
+public int indexFromPoint(double x, double y) {
     int nx = getNx();
     int ny = getNy();
     double xMin = getXMin();
@@ -132,7 +127,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     int nx = getNx();
     double xMin = getXMin();
     double xMax = getXMax();
@@ -153,7 +149,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     int ny = getNy();
     double yMin = getYMin();
     double yMax = getYMax();
@@ -174,7 +171,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    *
    * @param isVisible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
@@ -192,7 +190,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param  panel
    * @param  g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -209,9 +208,10 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
     int x1pix = panel.xToPix(x);
     int y1pix = panel.yToPix(y);
     int x2pix, y2pix;
-    Shape clipShape = g.getClip();
+    //Shape clipShape = g.getClip();
     Rectangle r = getBounds(panel);
-    g.clipRect(r.x, r.y, r.width, r.height);
+    Graphics2D g2 = (Graphics2D) g.create();
+    g2.clipRect(r.x, r.y, r.width, r.height);
     for(int ix = 0; ix<nx; ix++) {
       x += dx;
       x2pix = panel.xToPix(x);
@@ -219,15 +219,16 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
         y -= dy;
         y2pix = panel.yToPix(y);
         int val = data[ix][iy]&0xFF;
-        g.setColor(colors[val]);
-        g.fillRect(x1pix, y1pix, Math.abs(x2pix-x1pix)+1, Math.abs(y1pix-y2pix)+1);
+        g2.setColor(colors[val]);
+        g2.fillRect(x1pix, y1pix, Math.abs(x2pix-x1pix)+1, Math.abs(y1pix-y2pix)+1);
         y1pix = y2pix;
       }
       x1pix = x2pix;
       y = (dy<0) ? ymax-dy : ymax;
       y1pix = panel.yToPix(y);
     }
-    g.setClip(clipShape);
+    //g.setClip(clipShape);
+    g2.dispose(); // BH 2020.02.26
     super.draw(panel, g); // draw the grid
   }
 
@@ -238,7 +239,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param iy_offset int
    * @param val byte[][]
    */
-  public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
+  @Override
+public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
     if((iy_offset<0)||(iy_offset+val[0].length-1>ny)) {
       throw new IllegalArgumentException("Row offset "+iy_offset+" out of range."); //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -277,7 +279,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
     setAll(val);
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -289,7 +292,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param iy_offset int
    * @param val int[][]
    */
-  public void setBlock(int ix_offset, int iy_offset, int val[][]) {
+  @Override
+public void setBlock(int ix_offset, int iy_offset, int val[][]) {
     if((iy_offset<0)||(iy_offset+val[0].length-1>ny)) {
       throw new IllegalArgumentException("Row offset "+iy_offset+" out of range."); //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -308,7 +312,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    *
    * @param  val
    */
-  public void setBlock(byte val[][]) {
+  @Override
+public void setBlock(byte val[][]) {
     setBlock(0, 0, val);
   }
 
@@ -319,7 +324,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param iy_offset the y offset in the column
    * @param val values in column
    */
-  public void setCol(int ix, int iy_offset, byte val[]) {
+  @Override
+public void setCol(int ix, int iy_offset, byte val[]) {
     if((iy_offset<0)||(iy_offset+val.length>ny)) {
       throw new IllegalArgumentException("Row offset "+iy_offset+" out of range."); //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -338,7 +344,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param ix_offset the x offset in the row
    * @param val
    */
-  public void setRow(int iy, int ix_offset, byte val[]) {
+  @Override
+public void setRow(int iy, int ix_offset, byte val[]) {
     if((iy<0)||(iy>=ny)) {
       throw new IllegalArgumentException("Y index out of range in binary lattice setRow."); //$NON-NLS-1$
     }
@@ -357,7 +364,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param iy
    * @param val
    */
-  public void setValue(int ix, int iy, byte val) {
+  @Override
+public void setValue(int ix, int iy, byte val) {
     if((iy<0)||(iy>=ny)) {
       throw new IllegalArgumentException("Row index "+iy+" out of range."); //$NON-NLS-1$ //$NON-NLS-2$
     }
@@ -374,7 +382,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param  col
    * @return      the cell value.
    */
-  public byte getValue(int col, int row) {
+  @Override
+public byte getValue(int col, int row) {
     return data[col][row];
   }
 
@@ -394,12 +403,14 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    *
    * @param  showGridLines
    */
-  public void setShowGridLines(boolean showGridLines) {
+  @Override
+public void setShowGridLines(boolean showGridLines) {
     super.visible = showGridLines;
   }
 
   /** Randomizes the lattice values. */
-  public void randomize() {
+  @Override
+public void randomize() {
     Random random = new Random();
     for(int rindex = 0, nr = data[0].length; rindex<nr; rindex++) {
       for(int cindex = 0, nc = data.length; cindex<nc; cindex++) {
@@ -412,7 +423,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * Shows the color associated with each value.
    * @return the JFrame containing the legend
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     InteractivePanel dp = new InteractivePanel();
     dp.setPreferredSize(new java.awt.Dimension(300, 66));
     dp.setPreferredGutters(0, 0, 0, 35);
@@ -446,7 +458,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    *
    * @param  _colors
    */
-  public void setColorPalette(Color[] _colors) {
+  @Override
+public void setColorPalette(Color[] _colors) {
     int n = Math.min(256, _colors.length);
     for(int i = 0; i<n; i++) {
       colors[i] = _colors[i];
@@ -461,7 +474,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    *
    * @param  _color
    */
-  public void setGridLineColor(Color _color) {
+  @Override
+public void setGridLineColor(Color _color) {
     color = _color;
   }
 
@@ -471,7 +485,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    * @param  i
    * @param  color
    */
-  public void setIndexedColor(int i, Color color) {
+  @Override
+public void setIndexedColor(int i, Color color) {
     // i         = i % colors.length;
     i = (i+256)%colors.length;
     colors[i] = color;
@@ -483,26 +498,31 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
    *
    * @return
    */
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true; // we always have data
   }
 
-  public void setXMin(double _value) {
+  @Override
+public void setXMin(double _value) {
     xmin = _value;
     setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setXMax(double _value) {
+  @Override
+public void setXMax(double _value) {
     xmax = _value;
     setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMin(double _value) {
+  @Override
+public void setYMin(double _value) {
     ymin = _value;
     setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMax(double _value) {
+  @Override
+public void setYMax(double _value) {
     ymax = _value;
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -510,7 +530,8 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
   /**
    * Creates the default palette.
    */
-  public void createDefaultColors() {
+  @Override
+public void createDefaultColors() {
     for(int i = 0; i<256; i++) {
       double x = (i<128) ? (i-100)/255.0 : -1;
       double val = Math.exp(-x*x*8);
@@ -547,6 +568,6 @@ public class CellLatticeOSX extends Grid implements Measurable, ByteLattice {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

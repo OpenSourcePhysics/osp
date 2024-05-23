@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.analysis;
@@ -145,7 +145,8 @@ public class FourierAnalysis implements Data {
    *
    * @return list of ComplexDatasets
    */
-  public java.util.List<Data> getDataList() {
+  @Override
+public java.util.List<Data> getDataList() {
     java.util.ArrayList<Data> list = new java.util.ArrayList<Data>();
     if(fftData==null) {
       return list;
@@ -167,56 +168,55 @@ public class FourierAnalysis implements Data {
     return list;
   }
 
-  /**
-   * Gets the complex datasets that contain the result of the last Fourier analysis.
-   * Real coefficients are contained in the first dataset.
-   * Complex coefficients are in the second dataset.
-   *
-   * @return list of Datasets
-   */
-  public java.util.ArrayList<Dataset> getDatasets() {
-    java.util.ArrayList<Dataset> list = new java.util.ArrayList<Dataset>();
-    if(fftData==null) {
-      return list;
-    }
-    if(realDatasets[0]==null) {
-      realDatasets[0] = new Dataset();
-      realDatasets[0].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
-        DisplayRes.getString("FourierAnalysis.Column.Real"),                                     //$NON-NLS-1$
-          DisplayRes.getString("FourierAnalysis.RealCoefficients"));                             //$NON-NLS-1$
-      realDatasets[0].setLineColor(Color.RED);
-      realDatasets[1] = new Dataset();
-      realDatasets[1].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
-        DisplayRes.getString("FourierAnalysis.Column.Imaginary"),                                //$NON-NLS-1$
-          DisplayRes.getString("FourierAnalysis.ImaginaryCoefficients"));                        //$NON-NLS-1$
-      realDatasets[1].setLineColor(Color.BLUE);
-    } else {
-      realDatasets[0].clear();
-      realDatasets[1].clear();
-    }
-    if(radians) {
-      for(int i = 0, nOmega = omega.length; i<nOmega; i++) {
-        double re = fftData[2*i], im = fftData[2*i+1];
-        realDatasets[0].append(omega[i], re);
-        realDatasets[1].append(omega[i], im);
-      }
-    } else {
-      for(int i = 0, nFreqs = freqs.length; i<nFreqs; i++) {
-        double re = fftData[2*i], im = fftData[2*i+1];
-        realDatasets[0].append(freqs[i], re);
-        realDatasets[1].append(freqs[i], im);
-      }
-    }
-    list.add(realDatasets[0]);
-    list.add(realDatasets[1]);
-    return list;
-  }
+	/**
+	 * Gets the complex datasets that contain the result of the last Fourier
+	 * analysis. Real coefficients are contained in the first dataset. Complex
+	 * coefficients are in the second dataset.
+	 *
+	 * @return list of Datasets
+	 */
+	@Override
+	public java.util.ArrayList<Dataset> getDatasets() {
+		java.util.ArrayList<Dataset> list = new java.util.ArrayList<Dataset>();
+		if (fftData == null) {
+			return list;
+		}
+		if (realDatasets[0] == null) {
+			realDatasets[0] = new Dataset();
+			realDatasets[0].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.Column.Real"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.RealCoefficients")); //$NON-NLS-1$
+			realDatasets[0].setLineColor(Color.RED);
+			realDatasets[1] = new Dataset();
+			realDatasets[1].setXYColumnNames(DisplayRes.getString("FourierAnalysis.Column.Frequency"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.Column.Imaginary"), //$NON-NLS-1$
+					DisplayRes.getString("FourierAnalysis.ImaginaryCoefficients")); //$NON-NLS-1$
+			realDatasets[1].setLineColor(Color.BLUE);
+		} else {
+			realDatasets[0].clear();
+			realDatasets[1].clear();
+		}
+		int n = (radians ? omega.length : freqs.length);
+		double[] re = new double[n];
+		double[] im = new double[n];
+		for (int i = 0; i < n; i++) {
+			re[i] = fftData[2 * i];
+			im[i] = fftData[2 * i + 1];
+		}
+		double[] x = (radians ? omega : freqs);
+		realDatasets[0].append(x, re);
+		realDatasets[1].append(x, im);
+		list.add(realDatasets[0]);
+		list.add(realDatasets[1]);
+		return list;
+	}
 
   /**
    * Gets the frequencies, real, and imaginary coefficients.
    * @return double[][]
    */
-  public double[][] getData2D() {
+  @Override
+public double[][] getData2D() {
     if(fftData==null) {
       return null;
     }
@@ -242,7 +242,8 @@ public class FourierAnalysis implements Data {
    *
    * @return double[][][]
    */
-  public double[][][] getData3D() {
+  @Override
+public double[][][] getData3D() {
     return null;
   }
 
@@ -260,7 +261,8 @@ public class FourierAnalysis implements Data {
    *
    * @return String
    */
-  public String getName() {
+  @Override
+public String getName() {
     return name;
   }
 
@@ -268,7 +270,8 @@ public class FourierAnalysis implements Data {
    * The column names to be used in the data display tool
    * @return
    */
-  public String[] getColumnNames() {
+  @Override
+public String[] getColumnNames() {
     return new String[] {name};
   }
 
@@ -276,7 +279,8 @@ public class FourierAnalysis implements Data {
    * Line colors for Data interface.
    * @return
    */
-  public java.awt.Color[] getLineColors() {
+  @Override
+public java.awt.Color[] getLineColors() {
     return null;
   }
 
@@ -284,7 +288,8 @@ public class FourierAnalysis implements Data {
    * Fill colors for Data interface.
    * @return
    */
-  public java.awt.Color[] getFillColors() {
+  @Override
+public java.awt.Color[] getFillColors() {
     return null;
   }
 
@@ -293,7 +298,8 @@ public class FourierAnalysis implements Data {
    *
    * @param id the ID number
    */
-  public void setID(int id) {
+  @Override
+public void setID(int id) {
     datasetID = id;
   }
 
@@ -302,7 +308,8 @@ public class FourierAnalysis implements Data {
    *
    * @return the ID number
    */
-  public int getID() {
+  @Override
+public int getID() {
     return datasetID;
   }
 
@@ -328,6 +335,6 @@ public class FourierAnalysis implements Data {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,13 +2,12 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Shape;
 import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -96,12 +95,16 @@ public class TriangularByteLattice implements Measurable {
    * @param  panel
    * @param  g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
-    Shape oldClip = g.getClip();
-    g.setClip(null);
+    g = g.create();
+    //Shape oldClip = g.getClip();
+    // BH 2020.02.26 CAN'T DO THIS:
+    // unclip needed here
+    //g.setClip(null);
     double xScale=(xmax-xmin)/(xmaxLattice-xminLattice);
     double yScale=-(ymax-ymin)/(ymaxLattice-yminLattice);
     for(int yi = 0; yi<nrow; yi++) {
@@ -120,7 +123,7 @@ public class TriangularByteLattice implements Measurable {
         }
       }
     }
-    g.setClip(oldClip);
+    g.dispose();// BH 2020.02.26//setClip(oldClip);
   }
 
   /**
@@ -291,23 +294,28 @@ public class TriangularByteLattice implements Measurable {
     colors[i] = color;
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return true;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
@@ -340,6 +348,6 @@ public class TriangularByteLattice implements Measurable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,12 +2,13 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.List;
 
 /**
  * This defines methods for storing data in an xml control element.
@@ -22,7 +23,7 @@ public interface XMLControl extends Control, XMLProperty {
    * @param name the property name
    * @return the type
    */
-  public String getPropertyType(String name);
+  public int getPropertyType(String name);
 
   /**
    * Gets the name of the object class for which this element stores data.
@@ -104,7 +105,18 @@ public interface XMLControl extends Control, XMLProperty {
    */
   public String toXML();
 
+  
+  	public String getBasepath();
+
+	public void setBasepath(String basepath);
+
+	List<XMLProperty> getPropsRaw();
+
+	Object loadObject(Object obj, Object data);
+	
 }
+
+
 
 /*
  * Open Source Physics software is free software; you can redistribute
@@ -126,6 +138,6 @@ public interface XMLControl extends Control, XMLProperty {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

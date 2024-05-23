@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
@@ -62,7 +62,8 @@ public abstract class AxisFactory {
 }
 
 class CartesianType1Factory extends AxisFactory {
-  public DrawableAxes createAxes(PlottingPanel panel) {
+  @Override
+public DrawableAxes createAxes(PlottingPanel panel) {
 //  	return new CartesianType1(panel);
   	// axes changed to interactive by default. D Brown 2012-01-27
     return new CartesianInteractive(panel);
@@ -90,6 +91,6 @@ class CartesianType1Factory extends AxisFactory {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

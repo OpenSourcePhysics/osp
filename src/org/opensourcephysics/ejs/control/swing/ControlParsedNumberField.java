@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -31,7 +31,8 @@ public class ControlParsedNumberField extends ControlNumberField {
     super(_visual);
   }
 
-  protected java.awt.Component createVisual(Object _visual) {
+  @Override
+protected java.awt.Component createVisual(Object _visual) {
     if(_visual instanceof JTextField) {
       textfield = (JTextField) _visual;
     } else {
@@ -52,7 +53,8 @@ public class ControlParsedNumberField extends ControlNumberField {
   // Private methods and inner classes
   // -------------------------------------
   private class MyActionListener implements java.awt.event.ActionListener {
-    public void actionPerformed(java.awt.event.ActionEvent _e) {
+    @Override
+	public void actionPerformed(java.awt.event.ActionEvent _e) {
       // System.out.println ("Action for "+textfield.getText());
       setColor(defaultColor);
       String text = textfield.getText().trim(); // remove whitespace
@@ -99,6 +101,6 @@ public class ControlParsedNumberField extends ControlNumberField {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

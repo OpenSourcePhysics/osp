@@ -2,23 +2,22 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.frames;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
-import org.opensourcephysics.controls.OSPLog;
+
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.DataTable;
@@ -28,11 +27,9 @@ import org.opensourcephysics.display.Drawable;
 import org.opensourcephysics.display.DrawingFrame;
 import org.opensourcephysics.display.Histogram;
 import org.opensourcephysics.display.HistogramDataset;
-import org.opensourcephysics.display.OSPFrame;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.tools.DataTool;
-import org.opensourcephysics.tools.LocalJob;
 import org.opensourcephysics.tools.Tool;
 
 /**
@@ -61,7 +58,7 @@ public class HistogramFrame extends DrawingFrame {
     // histogram.setDiscrete(false) ;
     drawingPanel.addDrawable(histogram);
     setTitle(title);
-    dataTable.add(histogram);
+    dataTable.add(histogram.model);
     setAnimated(true);
     setAutoclear(true);
     addMenuItems();
@@ -82,7 +79,8 @@ public class HistogramFrame extends DrawingFrame {
   /**
    * Adds Views menu items on the menu bar.
    */
-  protected void addMenuItems() {
+  @Override
+protected void addMenuItems() {
     JMenuBar menuBar = getJMenuBar();
     if(menuBar==null) {
       return;
@@ -103,7 +101,8 @@ public class HistogramFrame extends DrawingFrame {
     JMenuItem tableItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DataTable_menu_item")); //$NON-NLS-1$
     tableItem.setAccelerator(KeyStroke.getKeyStroke('T', MENU_SHORTCUT_KEY_MASK));
     ActionListener tableListener = new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         showDataTable(true);
       }
 
@@ -114,7 +113,8 @@ public class HistogramFrame extends DrawingFrame {
     menu.addSeparator();
     logItem = new JCheckBoxMenuItem(DisplayRes.getString("HistogramFrame.MenuItem.LogScale"), false); //$NON-NLS-1$
     logItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         histogram.logScale = logItem.isSelected();
         drawingPanel.repaint();
       }
@@ -129,61 +129,33 @@ public class HistogramFrame extends DrawingFrame {
     }
   }
 
-  /**
-   * Adds launchable tools to the specified menu.
-   *
-   */
-  protected JMenu loadToolsMenu() {
-    JMenuBar menuBar = getJMenuBar();
-    if(menuBar==null) {
-      return null;
-    }
-    // add menu item
-    JMenu toolsMenu = new JMenu(DisplayRes.getString("DrawingFrame.Tools_menu_title")); //$NON-NLS-1$
-    menuBar.add(toolsMenu);
-    // test dataset tool
-    JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
-    toolsMenu.add(datasetItem);
-    /*
-     * datasetItem.addActionListener(new ActionListener() {
-     *  public void actionPerformed(ActionEvent e) {
-     *      tool=DataTool.getTool();
-     *      if(tool==null || !tool.isDisplayable()){
-     *        tool = new DataTool(histogram, histogram.getName());
-     *      }else{
-     *        tool.addTab(histogram, histogram.getName());
-     *      }
-     *      tool.setVisible(true);
-     *    }
-     *    });
-     */
-    Class<?> datasetToolClass = null;
-    if(OSPRuntime.loadDataTool) {
-      try {
-        datasetToolClass = Class.forName("org.opensourcephysics.tools.DataTool");      //$NON-NLS-1$
-      } catch(Exception ex) {
-        OSPRuntime.loadDataTool = false;
-        datasetItem.setEnabled(false);
-        OSPLog.finest("Cannot instantiate data analysis tool class:\n"+ex.toString()); //$NON-NLS-1$
-      }
-    }
-    final Class<?> finalDatasetToolClass = datasetToolClass; // class must be final for action listener
-    datasetItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        try {
-          Method m = finalDatasetToolClass.getMethod("getTool", (Class[]) null); //$NON-NLS-1$
-          Tool tool = (Tool) m.invoke(null, (Object[]) null);
-          tool.send(new LocalJob(drawingPanel), reply);
-          if(tool instanceof OSPFrame) {
-            ((OSPFrame) tool).setKeepHidden(false);
-          }
-          ((JFrame) tool).setVisible(true);
-        } catch(Exception ex) {}
-      }
-
-    });
-    return toolsMenu;
-  }
+	/**
+	 * Adds launchable tools to the specified menu.
+	 *
+	 */
+	@Override
+	protected JMenu loadToolsMenu() {
+		if (OSPRuntime.isJS) { // external tools not supported in JavaScript.
+			return null;
+		}
+		JMenuBar menuBar = getJMenuBar();
+		if (menuBar == null) {
+			return null;
+		}
+		// add menu item
+		JMenu toolsMenu = new JMenu(DisplayRes.getString("DrawingFrame.Tools_menu_title")); //$NON-NLS-1$
+		menuBar.add(toolsMenu);
+		// test dataset tool
+		JMenuItem datasetItem = new JMenuItem(DisplayRes.getString("DrawingFrame.DatasetTool_menu_item")); //$NON-NLS-1$
+		toolsMenu.add(datasetItem);
+ 		if (OSPRuntime.loadDataTool) {
+			if (!Tool.setSendAction(datasetItem, "DataTool", drawingPanel, reply, true)) {
+				OSPRuntime.loadDataTool = false;
+				datasetItem.setEnabled(false);
+			}
+		}
+		return toolsMenu;
+	}
 
   /**
    *  Gets an array containing the bin centers.
@@ -224,7 +196,8 @@ public class HistogramFrame extends DrawingFrame {
   /**
    * Removes drawable objects added by the user from this frame.
    */
-  public void clearDrawables() {
+  @Override
+public void clearDrawables() {
     drawingPanel.clear();                // removes all drawables
     drawingPanel.addDrawable(histogram); // puts complex dataset back into panel
     showDataTable(false);
@@ -235,10 +208,9 @@ public class HistogramFrame extends DrawingFrame {
    *
    * @return the list
    */
-  public synchronized ArrayList<Drawable> getDrawables() {
-    ArrayList<Drawable> list = super.getDrawables();
-    list.remove(histogram);
-    return list;
+  @Override
+public synchronized ArrayList<Drawable> getDrawables() {
+	    return super.getDrawablesExcept(null, histogram);
   }
 
   /**
@@ -251,18 +223,18 @@ public class HistogramFrame extends DrawingFrame {
    *
    * @see #getObjectOfClass(Class c)
    */
-  public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
-    ArrayList<T> list = super.getDrawables(c);
-    list.remove(histogram);
-    return list;
+  @Override
+public synchronized <T extends Drawable> ArrayList<T> getDrawables(Class<T> c) {
+	return getDrawablesExcept(c, histogram);
   }
 
   /**
    * Clears all the data stored.
    */
-  public void clearData() {
+  @Override
+public void clearData() {
     histogram.clear();
-    dataTable.refreshTable();
+    dataTable.refreshTable(DataTable.MODE_CLEAR);
     if(drawingPanel!=null) {
       drawingPanel.invalidateImage();
     }
@@ -276,7 +248,7 @@ public class HistogramFrame extends DrawingFrame {
     histogram.append(v);
     // this may be slow if the table is large
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
     }
   }
 
@@ -289,7 +261,7 @@ public class HistogramFrame extends DrawingFrame {
   public void append(double value, double numberOfOccurences) {
     histogram.append(value, numberOfOccurences);
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
     }
   }
 
@@ -302,7 +274,7 @@ public class HistogramFrame extends DrawingFrame {
     histogram.append(values);
     // this may be slow if the table is large
     if((tableFrame!=null)&&tableFrame.isShowing()) {
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_APPEND_ROW);
     }
   }
 
@@ -409,7 +381,7 @@ public class HistogramFrame extends DrawingFrame {
         tableFrame = new DataTableFrame(getTitle()+" "+DisplayRes.getString("TableFrame.TitleAddOn.Data"), dataTable); //$NON-NLS-1$ //$NON-NLS-2$
         tableFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
       }
-      dataTable.refreshTable();
+      dataTable.refreshTable(DataTable.MODE_SHOW);
       dataTable.sort(0);
       tableFrame.setVisible(true);
     } else {
@@ -430,7 +402,8 @@ public class HistogramFrame extends DrawingFrame {
      * @param control XMLControl
      * @return Object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       HistogramFrame frame = new HistogramFrame("x", "y", //$NON-NLS-1$ //$NON-NLS-2$
         DisplayRes.getString("HistogramFrame.Title"));    //$NON-NLS-1$
       return frame;
@@ -443,14 +416,15 @@ public class HistogramFrame extends DrawingFrame {
      * @param obj Object
      * @return Object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       HistogramFrame frame = ((HistogramFrame) obj);
       ArrayList<?> list = frame.getObjectOfClass(Histogram.class);
       if(list.size()>0) { // assume the first Histogram belongs to this frame
         frame.histogram = (Histogram) list.get(0);
         frame.histogram.clear();
-        frame.dataTable.add(frame.histogram);
+        frame.dataTable.add(frame.histogram.model);
       }
       return obj;
     }
@@ -479,6 +453,6 @@ public class HistogramFrame extends DrawingFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

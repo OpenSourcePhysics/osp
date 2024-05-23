@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.value;
@@ -32,31 +32,37 @@ public class ExpressionValue extends Value {
    * @param _group
    */
   public ExpressionValue(String _expression, GroupControl _group) {
+	  super(TYPE_EXPRESSION);
     group = _group;
     expression = new String(_expression.trim());
     processExpression();
   }
 
-  public boolean getBoolean() {
+  @Override
+public boolean getBoolean() {
     return(getDouble()!=0);
   }
 
-  public int getInteger() {
+  @Override
+public int getInteger() {
     return(int) getDouble();
   }
 
-  public double getDouble() {
+  @Override
+public double getDouble() {
     for(int i = 0, n = vars.length; i<n; i++) {
       parser.setVariable(i, group.getDouble(vars[i]));
     }
     return parser.evaluate();
   }
 
-  public String getString() {
+  @Override
+public String getString() {
     return String.valueOf(getDouble());
   }
 
-  public Object getObject() {
+  @Override
+public Object getObject() {
     if(isArray) {
       for(int k = 0, m = arrayVars.length; k<m; k++) {
         for(int i = 0, n = arrayVars[k].length; i<n; i++) {
@@ -74,7 +80,8 @@ public class ExpressionValue extends Value {
     processExpression();
   }
 
-  public void copyValue(Value _source) {
+  @Override
+public void copyValue(Value _source) {
     if(_source instanceof ExpressionValue) {
       expression = new String(((ExpressionValue) _source).expression);
     } else {
@@ -83,7 +90,8 @@ public class ExpressionValue extends Value {
     processExpression();
   }
 
-  public Value cloneValue() {
+  @Override
+public Value cloneValue() {
     return new ExpressionValue(expression, group);
   }
 
@@ -143,6 +151,6 @@ public class ExpressionValue extends Value {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

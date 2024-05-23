@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -97,7 +97,8 @@ public class Password extends JDialog {
     passwordField = new JPasswordField(20);
     passwordField.setToolTipText(ControlsRes.getString("Password.Tooltip")); //$NON-NLS-1$
     passwordField.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String input = String.copyValueOf(passwordField.getPassword());
         if((password!=null)&&!input.equals(password)) {
           Toolkit.getDefaultToolkit().beep();
@@ -110,7 +111,8 @@ public class Password extends JDialog {
 
     });
     passwordField.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         if(e.getKeyCode()==KeyEvent.VK_ESCAPE) {
           passwordField.requestFocusInWindow();
           setVisible(false);
@@ -121,7 +123,8 @@ public class Password extends JDialog {
     // create buttons
     JButton cancelButton = new JButton(ControlsRes.getString("Password.Button.Cancel")); //$NON-NLS-1$
     cancelButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         passwordField.requestFocusInWindow();
         setVisible(false);
       }
@@ -129,7 +132,8 @@ public class Password extends JDialog {
     });
     JButton okButton = new JButton(ControlsRes.getString("Password.Button.Enter")); //$NON-NLS-1$
     okButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         String input = String.copyValueOf(passwordField.getPassword());
         if((password!=null)&&!input.equals(password)) {
           Toolkit.getDefaultToolkit().beep();
@@ -191,6 +195,6 @@ public class Password extends JDialog {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019 The Open Source Physics project
- * https://www.compadre.org/osp
+ * Copyright (c) 2024 The Open Source Physics project
+ * http://www.opensourcephysics.org
  */

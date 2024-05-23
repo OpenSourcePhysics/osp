@@ -2,20 +2,21 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 public class DataPanel extends JPanel {
-  DataRowTable table = new DataRowTable();
-  JScrollPane scrollPane = new JScrollPane(table);
+  public DataRowTable dataRowTable = new DataRowTable();
+  JScrollPane scrollPane = new JScrollPane(dataRowTable);
 
   /**
    * Constructor DataRowPanel
@@ -25,16 +26,23 @@ public class DataPanel extends JPanel {
     add(scrollPane, BorderLayout.CENTER);
   }
   
+
   
+  
+  @Override
+public void paintComponent(Graphics g) {
+	  super.paintComponent(g);
+  }
   /**
    * Sets the font for this component.
    *
    * @param font the desired <code>Font</code> for this component
    * @see java.awt.Component#getFont
    */
-  public void setFont(Font font){
+  @Override
+public void setFont(Font font){
 	  super.setFont(font);
-	  if(table!=null)table.setFont(font);
+	  if(dataRowTable!=null)dataRowTable.setFont(font);
   }
   
   /**
@@ -45,16 +53,17 @@ public class DataPanel extends JPanel {
    * @param fg  the desired foreground <code>Color</code> 
    * @see java.awt.Component#getForeground
    */
-  public void setForeground(Color color){
+  @Override
+public void setForeground(Color color){
 	  super.setForeground(color);
-	  if(table!=null)table.setForeground(color);
+	  if(dataRowTable!=null)dataRowTable.setForeground(color);
   }
 
   /**
    * Refresh the data in the tables.
    */
-  public void refreshTable() {
-    table.refreshTable();
+  public void refreshTable(String from) {
+    dataRowTable.refreshTable(from);
   }
 
   /**
@@ -62,7 +71,7 @@ public class DataPanel extends JPanel {
    * @return
    */
   public java.awt.Component getVisual() {
-    return table;
+    return dataRowTable;
   }
 
   /**
@@ -72,8 +81,8 @@ public class DataPanel extends JPanel {
    * @param  name
    */
   public void setColumnNames(int column, String name) {
-    if(table.rowModel.setColumnNames(column, name)) { // refresh if the table changed
-      refreshTable();
+    if(dataRowTable.rowModel.setColumnNames(column, name)) { // refresh if the table changed
+      refreshTable("setColumnName");
     }
   }
 
@@ -85,12 +94,12 @@ public class DataPanel extends JPanel {
   public void setColumnNames(String[] names) {
     boolean changed = false;
     for(int i = 0, n = names.length; i<n; i++) {
-      if(table.rowModel.setColumnNames(i, names[i])) {
+      if(dataRowTable.rowModel.setColumnNames(i, names[i])) {
         changed = true;
       }
     }
     if(changed) {
-      refreshTable();
+      refreshTable("setColumnNames");
     }
   }
 
@@ -100,8 +109,8 @@ public class DataPanel extends JPanel {
    * @param  vis  <code>true<\code> if table display row number
    */
   public void setRowNumberVisible(boolean vis) {
-    if(table.rowModel.setRowNumberVisible(vis)) { // refresh if the table changed
-      refreshTable();
+    if(dataRowTable.rowModel.setRowNumberVisible(vis)) { // refresh if the table changed
+      refreshTable("setRowNumberVis " + vis);
     }
   }
 
@@ -111,9 +120,9 @@ public class DataPanel extends JPanel {
    * @param index
    */
   public void setFirstRowIndex(int index) {
-    if(table.rowModel.firstRowIndex!=index) { // refresh if the table changed
-      table.rowModel.firstRowIndex = index;
-      refreshTable();
+    if(dataRowTable.rowModel.firstRowIndex!=index) { // refresh if the table changed
+      dataRowTable.rowModel.firstRowIndex = index;
+      refreshTable("setFirstRowIndex " + index);
     }
   }
 
@@ -123,7 +132,7 @@ public class DataPanel extends JPanel {
    * @param  delay  the delay in millisecond
    */
   public void setRefreshDelay(int delay) {
-    table.setRefreshDelay(delay);
+    dataRowTable.setRefreshDelay(delay);
   }
 
   /**
@@ -141,8 +150,7 @@ public class DataPanel extends JPanel {
     while(componentType.isArray()) {
       componentType = componentType.getComponentType();
     }
-    String type = componentType.getName();
-    if(type.equals("double")) {      //$NON-NLS-1$
+    if(componentType == Double.TYPE) {      //$NON-NLS-1$
       double[][] array = (double[][]) obj;
       double[] row = new double[array.length];
       for(int i = 0, n = array[0].length; i<n; i++) {
@@ -151,7 +159,7 @@ public class DataPanel extends JPanel {
         }
         appendRow(row);
       }
-    } else if(type.equals("int")) {  //$NON-NLS-1$
+    } else if(componentType == Integer.TYPE) {  //$NON-NLS-1$
       int[][] array = (int[][]) obj;
       int[] row = new int[array.length];
       for(int i = 0, n = array[0].length; i<n; i++) {
@@ -160,7 +168,7 @@ public class DataPanel extends JPanel {
         }
         appendRow(row);
       }
-    } else if(type.equals("byte")) { //$NON-NLS-1$
+    } else if(componentType == Byte.TYPE) { //$NON-NLS-1$
       byte[][] array = (byte[][]) obj;
       byte[] row = new byte[array.length];
       for(int i = 0, n = array[0].length; i<n; i++) {
@@ -186,9 +194,9 @@ public class DataPanel extends JPanel {
    * @param x double[]
    */
   public synchronized void appendRow(double[] x) {
-    table.rowModel.appendDoubles(x);
+    dataRowTable.rowModel.appendDoubles(x);
     if(isShowing()) {
-      table.refreshTable();
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -197,9 +205,9 @@ public class DataPanel extends JPanel {
    * @param x double[]
    */
   public synchronized void appendRow(int[] x) {
-    table.rowModel.appendInts(x);
+    dataRowTable.rowModel.appendInts(x);
     if(isShowing()) {
-      table.refreshTable();
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -208,9 +216,9 @@ public class DataPanel extends JPanel {
    * @param x double[]
    */
   public synchronized void appendRow(Object[] x) {
-    table.rowModel.appendRow(x);
+    dataRowTable.rowModel.appendRow(x);
     if(isShowing()) {
-      table.refreshTable();
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -219,9 +227,9 @@ public class DataPanel extends JPanel {
    * @param x double[]
    */
   public synchronized void appendRow(byte[] x) {
-    table.rowModel.appendBytes(x);
+    dataRowTable.rowModel.appendBytes(x);
     if(isShowing()) {
-      table.refreshTable();
+      dataRowTable.refreshTable("appendRow");
     }
   }
 
@@ -230,7 +238,7 @@ public class DataPanel extends JPanel {
    * @return
    */
   public boolean isRowNumberVisible() {
-    return table.rowModel.rowNumberVisible;
+    return dataRowTable.rowModel.rowNumberVisible;
   }
 
   /**
@@ -239,7 +247,7 @@ public class DataPanel extends JPanel {
    * @return the column count
    */
   public int getColumnCount() {
-    return table.rowModel.getColumnCount();
+    return dataRowTable.rowModel.getColumnCount();
   }
 
   /**
@@ -248,7 +256,7 @@ public class DataPanel extends JPanel {
    * @return the row count
    */
   public int getRowCount() {
-    return table.rowModel.getRowCount();
+    return dataRowTable.rowModel.getRowCount();
   }
 
   /**
@@ -257,7 +265,7 @@ public class DataPanel extends JPanel {
    * @return the row count
    */
   public int getTotalRowCount() {
-    return table.rowModel.rowList.size();
+    return dataRowTable.rowModel.rowList.size();
   }
 
   /**
@@ -266,7 +274,7 @@ public class DataPanel extends JPanel {
    * @return the stride
    */
   public int getStride() {
-    return table.rowModel.stride;
+    return dataRowTable.rowModel.stride;
   }
 
   /**
@@ -276,14 +284,14 @@ public class DataPanel extends JPanel {
    * @param  format
    */
   public void setColumnFormat(int column, String format) {
-    table.setColumnFormat(column, format);
+    dataRowTable.setColumnFormat(column, format);
   }
 
   /**
    * Clears any previous format
    */
   public void clearFormats() {
-	table.clearFormats();
+	dataRowTable.clearFormats();
   }
   
   /**
@@ -292,7 +300,7 @@ public class DataPanel extends JPanel {
    * @param  pattern
    */
   public void setNumericFormat(String pattern) {
-    table.setNumericFormat(pattern);
+    dataRowTable.setNumericFormat(pattern);
   }
 
   /**
@@ -301,7 +309,7 @@ public class DataPanel extends JPanel {
    * @param  max
    */
   public void setMaxPoints(int max) {
-    table.rowModel.setMaxPoints(max);
+    dataRowTable.rowModel.setMaxPoints(max);
   }
 
   /**
@@ -310,9 +318,10 @@ public class DataPanel extends JPanel {
    * @param vis  if <code>true</code>, shows this component;
    * otherwise, hides this component
    */
-  public void setVisible(boolean vis) {
+  @Override
+public void setVisible(boolean vis) {
     if(vis) {
-      table.refreshTable(); // make sure the table shows the current values
+      dataRowTable.refreshTable(" vis " + vis); // make sure the table shows the current values
     }
     super.setVisible(vis);
   }
@@ -324,21 +333,21 @@ public class DataPanel extends JPanel {
    * @param  stride
    */
   public void setStride(int stride) {
-    table.setStride(stride);
+    dataRowTable.setStride(stride);
   }
 
   /**
    * Clears data from this table.  Column names and format patterns are not affected.
    */
   public void clearData() {
-    table.clearData();
+    dataRowTable.clearData();
   }
 
   /**
    * Clears data, column names and format patterns.
    */
   public void clear() {
-    table.clear();
+    dataRowTable.clear();
   }
   
   /**
@@ -352,7 +361,7 @@ public class DataPanel extends JPanel {
    *                   AUTO_RESIZE_ALL_COLUMNS
    */
   public void setAutoResizeMode(int mode) {
-    table.setAutoResizeMode(mode); // make sure the table shows the current values
+    dataRowTable.setAutoResizeMode(mode); // make sure the table shows the current values
   }
 
 }
@@ -377,6 +386,6 @@ public class DataPanel extends JPanel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

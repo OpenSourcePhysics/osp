@@ -2,20 +2,24 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.ResourceLoader;
 
 public class EjsRes {
-  private static final String BUNDLE_NAME = "org.opensourcephysics.resources.ejs.ejs_res"; //$NON-NLS-1$
-  static ResourceBundle res;
+  static org.opensourcephysics.tools.ResourceLoader.Bundle res;
 
   private EjsRes() {}
+
+  public static void setLocale(Locale locale) {
+	 res = ResourceLoader.getBundle("org.opensourcephysics.resources.ejs.ejs_res", locale); //$NON-NLS-1$
+  }
 
   static {
     String language = Locale.getDefault().getLanguage();
@@ -26,11 +30,7 @@ public class EjsRes {
         break;
       }
     }
-    res = ResourceBundle.getBundle(BUNDLE_NAME, resourceLocale);
-  }
-
-  public static void setLocale(Locale locale) {
-    res = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+    setLocale(resourceLocale);
   }
 
   public static String getString(String key) {
@@ -63,6 +63,6 @@ public class EjsRes {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

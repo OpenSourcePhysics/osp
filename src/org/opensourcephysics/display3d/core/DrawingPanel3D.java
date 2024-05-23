@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.core;
@@ -267,9 +267,11 @@ public interface DrawingPanel3D extends org.opensourcephysics.display3d.core.int
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader implements org.opensourcephysics.controls.XML.ObjectLoader {
-    abstract public Object createObject(XMLControl control);
+    @Override
+	abstract public Object createObject(XMLControl control);
 
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DrawingPanel3D panel = (DrawingPanel3D) obj;
       control.setValue("preferred x min", panel.getPreferredMinX());          //$NON-NLS-1$
       control.setValue("preferred x max", panel.getPreferredMaxX());          //$NON-NLS-1$
@@ -282,7 +284,8 @@ public interface DrawingPanel3D extends org.opensourcephysics.display3d.core.int
       control.setValue("elements", panel.getElements());                      //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DrawingPanel3D panel = (DrawingPanel3D) obj;
       double minX = control.getDouble("preferred x min"); //$NON-NLS-1$
       double maxX = control.getDouble("preferred x max"); //$NON-NLS-1$
@@ -329,6 +332,6 @@ public interface DrawingPanel3D extends org.opensourcephysics.display3d.core.int
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -16,8 +16,8 @@ import org.opensourcephysics.controls.XMLControl;
 public class DoubleArray {
   public static int NumberFormatError = 1;
   public static int ArrayIndexOutOfBoundsError = 2;
-  protected DecimalFormat format = new DecimalFormat("0.00");       // display format //$NON-NLS-1$
-  protected DecimalFormat formatExp = new DecimalFormat("0.00#E0"); // display format //$NON-NLS-1$
+  protected DecimalFormat format = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00");       // display format //$NON-NLS-1$
+  protected DecimalFormat formatExp = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00#E0"); // display format //$NON-NLS-1$
   protected double[] array;
   protected String defaultString;
   protected double[] defaultArray;
@@ -38,7 +38,7 @@ public class DoubleArray {
   /**
    * Creates a DoubleArray of the given length with all elements set to zero.
    *
-   * The length of the arry cannot be changed.
+   * The length of the array cannot be changed.
    *
    * @param array
    */
@@ -48,7 +48,7 @@ public class DoubleArray {
   }
 
   /**
-   * Creates an arry with the given string being the default string.
+   * Creates an array with the given string being the default string.
    *
    * The given string determines the length of the array.  This lenght cannot be changed.
    * @param str
@@ -67,7 +67,7 @@ public class DoubleArray {
    * @see java.text.DecimalFormat
    */
   public void setDecimalFormat(String pattern) {
-    format = new DecimalFormat(pattern);
+    format = org.opensourcephysics.numerics.Util.newDecimalFormat(pattern);
     formatExp = format;
   }
 
@@ -88,7 +88,8 @@ public class DoubleArray {
    *
    * @return string
    */
-  public String toString() {
+  @Override
+public String toString() {
     if(errorcode>0) {
       return defaultString;
     }
@@ -223,7 +224,8 @@ public class DoubleArray {
      * @param control the control
      * @param obj the DrawingPanel to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DoubleArray array = (DoubleArray) obj;
       control.setValue("data", array.getArray()); //$NON-NLS-1$
     }
@@ -234,7 +236,8 @@ public class DoubleArray {
      * @param control the control
      * @return the newly created panel
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DoubleArray((double[]) control.getObject("data")); //$NON-NLS-1$
     }
 
@@ -245,7 +248,8 @@ public class DoubleArray {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DoubleArray dataArray = (DoubleArray) obj;
       double[] data = (double[]) control.getObject("data"); //$NON-NLS-1$
       dataArray.array = data;
@@ -277,6 +281,6 @@ public class DoubleArray {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

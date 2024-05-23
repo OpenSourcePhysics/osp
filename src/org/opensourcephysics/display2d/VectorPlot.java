@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -74,7 +74,8 @@ public class VectorPlot implements Plot2D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -84,7 +85,8 @@ public class VectorPlot implements Plot2D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -94,7 +96,8 @@ public class VectorPlot implements Plot2D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -104,7 +107,8 @@ public class VectorPlot implements Plot2D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -115,7 +119,8 @@ public class VectorPlot implements Plot2D {
    *
    * @param obj
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][][] val = (double[][][]) obj;
     copyVecData(val);
     update();
@@ -132,7 +137,8 @@ public class VectorPlot implements Plot2D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][][] val = (double[][][]) obj;
     copyVecData(val);
     if(griddata.isCellData()) {
@@ -170,7 +176,8 @@ public class VectorPlot implements Plot2D {
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -179,7 +186,8 @@ public class VectorPlot implements Plot2D {
    *
    * @param _griddata the new data storage
    */
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
     if(griddata==null) {
       return;
@@ -202,7 +210,8 @@ public class VectorPlot implements Plot2D {
    *
    * @param indexes the sample-component indexes
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
     aIndex = indexes[1];
     bIndex = indexes[2];
@@ -225,7 +234,8 @@ public class VectorPlot implements Plot2D {
    *
    * @param mode
    */
-  public void setPaletteType(int mode) {
+  @Override
+public void setPaletteType(int mode) {
     colorMap.setPaletteType(mode);
   }
 
@@ -234,7 +244,8 @@ public class VectorPlot implements Plot2D {
    * Not implemented in this class.
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     // not implemented
   }
 
@@ -244,7 +255,8 @@ public class VectorPlot implements Plot2D {
    *
    * @param vis
    */
-  public void setVisible(boolean vis) {
+  @Override
+public void setVisible(boolean vis) {
     visible = vis;
   }
 
@@ -253,7 +265,8 @@ public class VectorPlot implements Plot2D {
    *
    * @param showGrid
    */
-  public void setShowGridLines(boolean showGrid) {
+  @Override
+public void setShowGridLines(boolean showGrid) {
     if(grid==null) {
       grid = new Grid(0);
     }
@@ -265,7 +278,8 @@ public class VectorPlot implements Plot2D {
    *
    * @param  c
    */
-  public void setGridLineColor(Color c) {
+  @Override
+public void setGridLineColor(Color c) {
     grid.setColor(c);
   }
 
@@ -274,7 +288,8 @@ public class VectorPlot implements Plot2D {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible||(griddata==null)) {
       return;
     }
@@ -373,7 +388,8 @@ public class VectorPlot implements Plot2D {
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     autoscaleZ = isAutoscale;
     if(autoscaleZ) {
       update();
@@ -388,14 +404,16 @@ public class VectorPlot implements Plot2D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return false;
   }
 
@@ -404,7 +422,8 @@ public class VectorPlot implements Plot2D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -412,7 +431,8 @@ public class VectorPlot implements Plot2D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return 0;
   }
 
@@ -420,7 +440,8 @@ public class VectorPlot implements Plot2D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return colorMap.getCeiling();
   }
 
@@ -430,26 +451,31 @@ public class VectorPlot implements Plot2D {
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     // not implemented
   }
 
   /**
    * Shows how values map to colors.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend();
   }
+
+  double[] minmax = new double[2];
 
   /**
    * Updates the vector field using the data array.
    */
-  public void update() {
+  @Override
+public void update() {
     if(griddata==null) {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       colorMap.setScale(minmax[1]);
     }
     if(griddata.isCellData()) {
@@ -474,7 +500,8 @@ public class VectorPlot implements Plot2D {
    * @param expanded boolean
    * @param expansionFactor double
    */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     // does nothing for now.
   }
 
@@ -518,23 +545,28 @@ public class VectorPlot implements Plot2D {
   }
 
   /* The following methods are requried for the measurable interface */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return xmin;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return xmax;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return ymin;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return ymax;
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return griddata!=null;
   }
 
@@ -545,7 +577,8 @@ public class VectorPlot implements Plot2D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new VectorPlot(null);
       }
 
@@ -574,6 +607,6 @@ public class VectorPlot implements Plot2D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

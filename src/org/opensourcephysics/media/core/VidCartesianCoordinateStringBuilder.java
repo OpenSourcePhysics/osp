@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.media.core;
@@ -36,7 +36,8 @@ public class VidCartesianCoordinateStringBuilder
    * @param e the mouse event
    * @return the coordinate string
    */
-  public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
+  @Override
+public String getCoordinateString(DrawingPanel panel, MouseEvent e) {
     if(!(panel instanceof VideoPanel)) {
       return super.getCoordinateString(panel, e);
     }
@@ -52,7 +53,8 @@ public class VidCartesianCoordinateStringBuilder
    * @param y the y
    * @return the coordinate string
    */
-  public String getCoordinateString(VideoPanel panel, double x, double y) {
+  @Override
+public String getCoordinateString(VideoPanel panel, double x, double y) {
     String msg;
     if((Math.abs(x)>100)||(Math.abs(x)<0.01)||(Math.abs(y)>100)||(Math.abs(y)<0.01)) {
 	  	scientificFormat.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
@@ -86,6 +88,6 @@ public class VidCartesianCoordinateStringBuilder
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

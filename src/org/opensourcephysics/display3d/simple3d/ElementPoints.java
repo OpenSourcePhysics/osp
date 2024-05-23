@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -31,7 +31,8 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // New configuration methods
   // -------------------------------------
-  public void setData(double[][] data) {
+  @Override
+public void setData(double[][] data) {
     if(coordinates.length!=data.length) {
       int n = data.length;
       coordinates = new double[n][3];
@@ -49,7 +50,8 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
     setElementChanged(true);
   }
 
-  public double[][] getData() {
+  @Override
+public double[][] getData() {
     double[][] data = new double[coordinates.length][3];
     for(int i = 0, n = coordinates.length; i<n; i++) {
       System.arraycopy(coordinates[i], 0, data[i], 0, 3);
@@ -60,7 +62,8 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // Abstract part of Element or Parent methods overwritten
   // -------------------------------------
-  public void getExtrema(double[] min, double[] max) {
+  @Override
+public void getExtrema(double[] min, double[] max) {
     double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
     double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
     double minZ = Double.POSITIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
@@ -83,7 +86,8 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
     max[2] = maxZ;
   }
 
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()||(coordinates.length==0)) {
       return null;
     }
@@ -95,14 +99,16 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
     return pointObjects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), pointObjects[_index].getDistance());
     _g2.setStroke(getRealStyle().getLineStroke());
     _g2.setColor(theColor);
     _g2.drawLine(aPoints[_index], bPoints[_index], aPoints[_index], bPoints[_index]); // a segment from it to itself
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()||(coordinates.length==0)) {
       return;
     }
@@ -121,7 +127,8 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()||(coordinates.length==0)) {
       return null;
     }
@@ -179,7 +186,8 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
   }
 
   static private class Loader extends org.opensourcephysics.display3d.core.ElementPoints.Loader {
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new ElementPoints();
     }
 
@@ -207,6 +215,6 @@ public class ElementPoints extends Element implements org.opensourcephysics.disp
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

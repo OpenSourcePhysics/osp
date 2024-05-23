@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -17,6 +17,7 @@ import javax.swing.table.AbstractTableModel;
  * @author Wolfgang Christian
  * @version 1.1
  */
+@SuppressWarnings("serial")
 public class ArrayTableModel extends AbstractTableModel {
   double[] doubleArray1;
   double[][] doubleArray2;
@@ -226,7 +227,8 @@ public class ArrayTableModel extends AbstractTableModel {
    *
    * @return the column count
    */
-  public int getColumnCount() {
+  @Override
+public int getColumnCount() {
     if(getArrayRowCount()==0) {
       return 0; // don't show columns if there aren't any rows
     }
@@ -301,7 +303,8 @@ public class ArrayTableModel extends AbstractTableModel {
    * @param column the column index
    * @return the column name
    */
-  public String getColumnName(int column) {
+  @Override
+public String getColumnName(int column) {
     if(!showRowNumber) {
       column++;
     }
@@ -322,7 +325,8 @@ public class ArrayTableModel extends AbstractTableModel {
    *
    * @return the row count
    */
-  public int getRowCount() {
+  @Override
+public int getRowCount() {
     if(transposed) {
       return getArrayColumnCount();
     }
@@ -370,9 +374,10 @@ public class ArrayTableModel extends AbstractTableModel {
    * @param column the column index
    * @return the value
    */
-  public Object getValueAt(int row, int column) {
+  @Override
+public Object getValueAt(int row, int column) {
     if(showRowNumber&&(column==0)) {
-      return new Integer(row+firstRow);
+      return Integer.valueOf(row+firstRow);
     }
     int offset = showRowNumber ? 1 : 0;
     if(transposed) {
@@ -381,14 +386,14 @@ public class ArrayTableModel extends AbstractTableModel {
       column = temp;
     }
     if(intArray1!=null) {
-      return new Integer(intArray1[row]);
+      return Integer.valueOf(intArray1[row]);
     }
     if(intArray2!=null) {
       int col = transposed ? column : column-offset;
       if((row>intArray2.length-1)||(col>intArray2[row].length-1)||(col<0)) {
         return null;
       }
-      return new Integer(intArray2[row][col]);
+      return Integer.valueOf(intArray2[row][col]);
     }
     if(doubleArray1!=null) {
       return new Double(doubleArray1[row]);
@@ -411,14 +416,14 @@ public class ArrayTableModel extends AbstractTableModel {
       return stringArray2[row][col];
     }
     if(booleanArray1!=null) {
-      return new Boolean(booleanArray1[row]);
+      return Boolean.valueOf(booleanArray1[row]);
     }
     if(booleanArray2!=null) {
       int col = transposed ? column : column-offset;
       if((row>booleanArray2.length-1)||(col>booleanArray2[row].length-1)||(col<0)) {
         return null;
       }
-      return new Boolean(booleanArray2[row][col]);
+      return Boolean.valueOf(booleanArray2[row][col]);
     }
     return null;
   }
@@ -430,7 +435,8 @@ public class ArrayTableModel extends AbstractTableModel {
    * @param row the row index
    * @param col the column index
    */
-  public void setValueAt(Object value, int row, int col) {
+  @Override
+public void setValueAt(Object value, int row, int col) {
     int offset = showRowNumber ? 1 : 0;  // added by WC
     if(transposed) {
       int temp = row;
@@ -474,7 +480,8 @@ public class ArrayTableModel extends AbstractTableModel {
    * @param col the column index
    * @return true if editable
    */
-  public boolean isCellEditable(int row, int col) {
+  @Override
+public boolean isCellEditable(int row, int col) {
     if(showRowNumber&&(col==0)) {
       return false; // row numbers are never editable
     }
@@ -508,6 +515,6 @@ public class ArrayTableModel extends AbstractTableModel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

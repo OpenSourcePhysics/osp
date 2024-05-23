@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -58,9 +58,9 @@ public class Cryptic {
   }
 
   /**
-   * Encrypts the input and saves in cryptic form.
+   * Encrypts the input and saves in cryptic form using a default password.
    *
-   * @param input UTF-8 String to encrypt
+   * @param content UTF-8 String to encrypt
    * @return the encrypted content
    */
   public String encrypt(String content) {
@@ -70,7 +70,8 @@ public class Cryptic {
   /**
    * Encrypts the input with a password and saves in cryptic form.
    *
-   * @param input UTF-8 String to encrypt
+   * @param content UTF-8 String to encrypt
+   * @param password password for encryption
    * @return the encrypted content
    */
   public String encrypt(String content, String password) {
@@ -168,7 +169,8 @@ public class Cryptic {
      * @param control the control to save to
      * @param obj the object to save
      */
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       Cryptic cryptic = (Cryptic) obj;
       control.setValue("cryptic", cryptic.getCryptic()); //$NON-NLS-1$
     }
@@ -179,7 +181,8 @@ public class Cryptic {
      * @param control the control
      * @return the newly created object
      */
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new Cryptic();
     }
 
@@ -190,7 +193,8 @@ public class Cryptic {
      * @param obj the object
      * @return the loaded object
      */
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       Cryptic cryptic = (Cryptic) obj;
       cryptic.setCryptic(control.getString("cryptic")); //$NON-NLS-1$
       return obj;
@@ -220,6 +224,6 @@ public class Cryptic {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

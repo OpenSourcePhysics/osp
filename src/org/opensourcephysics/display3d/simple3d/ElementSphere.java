@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -33,31 +33,37 @@ public class ElementSphere extends ElementEllipsoid implements org.opensourcephy
     setRadius(radius);
   }
 
-  public void setRadius(double radius) {
+  @Override
+public void setRadius(double radius) {
     radius *= 2;
     super.setSizeXYZ(radius, radius, radius);
   }
 
-  public double getRadius() {
+  @Override
+public double getRadius() {
     return this.getSizeX()/2;
   }
 
   // -------------------------------------
   // Overwrite parent methods
   // -------------------------------------
-  public void setSizeX(double sizeX) {
+  @Override
+public void setSizeX(double sizeX) {
     super.setSizeXYZ(sizeX, sizeX, sizeX);
   }
 
-  public void setSizeY(double sizeY) {
+  @Override
+public void setSizeY(double sizeY) {
     super.setSizeXYZ(sizeY, sizeY, sizeY);
   }
 
-  public void setSizeZ(double sizeZ) {
+  @Override
+public void setSizeZ(double sizeZ) {
     super.setSizeXYZ(sizeZ, sizeZ, sizeZ);
   }
 
-  public void setSizeXYZ(double sizeX, double sizeY, double sizeZ) {
+  @Override
+public void setSizeXYZ(double sizeX, double sizeY, double sizeZ) {
     double max = Math.max(Math.max(sizeX, sizeY), sizeZ);
     super.setSizeXYZ(max, max, max);
   }
@@ -84,6 +90,6 @@ public class ElementSphere extends ElementEllipsoid implements org.opensourcephy
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -26,7 +26,8 @@ public class HiddenControl implements Control {
    *
    * @param lock boolean
    */
-  public void setLockValues(boolean lock) {
+  @Override
+public void setLockValues(boolean lock) {
     // this control does not have a user interface
   }
 
@@ -38,7 +39,8 @@ public class HiddenControl implements Control {
     *@param  val  the initial parameter value
     *@since
     */
-  public void setValue(String par, Object val) {
+  @Override
+public void setValue(String par, Object val) {
     map.put(par, val.toString());
   }
 
@@ -50,7 +52,8 @@ public class HiddenControl implements Control {
    *@param  val  the initial parameter value
    *@since
    */
-  public void setValue(String par, boolean val) {
+  @Override
+public void setValue(String par, boolean val) {
     map.put(par, String.valueOf(val));
   }
 
@@ -62,7 +65,8 @@ public class HiddenControl implements Control {
    *@param  val  the initial parameter value
    *@since
    */
-  public void setValue(String par, double val) {
+  @Override
+public void setValue(String par, double val) {
     map.put(par, Double.toString(val));
   }
 
@@ -74,7 +78,8 @@ public class HiddenControl implements Control {
    *@param  val  the initial parameter value
    *@since
    */
-  public void setValue(String par, int val) {
+  @Override
+public void setValue(String par, int val) {
     map.put(par, Integer.toString(val));
   }
 
@@ -91,7 +96,13 @@ public class HiddenControl implements Control {
 *
 * @return List
 */
-  public java.util.Collection<String> getPropertyNames() {
+  @Override
+public java.util.Collection<String> getPropertyNames() {
+    return map.keySet();
+  }
+
+  @Override
+public java.util.Collection<String> getPropertyNamesRaw() {
     return map.keySet();
   }
 
@@ -102,7 +113,8 @@ public class HiddenControl implements Control {
    *@return      double the value of of the parameter
    *@since
    */
-  public double getDouble(String par) {
+  @Override
+public double getDouble(String par) {
     String str = getString(par);
     if(str.equals("")) { //$NON-NLS-1$
       return 0;
@@ -127,7 +139,8 @@ public class HiddenControl implements Control {
    *@return      int the value of of the parameter
    *@since
    */
-  public int getInt(String par) {
+  @Override
+public int getInt(String par) {
     int val = (int) getDouble(par);
     return val;
   }
@@ -139,7 +152,8 @@ public class HiddenControl implements Control {
    * @param name the name
    * @return the object
    */
-  public Object getObject(String name) {
+  @Override
+public Object getObject(String name) {
     return map.get(name);
   }
 
@@ -150,7 +164,8 @@ public class HiddenControl implements Control {
    *@return      String the value of of the parameter
    *@since
    */
-  public String getString(String par) {
+  @Override
+public String getString(String par) {
     String str = map.get(par);
     if(str==null) {
       println("Variable "+par+" not found."); //$NON-NLS-1$ //$NON-NLS-2$
@@ -166,7 +181,8 @@ public class HiddenControl implements Control {
    *@return      the value of of the parameter
    *@since
    */
-  public boolean getBoolean(String par) {
+  @Override
+public boolean getBoolean(String par) {
     String str = getString(par);
     if(str.equals("")) { //$NON-NLS-1$
       return false;
@@ -182,23 +198,29 @@ public class HiddenControl implements Control {
     return false;
   }
 
-  public void println(String s) {
+  @Override
+public void println(String s) {
     System.out.println(s);
   }
 
-  public void println() {
+  @Override
+public void println() {
     System.out.println();
   }
 
-  public void print(String s) {
+  @Override
+public void print(String s) {
     System.out.println(s);
   }
 
-  public void clearMessages() {}
+  @Override
+public void clearMessages() {}
 
-  public void calculationDone(String s) {}
+  @Override
+public void calculationDone(String s) {}
 
-  public void clearValues() {}
+  @Override
+public void clearValues() {}
 
 }
 
@@ -222,6 +244,6 @@ public class HiddenControl implements Control {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

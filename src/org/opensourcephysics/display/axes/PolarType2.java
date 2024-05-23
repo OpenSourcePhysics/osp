@@ -2,13 +2,12 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display.axes;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.PlottingPanel;
 import org.opensourcephysics.display.TextLine;
@@ -55,7 +54,8 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
    * @param  s the label
    * @param font_name an optional font name
    */
-  public void setXLabel(String s, String font_name) {}
+  @Override
+public void setXLabel(String s, String font_name) {}
 
   /**
    * Sets the y label of the axes.
@@ -65,14 +65,16 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
    * @param  label the label
    * @param s an optional font name
    */
-  public void setYLabel(String s, String font_name) {}
+  @Override
+public void setYLabel(String s, String font_name) {}
 
   /**
    * Gets the x axis label.
    *
    * @return String
    */
-  public String getXLabel() {
+  @Override
+public String getXLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -81,7 +83,8 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
    *
    * @return String
    */
-  public String getYLabel() {
+  @Override
+public String getYLabel() {
     return ""; //$NON-NLS-1$
   }
 
@@ -102,31 +105,34 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
   /**
    * Shows a grid line for every x axis major tickmark.
    */
-  public void setShowMajorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every x axis minor tickmark.
    */
-  public void setShowMinorXGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorXGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis major tickmark.
    */
-  public void setShowMajorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMajorYGrid(boolean showGrid) {}
 
   /**
    * Shows a grid line for every y axis minor tickmark.
    */
-  public void setShowMinorYGrid(boolean showGrid) {}
+  @Override
+public void setShowMinorYGrid(boolean showGrid) {}
 
   /**
  * Draws a representation of an object in a drawing panel.
  * @param panel
  * @param g
  */
-  public void draw(DrawingPanel panel, Graphics g) {
-    Graphics2D g2 = (Graphics2D) g;
-    Shape clipShape = g2.getClip();
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     int gw = panel.getLeftGutter()+panel.getRightGutter();
     int gh = panel.getTopGutter()+panel.getLeftGutter();
     if(interiorColor!=null) {
@@ -135,15 +141,8 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
       g.setColor(gridcolor);
       g.drawRect(panel.getLeftGutter(), panel.getTopGutter(), panel.getWidth()-gw, panel.getHeight()-gh);
     }
-    g2.clipRect(panel.getLeftGutter(), panel.getTopGutter(), panel.getWidth()-gw, panel.getHeight()-gh);
-    double rmax = Math.abs(panel.getXMax())+Math.abs(panel.getYMax());
-    rmax = Math.max(rmax, Math.abs(panel.getXMax())+Math.abs(panel.getYMin()));
-    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMax()));
-    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMin()));
-    double dr = drawRings(rmax, panel, g);
-    drawSpokes(rmax, panel, g);
-    g2.setClip(clipShape);
-    drawRAxis(dr, rmax, panel, g);
+    Graphics2D g2 = (Graphics2D) g.create();
+    // BH 2020.02.26 moved title up. OK?
     titleLine.setX((panel.getXMax()+panel.getXMin())/2);
     if(panel.getTopGutter()>20) {
       titleLine.setY(panel.getYMax()+5/panel.getYPixPerUnit());
@@ -151,7 +150,18 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
       titleLine.setY(panel.getYMax()-25/panel.getYPixPerUnit());
     }
     titleLine.setColor(panel.getForeground());
-    titleLine.draw(panel, g);
+    titleLine.draw(panel, g2);
+//  Shape clipShape = g2.getClip();
+    g2.clipRect(panel.getLeftGutter(), panel.getTopGutter(), panel.getWidth()-gw, panel.getHeight()-gh);
+    double rmax = Math.abs(panel.getXMax())+Math.abs(panel.getYMax());
+    rmax = Math.max(rmax, Math.abs(panel.getXMax())+Math.abs(panel.getYMin()));
+    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMax()));
+    rmax = Math.max(rmax, Math.abs(panel.getXMin())+Math.abs(panel.getYMin()));
+    double dr = drawRings(rmax, panel, g2);
+    drawSpokes(rmax, panel, g2);
+//    g2.setClip(clipShape);
+    drawRAxis(dr, rmax, panel, g2);
+    g2.dispose(); // BH 2020.02.26 added -- but after drawRAxis. OK?
   }
 
 }
@@ -176,6 +186,6 @@ public class PolarType2 extends AbstractPolarAxis implements PolarAxes {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

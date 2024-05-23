@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -10,7 +10,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Draws a group of shapes.
@@ -32,29 +31,41 @@ public class DrawableGroup implements Drawable {
     }
   }
 
+  AffineTransform trDG = new AffineTransform();
+
   /**
    * Draws the shapes in the drawable list.
    *
    * @param panel the drawing panel
    * @param g  the graphics context
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     int xpix = panel.xToPix(0);
     int ypix = panel.yToPix(0);
+    
     Graphics2D g2 = (Graphics2D) g;
-    Iterator<Drawable> it = drawableList.iterator();
-    AffineTransform oldAT = g2.getTransform();
-    AffineTransform at = g2.getTransform();
-    at.concatenate(AffineTransform.getRotateInstance(-theta, xpix, ypix));
+       
     double xt = x*panel.getXPixPerUnit()*Math.cos(theta)+y*panel.getYPixPerUnit()*Math.sin(theta);
     double yt = x*panel.getXPixPerUnit()*Math.sin(theta)-y*panel.getYPixPerUnit()*Math.cos(theta);
-    at.concatenate(AffineTransform.getTranslateInstance(xt, yt));
-    g2.setTransform(at);
-    while(it.hasNext()) {
-      Drawable drawable = it.next();
-      drawable.draw(panel, g2);
+    AffineTransform at = g2.getTransform();
+    trDG.setTransform(at);    
+    trDG.rotate(-theta, xpix, ypix);
+    trDG.translate(xt, yt);
+    
+    
+    // was:
+//    AffineTransform at = g2.getTransform();
+//    at.concatenate(AffineTransform.getRotateInstance(-theta, xpix, ypix));
+//    double xt = x*panel.getXPixPerUnit()*Math.cos(theta)+y*panel.getYPixPerUnit()*Math.sin(theta);
+//    double yt = x*panel.getXPixPerUnit()*Math.sin(theta)-y*panel.getYPixPerUnit()*Math.cos(theta);
+//    at.concatenate(AffineTransform.getTranslateInstance(xt, yt));
+
+    g2.setTransform(trDG);
+    for (int i = 0, n = drawableList.size(); i < n; i++) {
+      drawableList.get(i).draw(panel, g2);
     }
-    g2.setTransform(oldAT);
+    g2.setTransform(at);
   }
 
   /**
@@ -141,6 +152,6 @@ public class DrawableGroup implements Drawable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

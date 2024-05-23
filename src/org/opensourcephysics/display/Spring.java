@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -10,7 +10,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.GeneralPath;
 
@@ -246,7 +245,8 @@ public class Spring implements Measurable {
    * @param panel DrawingPanel
    * @param g Graphics
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -261,30 +261,35 @@ public class Spring implements Measurable {
       g2.drawLine(a, b, a, b);
       return;
     }
-    Shape s = springPath.createTransformedShape(panel.getPixelTransform());
-    g2.draw(s);
+    
+    g2.draw(panel.transformShape(springPath));
   }
 
   // -------------------------------------
   // Implementation of Measured3D
   // -------------------------------------
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return visible;
   }
 
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return(sizex>0) ? x : x+sizex;
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return(sizex>0) ? x+sizex : x;
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return(sizey>0) ? y : y+sizey;
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return(sizey>0) ? y+sizey : y;
   }
 
@@ -370,6 +375,6 @@ public class Spring implements Measurable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

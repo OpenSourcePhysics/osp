@@ -2,11 +2,16 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
 import java.text.DecimalFormat;
+import java.util.Hashtable;
+import java.util.Map;
+
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 /**
  * A utility class for numerical analysis.
@@ -22,19 +27,32 @@ public final class Util {
   /** The default precision for numerical analysis. */
   public static final double defaultNumericalPrecision = Math.sqrt(Double.MIN_VALUE);
 
+  private static Map<String, DecimalFormat> htFormats = new Hashtable<>();
+
+  public static DecimalFormat newDecimalFormat(String format) {
+	  DecimalFormat f = htFormats.get(format);
+	  if (f == null) {
+		  f = new DecimalFormat(format);
+		  htFormats.put(format,  f);
+	  }
+	return f;
+}
+
   /** Parser for simple arithmetic expressions. */
   private static SuryonoParser parser = new SuryonoParser(0);     // parser without variables
   // standard output formats
-  static DecimalFormat format2 = new DecimalFormat("#0.00");      //$NON-NLS-1$
-  static DecimalFormat format3 = new DecimalFormat("#0.000");     //$NON-NLS-1$
-  static DecimalFormat format4 = new DecimalFormat("#0.0000");    //$NON-NLS-1$
-  static DecimalFormat format_E2 = new DecimalFormat("0.00E0");   //$NON-NLS-1$
-  static DecimalFormat format_E3 = new DecimalFormat("0.000E0");  //$NON-NLS-1$
-  static DecimalFormat format_E4 = new DecimalFormat("0.0000E0"); //$NON-NLS-1$
+  static DecimalFormat format2 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.00");      //$NON-NLS-1$
+  static DecimalFormat format3 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.000");     //$NON-NLS-1$
+  static DecimalFormat format4 = org.opensourcephysics.numerics.Util.newDecimalFormat("#0.0000");    //$NON-NLS-1$
+  static DecimalFormat format_E2 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.00E0");   //$NON-NLS-1$
+  static DecimalFormat format_E3 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.000E0");  //$NON-NLS-1$
+  static DecimalFormat format_E4 = org.opensourcephysics.numerics.Util.newDecimalFormat("0.0000E0"); //$NON-NLS-1$
 
   private Util() {}                                               // prohibit instantiation because all methods are static
 
-  /**
+  
+
+/**
    * Convert a double to a string, printing two decimal places.
    * @param d  Input double
    */
@@ -192,7 +210,8 @@ public final class Util {
    */
   public static Function constantFunction(final double c) {
     return new Function() {
-      public double evaluate(final double x) {
+      @Override
+	public double evaluate(final double x) {
         return c;
       }
 
@@ -208,7 +227,8 @@ public final class Util {
    */
   public static Function linearFunction(final double m, final double b) {
     return new Function() {
-      public double evaluate(final double x) {
+      @Override
+	public double evaluate(final double x) {
         return m*x+b;
       }
 
@@ -228,7 +248,8 @@ public final class Util {
   public static Function gaussian(final double x0, final double sigma) {
     final double s2 = 2*sigma*sigma;
     return new Function() {
-      public double evaluate(double x) {
+      @Override
+	public double evaluate(double x) {
         return Math.exp(-(x-x0)*(x-x0)/s2)/sigma/SQRT2PI;
       }
 
@@ -247,6 +268,20 @@ public final class Util {
     } catch(ParserException ex) {}
     return Double.NaN;
   }
+
+
+
+public static void newSpinnerNumberModel(JSpinner spinner, int value, int min, int max, int step) {
+	SpinnerNumberModel m = (SpinnerNumberModel) spinner.getModel();
+	if (min == ((Integer) m.getMinimum()).intValue()
+			&& max == ((Integer) m.getMaximum()).intValue()
+			&& step == ((Integer) m.getMaximum()).intValue()
+			) {
+		spinner.setValue(value);
+	} else {
+    spinner.setModel(new SpinnerNumberModel(value, min, max, step));
+	}
+}
 
 }
 
@@ -270,6 +305,6 @@ public final class Util {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

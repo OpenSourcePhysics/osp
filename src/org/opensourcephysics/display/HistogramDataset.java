@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -15,6 +15,7 @@ import org.opensourcephysics.controls.XMLControl;
  * @author Wolfgang Christian
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class HistogramDataset extends Dataset {
   double min, max;
   double binSize = 1;
@@ -49,7 +50,8 @@ public class HistogramDataset extends Dataset {
    * @param  x
    * @param  y
    */
-  public void append(double x, double y) {
+  @Override
+public void append(double x, double y) {
     int index = (int) ((x-min)/binSize);
     if((index<0)||(index>=n)) {
       missedCounts++;
@@ -72,7 +74,8 @@ public class HistogramDataset extends Dataset {
    * @param  xpoints
    * @param  ypoints
    */
-  public void append(double[] xpoints, double[] ypoints) {
+  @Override
+public void append(double[] xpoints, double[] ypoints) {
     for(int j = 0, nj = xpoints.length; j<nj; j++) { // bin all the points
       int index = (int) ((xpoints[j]-min)/binSize);
       if((index<0)||(index>=n)) {
@@ -96,7 +99,8 @@ public class HistogramDataset extends Dataset {
    *
    * @return    xmin
    */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return min;
   }
 
@@ -105,7 +109,8 @@ public class HistogramDataset extends Dataset {
    *
    * @return    xmax
    */
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return max;
   }
 
@@ -123,30 +128,30 @@ public class HistogramDataset extends Dataset {
       xVals[i] = x;
       x += this.binSize;
     }
-    super.clear();
-    super.append(xVals, binVals);
+    super.set(xVals, binVals);
   }
 
-  /**
-   *  Clears data from the histogram.
-   */
-  public void clear() {
-    for(int i = 0; i<n; i++) {
-      binVals[i] = 0;
-    }
-    counts = 0;
-    missedCounts = 0;
-    //  xpoints do not change; ypoints has been set so just copy the new data
-    ymax = 0;
-    ymin = 0;
-    if(n==0) {
-      return;
-    }
-    System.arraycopy(binVals, 0, ypoints, 0, n);
-    if(isConnected()) {
-      recalculatePath();
-    }
-  }
+	/**
+	 * Clears data from the histogram.
+	 */
+	@Override
+	public void clear() {
+		for (int i = 0; i < n; i++) {
+			binVals[i] = 0;
+		}
+		counts = 0;
+		missedCounts = 0;
+		// xpoints do not change; ypoints has been set so just copy the new data
+		ymax = 0;
+		ymin = 0;
+		if (n == 0) {
+			return;
+		}
+		System.arraycopy(binVals, 0, ypoints, 0, n);
+		if (isConnected()) {
+			recalculatePath();
+		}
+	}
 
   /**
  * Returns the XML.ObjectLoader for this class.
@@ -158,7 +163,8 @@ public class HistogramDataset extends Dataset {
   }
 
   protected static class HistogramDatasetLoader extends Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       HistogramDataset dataset = (HistogramDataset) obj;
       control.setValue("min", dataset.min);                    //$NON-NLS-1$
@@ -171,7 +177,8 @@ public class HistogramDataset extends Dataset {
       control.setValue("missed_counts", dataset.missedCounts); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       HistogramDataset dataset = (HistogramDataset) obj;
       dataset.setBinWidth(control.getDouble("min"), control.getDouble("max"), control.getDouble("bin_size")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -214,6 +221,6 @@ public class HistogramDataset extends Dataset {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -19,22 +19,24 @@ package org.opensourcephysics.numerics;
  */
 public final class ParsedMultiVarFunction implements MultiVarFunction {
   private final String fStr;
-  private final MultiVarFunction function;
-  private String[] functionNames;
+  private final MultiVarFunction myFunction;
+  private final String[] myFunctionNames;
+  public boolean isNull;
 
   /**
    * Constructs a ParsedFunction from the given string and independent variable.
    *
    * @param _fStr the function
    * @param var the independent variable
+   * @param allowUnknownIdentifiers   always false
    * @throws ParserException
    */
-  public ParsedMultiVarFunction(String _fStr, String[] var) throws ParserException {
+  public ParsedMultiVarFunction(String _fStr, String[] var, boolean allowUnkownIdentifiers) throws ParserException {
     fStr = _fStr;
-    SuryonoParser parser = null;
-    parser = new SuryonoParser(fStr, var);
-    function = parser;
-    functionNames = parser.getFunctionNames();
+    isNull = (fStr.equals(SuryonoParser.NULL) || fStr.equals(SuryonoParser.NULL_D));
+    SuryonoParser parser = new SuryonoParser(fStr, var, allowUnkownIdentifiers);
+    myFunction = parser;
+    myFunctionNames = parser.getFunctionNames();
   }
   
   /**
@@ -59,8 +61,10 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    *
    * @return the value of the function
    */
+  @Override
   public double evaluate(double[] x) {
-    return function.evaluate(x);
+    return (isNull ? 0 : 
+    	myFunction.evaluate(x));
   }
 
   /**
@@ -68,6 +72,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    *
    * @return the string
    */
+  @Override
   public String toString() {
     return "f(x) = "+fStr; //$NON-NLS-1$
   }
@@ -79,7 +84,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    * @return array of function names
    */
   public String[] getFunctionNames() {
-    return functionNames;
+    return myFunctionNames;
   }
 
   /**
@@ -88,10 +93,7 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
    * @return true if result was converted from NaN to zero
    */
   public boolean evaluatedToNaN() {
-  	if (function instanceof SuryonoParser) {
-  		return ((SuryonoParser)function).evaluatedToNaN();
-  	}
-  	return false;
+  	return !isNull && myFunction instanceof SuryonoParser && ((SuryonoParser)myFunction).evaluatedToNaN();
   }
 
 }
@@ -116,6 +118,6 @@ public final class ParsedMultiVarFunction implements MultiVarFunction {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

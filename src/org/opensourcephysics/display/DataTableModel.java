@@ -2,60 +2,61 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
 import javax.swing.table.TableModel;
 
 /**
- * Interface DataTableModel
+ * Interface DataTableModel - abandoned
  */
+@Deprecated
 public interface DataTableModel extends TableModel {
-  /**
-   * Sets the visibility of a column of a TableModel in the DataTable.
-   * @param tableModel
-   * @param columnIndex
-   * @param b
-   */
-  public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b);
-
-  /**
-   * Remove a TableModel object from the table model list.
-   * @param tableModel
-   */
-  public void remove(TableModel tableModel);
-
-  /**
-   * Remove all TableModels from the table model list.
-   */
-  public void clear();
-
-  /**
-   * Add a TableModel object to the table model list.
-   * @param tableModel
-   */
-  public void add(TableModel tableModel);
-
-  /**
-   * Sets the stride of a TableModel in the DataTable.
-   * @param tableModel
-   * @param stride
-   */
-  public void setStride(TableModel tableModel, int stride);
-
-  /**
-   * Sets the display row number flag.  Table displays row number.
-   * @param rowNumberVisible
-   */
-  public void setRowNumberVisible(boolean rowNumberVisible);
-
-  /**
-   * Gets the display row number flag.
-   *
-   * @return visible flag
-   */
-  public boolean isRowNumberVisible();
+//  /**
+//   * Sets the visibility of a column of a TableModel in the DataTable.
+//   * @param tableModel
+//   * @param columnIndex
+//   * @param b
+//   */
+//  public void setColumnVisible(TableModel tableModel, int columnIndex, boolean b);
+//
+//  /**
+//   * Remove a TableModel object from the table model list.
+//   * @param tableModel
+//   */
+//  public void remove(TableModel tableModel);
+//
+//  /**
+//   * Remove all TableModels from the table model list.
+//   */
+//  public void clear();
+//
+//  /**
+//   * Add a TableModel object to the table model list.
+//   * @param tableModel
+//   */
+//  public void add(TableModel tableModel);
+//
+//  /**
+//   * Sets the stride of a TableModel in the DataTable.
+//   * @param tableModel
+//   * @param stride
+//   */
+//  public void setStride(TableModel tableModel, int stride);
+//
+//  /**
+//   * Sets the display row number flag.  Table displays row number.
+//   * @param rowNumberVisible
+//   */
+//  public void setRowNumberVisible(boolean rowNumberVisible);
+//
+//  /**
+//   * Gets the display row number flag.
+//   *
+//   * @return visible flag
+//   */
+//  public boolean isRowNumberVisible();
 
 }
 
@@ -79,6 +80,6 @@ public interface DataTableModel extends TableModel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

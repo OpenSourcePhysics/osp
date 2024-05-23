@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -67,7 +67,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
   /**
    * Creates the default palette.
    */
-  public void createDefaultColors() {
+  @Override
+public void createDefaultColors() {
     zeroColor = Color.red;
     oneColor = Color.blue;
   }
@@ -77,7 +78,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param _nx number of x sites
    * @param _ny number of y sites
    */
-  public void resizeLattice(int _nx, int _ny) {
+  @Override
+public void resizeLattice(int _nx, int _ny) {
     ny = _ny;
     nx = _nx;
     int len = ((nx+7)/8)*ny; // each row starts on a byte boundary
@@ -93,22 +95,26 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
   }
   
   
-  public void setXMin(double _value) {
+  @Override
+public void setXMin(double _value) {
 	super.setXMin(_value);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setXMax(double _value) {
+  @Override
+public void setXMax(double _value) {
 	super.setXMax(_value);
 	grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMin(double _value) {
+  @Override
+public void setYMin(double _value) {
 	super.setYMin(_value);
 	grid.setMinMax(xmin, xmax, ymin, ymax);
   }
 
-  public void setYMax(double _value) {
+  @Override
+public void setYMax(double _value) {
 	 super.setYMax(_value);
      grid.setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -116,7 +122,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
   /**
    * Randomizes the lattice values.
    */
-  public void randomize() {
+  @Override
+public void randomize() {
     Random random = new Random();
     random.nextBytes(packedData);
   }
@@ -126,11 +133,12 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
-    if (!OSPRuntime.isMac()) {  //Rendering hint bug in Mac Snow Leopard 
+    if (OSPRuntime.setRenderingHints) {  //Rendering hint bug in Mac Snow Leopard 
       Graphics2D g2 = ((Graphics2D) g);
       g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -164,7 +172,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(byte val[][], double xmin, double xmax, double ymin, double ymax) {
     setAll(val);
     setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -176,7 +185,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param ymin
    * @param ymax
    */
-  public void setMinMax(double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setMinMax(double xmin, double xmax, double ymin, double ymax) {
     super.setMinMax(xmin, xmax, ymin, ymax);
     grid.setMinMax(xmin, xmax, ymin, ymax);
   }
@@ -231,7 +241,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param iy_offset
    * @param val  the value array
    */
-  public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
+  @Override
+public void setBlock(int ix_offset, int iy_offset, byte val[][]) {
     if((iy_offset<0)||(iy_offset+val[0].length>ny)) {
       throw new IllegalArgumentException("Row index out of range in binary lattice setBlock."); //$NON-NLS-1$
     }
@@ -258,7 +269,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    *
    * @param val
   */
-  public void setBlock(byte[][] val) {
+  @Override
+public void setBlock(byte[][] val) {
     setBlock(0, 0, val);
   }
 
@@ -300,7 +312,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param iy_offset
    * @param val  the array of values
    */
-  public void setCol(int ix, int iy_offset, byte val[]) {
+  @Override
+public void setCol(int ix, int iy_offset, byte val[]) {
     if((iy_offset<0)||(iy_offset+val.length>ny)) {
       throw new IllegalArgumentException("Row index out of range in binary lattice setCol."); //$NON-NLS-1$
     }
@@ -358,7 +371,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param ix_offset  the x offset
    * @param val the value array
    */
-  public void setRow(int iy, int ix_offset, byte val[]) {
+  @Override
+public void setRow(int iy, int ix_offset, byte val[]) {
     if((iy<0)||(iy>=ny)) {
       throw new IllegalArgumentException("Row index out of range in binary lattice setRow."); //$NON-NLS-1$
     }
@@ -401,7 +415,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
     packedData[arrayIndex] = packedcell;
   }
 
-  public void setValue(int ix, int iy, byte val) {
+  @Override
+public void setValue(int ix, int iy, byte val) {
     setValue(ix, iy, (int) val);
   }
 
@@ -414,7 +429,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param iy
    * @return the cell value.
    */
-  public byte getValue(int ix, int iy) {
+  @Override
+public byte getValue(int ix, int iy) {
     byte packedcell = packedData[(ny-iy-1)*((nx+7)/8)+ix/8]; // each row starts on a byte boundary
     int mask = 0x80>>>(ix%8);                                // start with 0x10000000 and shift right
     if((packedcell&mask)>0) {
@@ -427,7 +443,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * Gets the number of x entries.
    * @return nx
    */
-  public int getNx() {
+  @Override
+public int getNx() {
     return nx;
   }
 
@@ -435,7 +452,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * Gets the number of y entries.
    * @return ny
    */
-  public int getNy() {
+  @Override
+public int getNy() {
     return ny;
   }
 
@@ -453,7 +471,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    *
    * @param colors
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     zeroColor = colors[0];
     oneColor = colors[1];
     ColorModel colorModel = new IndexColorModel(1, 2, new byte[] {(byte) zeroColor.getRed(), (byte) oneColor.getRed()}, // red
@@ -468,7 +487,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param i
    * @param color
    */
-  public void setIndexedColor(int i, Color color) {
+  @Override
+public void setIndexedColor(int i, Color color) {
     if(i==0) {
       zeroColor = color;
     } else {
@@ -485,11 +505,13 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * Sets the grid color.
    * @param color
    */
-  public void setGridLineColor(Color color) {
+  @Override
+public void setGridLineColor(Color color) {
     grid.setColor(color);
   }
 
-  public void setShowGridLines(boolean showGridLines) {
+  @Override
+public void setShowGridLines(boolean showGridLines) {
     grid.setVisible(showGridLines);
   }
 
@@ -499,7 +521,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     int nx = getNx();
     double xMin = getXMin();
     double xMax = getXMax();
@@ -520,7 +543,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     int ny = getNy();
     double yMin = getYMin();
     double yMax = getYMax();
@@ -543,7 +567,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
    * @param y
    * @return index
    */
-  public int indexFromPoint(double x, double y) {
+  @Override
+public int indexFromPoint(double x, double y) {
     int nx = getNx();
     int ny = getNy();
     double xMin = getXMin();
@@ -560,7 +585,8 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
     return iy*nx+ix;
   }
 
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return null;
   }
 
@@ -586,6 +612,6 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

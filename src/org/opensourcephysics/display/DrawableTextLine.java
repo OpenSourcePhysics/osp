@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -10,11 +10,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
@@ -106,7 +103,8 @@ public class DrawableTextLine extends TextLine implements Drawable {
  * @param panel DrawingPanel
  * @param g Graphics
  */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if((text==null)||text.equals("")) { //$NON-NLS-1$
       return;
     }
@@ -136,38 +134,24 @@ public class DrawableTextLine extends TextLine implements Drawable {
   
   private void drawWithPixWindows(DrawingPanel panel, Graphics g) {
     if(theta!=0) {
-      ((Graphics2D) g).transform(AffineTransform.getRotateInstance(-theta, x, y));
-      drawText(g, (int) x, (int) y);
-      ((Graphics2D) g).transform(AffineTransform.getRotateInstance(theta, x, y));
+    	drawRotatedText(theta, x, y, g);
     } else {
       drawText(g, (int) x, (int) y);
     }
   }
+  
+  int imgWidth, imgHeight;
+  BufferedImage image;
   
   private void drawWithPixMac(DrawingPanel panel, Graphics g) {
 	if(theta==0){
 		drawWithPixWindows( panel,  g);
 		return;
 	}
-    int w=g.getFontMetrics().stringWidth(text)+7;
-    int h=g.getFontMetrics().getHeight()+10;
-    BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
-    Graphics2D imageGraphics=image.createGraphics();
-    imageGraphics.setFont(g.getFont());
-    //imageGraphics.setColor(Color.RED);  // debug
-    //imageGraphics.fillRect(0, 0, w, h);
-    imageGraphics.setColor(Color.BLACK);
-    drawText(imageGraphics, w/2-2, h-5);
-    imageGraphics.dispose();
-    Graphics2D g2d=(Graphics2D) g;
-    g2d.translate(x-h-2,y+w/2);
-    AffineTransform at= AffineTransform.getRotateInstance(-theta, 0, 0);
-    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-    g2d.drawImage(image,at, panel);
-    g2d.translate(-x+h+2,-y-w/2);
+	drawTextImageRotated(panel, g, theta, x, y);
    }
  
-  /**
+/**
    * Draws the TextLine using world units for x and y.
    *
    * @param panel DrawingPanel
@@ -181,46 +165,39 @@ public class DrawableTextLine extends TextLine implements Drawable {
 	  }
   }
 
-  private void drawWithWorldMac(DrawingPanel panel, Graphics g) {
-	if(theta==0){
-		drawWithWorldWindows( panel,  g);
-		return;
-	}
-    int w=g.getFontMetrics().stringWidth(text)+7;
-    int h=g.getFontMetrics().getHeight()+10;
-    BufferedImage image = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
-    Graphics2D imageGraphics=image.createGraphics();
-    imageGraphics.setColor(Color.BLACK);
-    imageGraphics.setFont(g.getFont());
-    drawText(imageGraphics, w/2-2, h-5);
-    imageGraphics.dispose();
-    Graphics2D g2d=(Graphics2D) g;
-    Point2D pt = new Point2D.Double(x, y);
-    pt = panel.getPixelTransform().transform(pt, pt);
-    g2d.translate(pt.getX()-h-2,pt.getY()+w/2);
-    AffineTransform at= AffineTransform.getRotateInstance(-theta, 0, 0);
-    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-    g2d.drawImage(image,at, panel);
-    g2d.translate(-pt.getX()+h+2,-pt.getY()-w/2);
-  }
   
-  /**
-   * Draws the TextLine using world units for x and y.
-   *
-   * @param panel DrawingPanel
-   * @param g Graphics
-   */
-  private void drawWithWorldWindows(DrawingPanel panel, Graphics g) {
-    Point2D pt = new Point2D.Double(x, y);
-    pt = panel.getPixelTransform().transform(pt, pt);
-    if(theta!=0) {
-      ((Graphics2D) g).transform(AffineTransform.getRotateInstance(-theta, pt.getX(), pt.getY()));
-      drawText(g, (int) pt.getX(), (int) pt.getY());
-      ((Graphics2D) g).transform(AffineTransform.getRotateInstance(theta, pt.getX(), pt.getY()));
-    } else {
-      drawText(g, (int) pt.getX(), (int) pt.getY());
-    }
-  }
+  Point2D.Double pixelPt = new Point2D.Double();
+  
+	private void drawWithWorldMac(DrawingPanel panel, Graphics g) {
+		if (theta == 0) {
+			drawWithWorldWindows(panel, g);
+			return;
+		}
+		super.drawTextImageRotated(panel, g, theta, x, y);
+	}
+  
+//	private AffineTransform trTL = new AffineTransform();
+
+	  /**
+	 * Draws the TextLine using world units for x and y.
+	 *
+	 * @param panel DrawingPanel
+	 * @param g     Graphics
+	 */
+	private void drawWithWorldWindows(DrawingPanel panel, Graphics g) {
+		pixelPt.setLocation(x, y);
+		trTL.setTransform(panel.getPixelTransform());
+		trTL.transform(pixelPt, pixelPt);
+		if (theta != 0) {
+			trTL.setToRotation(-theta, pixelPt.x, pixelPt.y);
+			((Graphics2D) g).transform(trTL);
+			drawText(g, (int) pixelPt.x, (int) pixelPt.y);
+			trTL.setToRotation(theta, pixelPt.x, pixelPt.y);
+			((Graphics2D) g).transform(trTL);
+		} else {
+			drawText(g, (int) pixelPt.x, (int) pixelPt.y);
+		}
+	}
 
   /**
  * Gets the XML object loader for this class.
@@ -234,7 +211,8 @@ public class DrawableTextLine extends TextLine implements Drawable {
    * A class to save and load InteractiveArrow in an XMLControl.
    */
   protected static class DrawableTextLineLoader extends XMLLoader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       DrawableTextLine drawableTextLine = (DrawableTextLine) obj;
       control.setValue("text", drawableTextLine.getText());         //$NON-NLS-1$
       control.setValue("x", drawableTextLine.x);                    //$NON-NLS-1$
@@ -244,11 +222,13 @@ public class DrawableTextLine extends TextLine implements Drawable {
       control.setValue("pixel position", drawableTextLine.pixelXY); //$NON-NLS-1$
     }
 
-    public Object createObject(XMLControl control) {
+    @Override
+	public Object createObject(XMLControl control) {
       return new DrawableTextLine("", 0, 0); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       DrawableTextLine drawableTextLine = (DrawableTextLine) obj;
       drawableTextLine.x = control.getDouble("x");                     //$NON-NLS-1$
       drawableTextLine.y = control.getDouble("y");                     //$NON-NLS-1$
@@ -283,6 +263,6 @@ public class DrawableTextLine extends TextLine implements Drawable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

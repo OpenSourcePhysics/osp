@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.numerics;
@@ -107,7 +107,8 @@ public class CubicSpline implements Function {
    * @param  x
    * @return interpolated y value.
    */
-  public double evaluate(double x) {
+  @Override
+public double evaluate(double x) {
     int n1 = 0;
     int n2 = xd.length-1;
     if(n2<1) {
@@ -194,6 +195,7 @@ public class CubicSpline implements Function {
   // Computes the first derivative using the spline coefficients.
   class splineFirstDerivate implements Function{
 
+	@Override
 	public double evaluate(double x) {
 	    int n1 = 0;
 	    int n2 = xd.length-1;
@@ -234,6 +236,7 @@ public class CubicSpline implements Function {
   // Computes the second derivative using the spline coefficients.
   class splineSecondDerivate implements Function{
 
+	@Override
 	public double evaluate(double x) {
 	    int n1 = 0;
 	    int n2 = xd.length-1;
@@ -290,6 +293,6 @@ public class CubicSpline implements Function {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

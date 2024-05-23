@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -58,7 +58,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
    * is displayed.
    * @return DrawingPanel3D
    */
-  final public DrawingPanel3D getDrawingPanel3D() {
+  @Override
+final public DrawingPanel3D getDrawingPanel3D() {
     Element el = this;
     while(el.group!=null) {
       el = el.group;
@@ -121,18 +122,21 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
   // ----------------------------------------
   // Name of the element
   // ----------------------------------------
-  public void setName(String aName) {
+  @Override
+public void setName(String aName) {
     this.name = aName;
   }
 
-  final public String getName() {
+  @Override
+final public String getName() {
     return this.name;
   }
 
   // ----------------------------------------
   // Position of the element
   // ----------------------------------------
-  public void setX(double x) {
+  @Override
+public void setX(double x) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_YXZ :
          this.y = x*this.factorX;
@@ -152,11 +156,13 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  final public double getX() {
+  @Override
+final public double getX() {
     return this.x/this.factorX;
   }
 
-  public void setY(double y) {
+  @Override
+public void setY(double y) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.z = y*this.factorZ;
@@ -176,11 +182,13 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  final public double getY() {
+  @Override
+final public double getY() {
     return this.y/this.factorY;
   }
 
-  public void setZ(double z) {
+  @Override
+public void setZ(double z) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.y = z*this.factorY;
@@ -200,11 +208,13 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  final public double getZ() {
+  @Override
+final public double getZ() {
     return this.z/this.factorZ;
   }
 
-  public void setXYZ(double x, double y, double z) {
+  @Override
+public void setXYZ(double x, double y, double z) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.x = x*this.factorX;
@@ -239,7 +249,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  public void setXYZ(double[] pos) {
+  @Override
+public void setXYZ(double[] pos) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.x = pos[0]*this.factorX;
@@ -294,12 +305,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
    * the maximum point
    */
   void getExtrema(double[] min, double[] max) {
-    min[0] = -0.5;
-    max[0] = 0.5;
-    min[1] = -0.5;
-    max[1] = 0.5;
-    min[2] = -0.5;
-    max[2] = 0.5;
+    min[0] = min[1] = min[2] = -0.5;
+    max[0] = max[1] = max[2] = 0.5;
     sizeAndToSpaceFrame(min);
     sizeAndToSpaceFrame(max);
   }
@@ -307,7 +314,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
   // ----------------------------------------
   // Size of the element
   // ----------------------------------------
-  public void setSizeX(double sizeX) {
+  @Override
+public void setSizeX(double sizeX) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_YXZ :
          this.sizeY = sizeX*this.factorY;
@@ -327,11 +335,13 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  final public double getSizeX() {
+  @Override
+final public double getSizeX() {
     return this.sizeX;
   }
 
-  public void setSizeY(double sizeY) {
+  @Override
+public void setSizeY(double sizeY) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.sizeZ = sizeY*this.factorZ;
@@ -351,11 +361,13 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  final public double getSizeY() {
+  @Override
+final public double getSizeY() {
     return this.sizeY;
   }
 
-  public void setSizeZ(double sizeZ) {
+  @Override
+public void setSizeZ(double sizeZ) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.sizeY = sizeZ*this.factorY;
@@ -375,11 +387,13 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  final public double getSizeZ() {
+  @Override
+final public double getSizeZ() {
     return this.sizeZ;
   }
 
-  public void setSizeXYZ(double sizeX, double sizeY, double sizeZ) {
+  @Override
+public void setSizeXYZ(double sizeX, double sizeY, double sizeZ) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.sizeX = sizeX*this.factorX;
@@ -414,7 +428,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  public void setSizeXYZ(double[] size) {
+  @Override
+public void setSizeXYZ(double[] size) {
     switch(getAxesMode()) {
        case org.opensourcephysics.display3d.core.DrawingPanel3D.MODE_XZY :
          this.sizeX = size[0]*this.factorX;
@@ -509,11 +524,13 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
   // -------------------------------------
   // Visibility and style
   // -------------------------------------
-  public void setVisible(boolean _visible) {
+  @Override
+public void setVisible(boolean _visible) {
     this.visible = _visible;
   }
 
-  final public boolean isVisible() {
+  @Override
+final public boolean isVisible() {
     return this.visible;
   }
 
@@ -533,7 +550,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     return this.visible;
   }
 
-  final public org.opensourcephysics.display3d.core.Style getStyle() {
+  @Override
+final public org.opensourcephysics.display3d.core.Style getStyle() {
     return this.style;
   }
 
@@ -556,14 +574,16 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
   // ----------------------------------------
   // Transformation of the element
   // ----------------------------------------
-  public Transformation getTransformation() {
+  @Override
+public Transformation getTransformation() {
     if(transformation==null) {
       return null;
     }
     return(Transformation) transformation.clone();
   }
 
-  public void setTransformation(org.opensourcephysics.numerics.Transformation transformation) {
+  @Override
+public void setTransformation(org.opensourcephysics.numerics.Transformation transformation) {
     if(transformation==null) {
       this.transformation = null;
     } else {
@@ -629,7 +649,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     elementChanged = true;
   }
 
-  public double[] toSpaceFrame(double[] vector) {
+  @Override
+public double[] toSpaceFrame(double[] vector) {
     if(transformation!=null) {
       transformation.direct(vector);
     }
@@ -652,7 +673,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     return vector;
   }
 
-  public double[] toBodyFrame(double[] vector) throws UnsupportedOperationException {
+  @Override
+public double[] toBodyFrame(double[] vector) throws UnsupportedOperationException {
     java.util.ArrayList<Element> elList = new java.util.ArrayList<Element>();
     Element el = this;
     do {
@@ -735,7 +757,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
   // ---------------------------------
   // Implementation of core.InteractionSource
   // ---------------------------------
-  public org.opensourcephysics.display3d.core.interaction.InteractionTarget getInteractionTarget(int target) {
+  @Override
+public org.opensourcephysics.display3d.core.interaction.InteractionTarget getInteractionTarget(int target) {
     switch(target) {
        case TARGET_POSITION :
          return targetPosition;
@@ -745,14 +768,16 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
     return null;
   }
 
-  public void addInteractionListener(InteractionListener listener) {
+  @Override
+public void addInteractionListener(InteractionListener listener) {
     if((listener==null)||listeners.contains(listener)) {
       return;
     }
     listeners.add(listener);
   }
 
-  public void removeInteractionListener(InteractionListener listener) {
+  @Override
+public void removeInteractionListener(InteractionListener listener) {
     listeners.remove(listener);
   }
 
@@ -957,7 +982,8 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
   // ----------------------------------------------------
   // XML loader
   // ----------------------------------------------------
-  public void loadUnmutableObjects(XMLControl control) {
+  @Override
+public void loadUnmutableObjects(XMLControl control) {
     style = (Style) control.getObject("style"); //$NON-NLS-1$
     style.setElement(this);
     elementChanged = true;
@@ -985,6 +1011,6 @@ public abstract class Element implements org.opensourcephysics.display3d.core.El
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

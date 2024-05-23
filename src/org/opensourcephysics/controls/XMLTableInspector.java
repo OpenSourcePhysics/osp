@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -62,7 +62,8 @@ public class XMLTableInspector extends JDialog implements PropertyChangeListener
     String s = XML.getExtension(control.getObjectClassName());
     setTitle(frameTitle+" "+s+" \""+control.getPropertyName()+"\" "); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     addWindowListener(new java.awt.event.WindowAdapter() {
-      public void windowClosing(java.awt.event.WindowEvent e) {
+      @Override
+	public void windowClosing(java.awt.event.WindowEvent e) {
         if(changed) {
           firePropertyChange("xmlData", null, null);                  //$NON-NLS-1$
           changed = false;
@@ -105,7 +106,8 @@ public class XMLTableInspector extends JDialog implements PropertyChangeListener
    *
    * @param e the property change event
    */
-  public void propertyChange(PropertyChangeEvent e) {
+  @Override
+public void propertyChange(PropertyChangeEvent e) {
     changed = true;
     // forward event to listeners
     firePropertyChange(e.getPropertyName(), e.getOldValue(), e.getNewValue());
@@ -178,6 +180,6 @@ public class XMLTableInspector extends JDialog implements PropertyChangeListener
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

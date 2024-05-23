@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.logging.Level;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -25,13 +26,15 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+
+import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.ToolsRes;
 
 /**
@@ -43,11 +46,14 @@ import org.opensourcephysics.tools.ToolsRes;
  * @version 1.0
  */
 public class MessageFrame extends JFrame {
+	
+	
   static final Color DARK_GREEN = new Color(0, 128, 0), DARK_BLUE = new Color(0, 0, 128), DARK_RED = new Color(128, 0, 0);
   static Style black, red, blue, green, magenta, gray;
   static volatile MessageFrame APPLET_MESSAGEFRAME;
   //static Level levelOSP = Level.CONFIG;
   static int levelOSP = Level.CONFIG.intValue();
+  
   private static int SEVERE = Level.SEVERE.intValue(), WARNING = Level.WARNING.intValue(), INFO = Level.INFO.intValue(), CONFIG = Level.CONFIG.intValue(), FINE = Level.FINE.intValue(), FINER = Level.FINER.intValue(), FINEST = Level.FINEST.intValue();
   private static ArrayList<JRadioButtonMenuItem> buttonList = new ArrayList<JRadioButtonMenuItem>();
   private JTextPane textPane = new JTextPane();
@@ -76,6 +82,8 @@ public class MessageFrame extends JFrame {
     JScrollPane textScroller = new JScrollPane(textPane);
     textScroller.setWheelScrollingEnabled(true);
     logPanel.add(textScroller, BorderLayout.CENTER);
+    //FontSizer.setFonts(this, FontSizer.getLevel());
+    //textPane.setFont(textPane.getFont().deriveFont(16F));
     pack();
   }
 
@@ -102,7 +110,8 @@ public class MessageFrame extends JFrame {
     final JMenuItem clearItem = new JMenuItem(ControlsRes.getString("MessageFrame.Clear_menu_item")); //$NON-NLS-1$
     editMenu.add(clearItem);
     clearItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         APPLET_MESSAGEFRAME.textPane.setText(""); //$NON-NLS-1$
       }
 
@@ -120,19 +129,30 @@ public class MessageFrame extends JFrame {
       }
       item.setActionCommand(OSPLog.levels[i].getName());
       item.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
+        @Override
+		public void actionPerformed(ActionEvent e) {
           setLevel(Level.parse(e.getActionCommand()));
         }
 
       });
     }
-    ToolsRes.addPropertyChangeListener("locale", new PropertyChangeListener() {           //$NON-NLS-1$
-      public void propertyChange(PropertyChangeEvent e) {
-        APPLET_MESSAGEFRAME.setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$
-        editMenu.setText(ControlsRes.getString("MessageFrame.Edit_menu"));                //$NON-NLS-1$
-        clearItem.setText(ControlsRes.getString("MessageFrame.Clear_menu"));              //$NON-NLS-1$
-        levelMenu.setText(ControlsRes.getString("MessageFrame.Level_menu"));              //$NON-NLS-1$
-      }
+    
+	FontSizer.setFonts(APPLET_MESSAGEFRAME, FontSizer.getLevel());
+	FontSizer.addListener(FontSizer.PROPERTY_LEVEL, new PropertyChangeListener() { //$NON-NLS-1$
+		@Override
+		public void propertyChange(PropertyChangeEvent e) {
+			FontSizer.setFonts(APPLET_MESSAGEFRAME);
+		}
+
+	});
+    ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() {           //$NON-NLS-1$
+			@Override
+			public void propertyChange(PropertyChangeEvent e) {
+				APPLET_MESSAGEFRAME.setTitle(ControlsRes.getString("MessageFrame.DefaultTitle")); //$NON-NLS-1$
+				editMenu.setText(ControlsRes.getString("MessageFrame.Edit_menu")); //$NON-NLS-1$
+				clearItem.setText(ControlsRes.getString("MessageFrame.Clear_menu")); //$NON-NLS-1$
+				levelMenu.setText(ControlsRes.getString("MessageFrame.Level_menu")); //$NON-NLS-1$
+			}
 
     });
   }
@@ -249,30 +269,23 @@ public class MessageFrame extends JFrame {
     }
   }
 
-  private static void appletLog(final String msg, final Style style) {
+  @SuppressWarnings("deprecation")
+private static void appletLog(final String msg, final Style style) {
     if((APPLET_MESSAGEFRAME==null)||!APPLET_MESSAGEFRAME.isDisplayable()) {
       createAppletMessageFrame();
     }
-    Runnable refreshText = new Runnable() {
-      public synchronized void run() {
-        try {
-          Document doc = APPLET_MESSAGEFRAME.textPane.getDocument();
-          doc.insertString(doc.getLength(), msg+'\n', style);
-          // scroll to display new message
-          Rectangle rect = APPLET_MESSAGEFRAME.textPane.getBounds();
-          rect.y = rect.height;
-          APPLET_MESSAGEFRAME.textPane.scrollRectToVisible(rect);
-        } catch(BadLocationException ex) {
-          System.err.println(ex);
-        }
-      }
-
-    };
-    if(SwingUtilities.isEventDispatchThread()) {
-      refreshText.run();
-    } else {
-      SwingUtilities.invokeLater(refreshText);
-    }
+    OSPRuntime.postEvent(() -> {
+            try {
+              Document doc = APPLET_MESSAGEFRAME.textPane.getDocument();
+              doc.insertString(doc.getLength(), msg+'\n', style);
+              // scroll to display new message
+              Rectangle rect = APPLET_MESSAGEFRAME.textPane.getBounds();
+              rect.y = rect.height;
+              APPLET_MESSAGEFRAME.textPane.scrollRectToVisible(rect);
+            } catch(BadLocationException ex) {
+              System.err.println(ex);
+            }
+        });
   }
   /*
    * public static void main(String[] args) {
@@ -303,6 +316,6 @@ public class MessageFrame extends JFrame {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

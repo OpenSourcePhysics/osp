@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.simple3d;
@@ -127,7 +127,8 @@ public abstract class AbstractTile extends Element {
   // ----------------------------------------------
   // part of the abstract methods in Element
   // ----------------------------------------------
-  Object3D[] getObjects3D() {
+  @Override
+Object3D[] getObjects3D() {
     if(!isReallyVisible()) {
       return null;
     }
@@ -143,7 +144,8 @@ public abstract class AbstractTile extends Element {
     return objects;
   }
 
-  void draw(Graphics2D _g2, int _index) {
+  @Override
+void draw(Graphics2D _g2, int _index) {
     if(levelZ!=null) {
       drawColorCoded(_g2, _index);
       return;
@@ -161,7 +163,8 @@ public abstract class AbstractTile extends Element {
     }
   }
 
-  void drawQuickly(Graphics2D _g2) {
+  @Override
+void drawQuickly(Graphics2D _g2) {
     if(!isReallyVisible()) {
       return;
     }
@@ -196,7 +199,8 @@ public abstract class AbstractTile extends Element {
   // -------------------------------------
   // Interaction
   // -------------------------------------
-  protected InteractionTarget getTargetHit(int x, int y) {
+  @Override
+protected InteractionTarget getTargetHit(int x, int y) {
     if(!isReallyVisible()) {
       return null;
     }
@@ -385,6 +389,6 @@ public abstract class AbstractTile extends Element {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

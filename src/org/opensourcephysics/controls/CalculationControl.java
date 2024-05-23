@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -20,6 +20,7 @@ import org.opensourcephysics.display.OSPFrame;
  * @author       Joshua Gould
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class CalculationControl extends OSPControl {
   protected Calculation calculation;
   final static String resetToolTipText = ControlsRes.CALCULATION_RESET_TIP;
@@ -56,14 +57,16 @@ public class CalculationControl extends OSPControl {
  * Gets this frame.  Implementation of MainFrame interface.
  * @return OSPFrame
  */
-  public OSPFrame getMainFrame() {
+  @Override
+public OSPFrame getMainFrame() {
     return this;
   }
 
   /**
    * Refreshes the user interface in response to display changes such as the Language.
    */
-  protected void refreshGUI() {
+  @Override
+protected void refreshGUI() {
     super.refreshGUI();
     if(calcBtn==null) {
       return;
@@ -78,7 +81,8 @@ public class CalculationControl extends OSPControl {
      *
      * @param  e
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       GUIUtils.clearDrawingFrameData(false);
       if(calculation==null) {
         println("The CalculationControl's model is null."); //$NON-NLS-1$
@@ -96,7 +100,8 @@ public class CalculationControl extends OSPControl {
      *
      * @param  e
      */
-    public void actionPerformed(ActionEvent e) {
+    @Override
+	public void actionPerformed(ActionEvent e) {
       GUIUtils.clearDrawingFrameData(true);
       if(calculation==null) {
         println("The CalculationControl's model is null."); //$NON-NLS-1$
@@ -159,6 +164,6 @@ public class CalculationControl extends OSPControl {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

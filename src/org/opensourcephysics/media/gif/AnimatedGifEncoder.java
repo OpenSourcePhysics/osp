@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.gif package provides animated gif
  * implementations of the Video and VideoRecorder interfaces.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.gif;
 import java.awt.Color;
@@ -375,9 +375,11 @@ public class AnimatedGifEncoder {
       BufferedImage temp = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
       Graphics2D g = temp.createGraphics();
       g.drawImage(image, 0, 0, null);
+      g.dispose();
       image = temp;
     }
     pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+    image.flush(); // required for SwingJS
   }
 
   /**
@@ -494,9 +496,11 @@ public class AnimatedGifEncoder {
    * Writes string to output stream
    */
   protected void writeString(String s) throws IOException {
-    for(int i = 0; i<s.length(); i++) {
-      out.write((byte) s.charAt(i));
-    }
+	byte[] b = s.getBytes();
+	out.write(b, 0, b.length);
+//    for(int i = 0; i<s.length(); i++) {
+//      out.write((byte) s.charAt(i));
+//    }
   }
 
 }
@@ -521,6 +525,6 @@ public class AnimatedGifEncoder {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

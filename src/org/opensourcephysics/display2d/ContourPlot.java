@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -77,7 +77,8 @@ public class ContourPlot implements Plot2D {
    * @param i int
    * @return double the x coordinate
    */
-  public double indexToX(int i) {
+  @Override
+public double indexToX(int i) {
     return griddata.indexToX(i);
   }
 
@@ -87,7 +88,8 @@ public class ContourPlot implements Plot2D {
    * @param i int
    * @return double the y coordinate
    */
-  public double indexToY(int i) {
+  @Override
+public double indexToY(int i) {
     return griddata.indexToY(i);
   }
 
@@ -97,7 +99,8 @@ public class ContourPlot implements Plot2D {
    * @param x double the coordinate
    * @return int the index
    */
-  public int xToIndex(double x) {
+  @Override
+public int xToIndex(double x) {
     return griddata.xToIndex(x);
   }
 
@@ -107,7 +110,8 @@ public class ContourPlot implements Plot2D {
    * @param y double the coordinate
    * @return int the index
    */
-  public int yToIndex(double y) {
+  @Override
+public int yToIndex(double y) {
     return griddata.yToIndex(y);
   }
 
@@ -118,7 +122,8 @@ public class ContourPlot implements Plot2D {
    *
    * @param obj double[][] the new values
    */
-  public void setAll(Object obj) {
+  @Override
+public void setAll(Object obj) {
     double[][] val = (double[][]) obj;
     copyData(val);
     update();
@@ -135,7 +140,8 @@ public class ContourPlot implements Plot2D {
    * @param ymin double
    * @param ymax double
    */
-  public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
+  @Override
+public void setAll(Object obj, double xmin, double xmax, double ymin, double ymax) {
     double[][] val = (double[][]) obj;
     copyData(val);
     if(griddata.isCellData()) {
@@ -165,7 +171,8 @@ public class ContourPlot implements Plot2D {
    * Gets the GridData object.
    * @return GridData
    */
-  public GridData getGridData() {
+  @Override
+public GridData getGridData() {
     return griddata;
   }
 
@@ -174,7 +181,8 @@ public class ContourPlot implements Plot2D {
    *
    * @param _griddata
    */
-  public void setGridData(GridData _griddata) {
+  @Override
+public void setGridData(GridData _griddata) {
     griddata = _griddata;
     if(griddata==null) {
       return;
@@ -190,14 +198,16 @@ public class ContourPlot implements Plot2D {
    *
    * @param isVisible
    */
-  public void setVisible(boolean isVisible) {
+  @Override
+public void setVisible(boolean isVisible) {
     visible = isVisible;
   }
 
   /**
    * Shows how values map to colors.
    */
-  public JFrame showLegend() {
+  @Override
+public JFrame showLegend() {
     return colorMap.showLegend(zMap);
   }
 
@@ -206,7 +216,8 @@ public class ContourPlot implements Plot2D {
    *
    * @param showLines
    */
-  public void setShowGridLines(boolean showLines) {
+  @Override
+public void setShowGridLines(boolean showLines) {
     showContourLines = showLines;
   }
 
@@ -215,7 +226,8 @@ public class ContourPlot implements Plot2D {
    * The default line color is dark green.
    * @param color
    */
-  public void setGridLineColor(Color color) {
+  @Override
+public void setGridLineColor(Color color) {
     lineColor = color;
   }
   
@@ -227,7 +239,8 @@ public class ContourPlot implements Plot2D {
    * Paint the contour.
    * @param g
    */
-  public synchronized void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public synchronized void draw(DrawingPanel panel, Graphics g) {
     if(!visible||(griddata==null)) {
       return;
     }
@@ -292,7 +305,8 @@ public class ContourPlot implements Plot2D {
    * @param floor
    * @param ceil
    */
-  public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
+  @Override
+public void setAutoscaleZ(boolean isAutoscale, double floor, double ceil) {
     autoscaleZ = isAutoscale;
     if(autoscaleZ) {
       update();
@@ -312,14 +326,16 @@ public class ContourPlot implements Plot2D {
    *
    * @param symmetric
    */
-  public void setSymmetricZ(boolean symmetric){
+  @Override
+public void setSymmetricZ(boolean symmetric){
 	  symmetricZ=symmetric;
   }
   
   /**
    * Gets the symmetric z flag.  
    */
-  public boolean isSymmetricZ(){
+  @Override
+public boolean isSymmetricZ(){
 	  return symmetricZ;
   }
 
@@ -346,7 +362,8 @@ public class ContourPlot implements Plot2D {
    * @param expanded boolean
    * @param expansionFactor double
    */
-  public void setExpandedZ(boolean expanded, double expansionFactor) {
+  @Override
+public void setExpandedZ(boolean expanded, double expansionFactor) {
     if(expanded&&(expansionFactor>0)) {
       zMap = new ZExpansion(expansionFactor);
       zMap.setMinMax(zmin, zmax);
@@ -360,7 +377,8 @@ public class ContourPlot implements Plot2D {
    *
    * @return boolean
    */
-  public boolean isAutoscaleZ() {
+  @Override
+public boolean isAutoscaleZ() {
     return autoscaleZ;
   }
 
@@ -368,7 +386,8 @@ public class ContourPlot implements Plot2D {
    * Gets the floor for scaling the z data.
    * @return double
    */
-  public double getFloor() {
+  @Override
+public double getFloor() {
     return colorMap.getFloor();
   }
 
@@ -376,14 +395,16 @@ public class ContourPlot implements Plot2D {
    * Gets the ceiling for scaling the z data.
    * @return double
    */
-  public double getCeiling() {
+  @Override
+public double getCeiling() {
     return colorMap.getCeil();
   }
 
   /**
    * Updates the contour data.
    */
-  public void update() {
+  @Override
+public void update() {
     if(griddata==null) {
       return;
     }
@@ -394,13 +415,14 @@ public class ContourPlot implements Plot2D {
     }
     colorMap.updateLegend(zMap);
   }
-
+  
   /**
    * Updates the internal data by interpolating large grids onto a smaller array.
    */
   void updateInterpolated(GridData griddata) {
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+    	
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
      	 zmax=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
      	 zmin=-zmax;
@@ -428,6 +450,9 @@ public class ContourPlot implements Plot2D {
     }
   }
 
+  
+  double[] minmax = new double[2];
+
   /**
    * Updates the contour data my directly copying values.
    */
@@ -436,7 +461,7 @@ public class ContourPlot implements Plot2D {
       return;
     }
     if(autoscaleZ) {
-      double[] minmax = griddata.getZRange(ampIndex);
+      griddata.getZRange(ampIndex, minmax);
       if(symmetricZ){
       	 zmax=Math.max(Math.abs(minmax[1]),Math.abs(minmax[0]));
       	 zmin=-zmax;
@@ -587,7 +612,8 @@ public class ContourPlot implements Plot2D {
    *
    * @param colors Color[]
    */
-  public void setColorPalette(Color[] colors) {
+  @Override
+public void setColorPalette(Color[] colors) {
     colorMap.setColorPalette(colors);
   }
 
@@ -598,7 +624,8 @@ public class ContourPlot implements Plot2D {
    *
    * @param mode
    */
-  public void setPaletteType(int mode) {
+  @Override
+public void setPaletteType(int mode) {
     colorMap.setPaletteType(mode);
   }
 
@@ -608,7 +635,8 @@ public class ContourPlot implements Plot2D {
    * @param floorColor
    * @param ceilColor
    */
-  public void setFloorCeilColor(Color floorColor, Color ceilColor) {
+  @Override
+public void setFloorCeilColor(Color floorColor, Color ceilColor) {
     colorMap.setFloorCeilColor(floorColor, ceilColor);
   }
 
@@ -617,7 +645,8 @@ public class ContourPlot implements Plot2D {
    *
    * @param indexes the sample-component indexes
    */
-  public void setIndexes(int[] indexes) {
+  @Override
+public void setIndexes(int[] indexes) {
     ampIndex = indexes[0];
   }
 
@@ -633,23 +662,28 @@ public class ContourPlot implements Plot2D {
   }
 
   /* The following methods are requried for the measurable interface */
-  public double getXMin() {
+  @Override
+public double getXMin() {
     return griddata.getLeft();
   }
 
-  public double getXMax() {
+  @Override
+public double getXMax() {
     return griddata.getRight();
   }
 
-  public double getYMin() {
+  @Override
+public double getYMin() {
     return griddata.getBottom();
   }
 
-  public double getYMax() {
+  @Override
+public double getYMax() {
     return griddata.getTop();
   }
 
-  public boolean isMeasured() {
+  @Override
+public boolean isMeasured() {
     return griddata!=null;
   }
 
@@ -660,16 +694,19 @@ public class ContourPlot implements Plot2D {
    */
   public static XML.ObjectLoader getLoader() {
     return new Plot2DLoader() {
-      public void saveObject(XMLControl control, Object obj) {
+      @Override
+	public void saveObject(XMLControl control, Object obj) {
         super.saveObject(control, obj);
         ContourPlot plot = (ContourPlot) obj;
         control.setValue("line color", plot.lineColor); //$NON-NLS-1$
         control.setValue("color map", plot.colorMap);   //$NON-NLS-1$
       }
-      public Object createObject(XMLControl control) {
+      @Override
+	public Object createObject(XMLControl control) {
         return new ContourPlot(null);
       }
-      public Object loadObject(XMLControl control, Object obj) {
+      @Override
+	public Object loadObject(XMLControl control, Object obj) {
         super.loadObject(control, obj);
         ContourPlot plot = (ContourPlot) obj;
         plot.lineColor = (Color) control.getObject("line color");     //$NON-NLS-1$
@@ -702,6 +739,6 @@ public class ContourPlot implements Plot2D {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

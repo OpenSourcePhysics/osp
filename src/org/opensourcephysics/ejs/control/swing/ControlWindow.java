@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.ejs.control.swing;
@@ -73,7 +73,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public void destroy() {
+  @Override
+public void destroy() {
     dispose();
     super.destroy();
   }
@@ -85,7 +86,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public void reset() {
+  @Override
+public void reset() {
     startingup = false;
     if(shouldShow) {
       show(); // ((Window) getComponent()).show();
@@ -95,12 +97,14 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     super.reset();
   }
 
-  public void update() { // Ensure it will be updated
+  @Override
+public void update() { // Ensure it will be updated
     startingup = false;
     // super.update();
   }
 
-  public void adjustSize() { // overrides its super
+  @Override
+public void adjustSize() { // overrides its super
     String size = getProperty("size"); //$NON-NLS-1$
     ((Window) getComponent()).validate();
     if((size!=null)&&size.trim().toLowerCase().equals("pack")) { //$NON-NLS-1$
@@ -115,7 +119,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
   // ------------------------------------------------
   static private java.util.ArrayList<String> infoList = null;
 
-  public java.util.ArrayList<String> getPropertyList() {
+  @Override
+public java.util.ArrayList<String> getPropertyList() {
     if(infoList==null) {
       infoList = new java.util.ArrayList<String>();
       infoList.add("layout");       //$NON-NLS-1$
@@ -126,7 +131,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     return infoList;
   }
 
-  public String getPropertyInfo(String _property) {
+  @Override
+public String getPropertyInfo(String _property) {
     if(_property.equals("location")) { //$NON-NLS-1$
       return "Point|Object";           //$NON-NLS-1$
     }
@@ -145,7 +151,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
   // ------------------------------------------------
   // Set and Get the values of the properties
   // ------------------------------------------------
-  public void setValue(int _index, Value _value) {
+  @Override
+public void setValue(int _index, Value _value) {
     switch(_index) {
        case 0 :                                                                   // layout
          if(_value.getObject() instanceof LayoutManager) {
@@ -169,8 +176,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
          setWaitForReset(_value.getBoolean());
          break;
        case VISIBLE :                                                             // Overrides its super 'visible'
-         internalValue.value = _value.getBoolean();
-         if(internalValue.value) {
+         internalValue.setValue(_value);
+         if(internalValue.getBoolean()) {
            show();
          } else {
            hide();
@@ -204,7 +211,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public void setDefaultValue(int _index) {
+  @Override
+public void setDefaultValue(int _index) {
     switch(_index) {
        case 0 :
          getContainer().setLayout(myLayout = new BorderLayout());
@@ -217,7 +225,7 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
          setWaitForReset(false);
          break;
        case VISIBLE :                                                   // Overrides its super 'visible'
-         internalValue.value = true;
+         internalValue.setValue(true);
          show();
          break;
        case SIZE :                                                      // // Overrides its super 'size'
@@ -235,7 +243,8 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
     }
   }
 
-  public Value getValue(int _index) {
+  @Override
+public Value getValue(int _index) {
     switch(_index) {
        case 0 :
          return internalValue;
@@ -269,6 +278,6 @@ public abstract class ControlWindow extends ControlContainer implements NeedsUpd
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

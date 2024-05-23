@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display2d;
@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
@@ -60,32 +61,25 @@ public class GridDataTable extends JTable implements ActionListener {
    *
    * @param  evt
    */
-  public void actionPerformed(ActionEvent evt) {
+  @Override
+public void actionPerformed(ActionEvent evt) {
     tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
   }
 
-  /**
-   *  Refresh the data in the DataTable, as well as other changes to the table,
-   *  such as row number visibility. Changes to the TableModels displayed in the
-   *  table will not be visible until this method is called.
-   */
-  public void refreshTable() {
-    if(refreshDelay>0) {
-      refreshTimer.start();
-    } else {
-      Runnable doRefreshTable = new Runnable() {
-        public synchronized void run() {
-          tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
-        }
-
-      };
-      if(SwingUtilities.isEventDispatchThread()) {
-        doRefreshTable.run();
-      } else {
-        SwingUtilities.invokeLater(doRefreshTable);
-      }
-    }
-  }
+	/**
+	 * Refresh the data in the DataTable, as well as other changes to the table,
+	 * such as row number visibility. Changes to the TableModels displayed in the
+	 * table will not be visible until this method is called.
+	 */
+	public void refreshTable() {
+		if (refreshDelay > 0) {
+			refreshTimer.start();
+		} else {
+			SwingUtilities.invokeLater(() -> {
+				tableChanged(new TableModelEvent(tableModel, TableModelEvent.HEADER_ROW));
+			});
+		}
+	}
 
   /**
    *  Returns an appropriate renderer for the cell specified by this row and
@@ -100,7 +94,8 @@ public class GridDataTable extends JTable implements ActionListener {
    * @param  column  Description of Parameter
    * @return         The cellRenderer value
    */
-  public TableCellRenderer getCellRenderer(int row, int column) {
+  @Override
+public TableCellRenderer getCellRenderer(int row, int column) {
     int i = convertColumnIndexToModel(column);
     if(i==0) {
       return rowNumberRenderer;
@@ -136,7 +131,8 @@ public class GridDataTable extends JTable implements ActionListener {
      * @param  column
      * @return
      */
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    @Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
       if(column==0) {
         setBackground(PANEL_BACKGROUND);
       }
@@ -168,6 +164,6 @@ public class GridDataTable extends JTable implements ActionListener {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

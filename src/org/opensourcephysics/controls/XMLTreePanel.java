@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -11,10 +11,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -23,11 +20,12 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Enumeration;
 import java.util.Iterator;
+
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -46,8 +44,11 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.tools.ArrayInspector;
+import org.opensourcephysics.tools.ResourceLoader;
 
 /**
  * This is a split pane view of an XML tree and its contents.
@@ -72,7 +73,7 @@ public class XMLTreePanel extends JPanel {
   int maxStringLength = 24;
 
   /**
-   * Contructs a tree panel with an XMLControl
+   * Constructs a tree panel with an XMLControl
    *
    * @param control the XMLControl
    */
@@ -81,7 +82,7 @@ public class XMLTreePanel extends JPanel {
   }
 
   /**
-   * Contructs a tree panel with an XMLControl
+   * Constructs a tree panel with an XMLControl
    *
    * @param control the XMLControl
    * @param editable true to enable xml edits via the input field
@@ -132,6 +133,53 @@ public class XMLTreePanel extends JPanel {
   }
 
   /**
+   * Selects and returns the node with the specified TreePath.
+   * This uses only the names of the nodes in the path so
+   * it can be used after creating a new similar Tree.
+   *
+   * @param treePath the TreePath
+   * @return the selected node, or null if none found
+   */
+  public XMLTreeNode setSelectedNode(TreePath treePath) {
+  	Object[] elements = treePath.getPath();
+    XMLTreeNode root = (XMLTreeNode) tree.getModel().getRoot();
+    XMLTreeNode node = null;
+    for (int i = 0; i < elements.length; i++) {
+    	node = getChildNode(root, elements[i].toString());
+    	if (node == null)
+    		break;
+    	root = node;
+    }
+    if (node != null) {
+      TreePath path = new TreePath(node.getPath());
+      tree.setSelectionPath(path);
+      tree.scrollPathToVisible(path);
+      showInspector(node);
+      return node;
+    }
+    return null;
+  }
+
+  /**
+   * Returns the first child of a specified root node
+   * that has a given name.
+   *
+   * @param root the node to search
+   * @param name the name
+   * @return the node, or null if none found
+   */
+  public XMLTreeNode getChildNode(XMLTreeNode root, String name) {
+    Enumeration<?> e = root.breadthFirstEnumeration();
+    while(e.hasMoreElements()) {
+      XMLTreeNode node = (XMLTreeNode) e.nextElement();
+      if (node.toString().equals(name)) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Displays the property data for the specified node.
    *
    * @param node the XMLTreeNode
@@ -149,10 +197,7 @@ public class XMLTreePanel extends JPanel {
       // display primitive properties in input field
       if(value instanceof String) {
         property = prop;
-        String content = (String) value;
-        if(content.indexOf(XML.CDATA_PRE)!=-1) {
-          content = content.substring(content.indexOf(XML.CDATA_PRE)+XML.CDATA_PRE.length(), content.length()-XML.CDATA_POST.length());
-        }
+        String content = XML.removeCDATA((String) value);
         input.setText(content);
         input.setEditable(editable);
         input.setVisible(true);
@@ -202,21 +247,22 @@ public class XMLTreePanel extends JPanel {
     String imageFile = "/org/opensourcephysics/resources/controls/images/inspect.gif"; //$NON-NLS-1$
     // Don't use resource loader to improve performance.  Changed by W. Christian
     //inspectIcon = ResourceLoader.getIcon(imageFile);
-    inspectIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    inspectIcon = ResourceLoader.getImageIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/controls/images/value.gif";         //$NON-NLS-1$
     //valueIcon = ResourceLoader.getIcon(imageFile);
-    valueIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    valueIcon = ResourceLoader.getImageIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/controls/images/folder.gif";        //$NON-NLS-1$
     //folderIcon = ResourceLoader.getIcon(imageFile);
-    folderIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    folderIcon = ResourceLoader.getImageIcon(imageFile);
     imageFile = "/org/opensourcephysics/resources/controls/images/inspectfolder.gif"; //$NON-NLS-1$
     //inspectFolderIcon = ResourceLoader.getIcon(imageFile);
-    inspectFolderIcon = new ImageIcon(XMLTreePanel.class.getResource(imageFile));
+    inspectFolderIcon = ResourceLoader.getImageIcon(imageFile);
     popup = new JPopupMenu();
     JMenuItem item = new JMenuItem(ControlsRes.getString("XMLTreePanel.Popup.MenuItem.Inspect")); //$NON-NLS-1$
     popup.add(item);
     item.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         XMLTreeNode node = (XMLTreeNode) tree.getLastSelectedPathComponent();
         if(node!=null) {
           showInspector(node);
@@ -236,7 +282,8 @@ public class XMLTreePanel extends JPanel {
     input = new JTextField(20);
     input.setVisible(false);
     input.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
+      @Override
+	public void actionPerformed(ActionEvent e) {
         property.setValue(input.getText());
         Object obj = control.loadObject(null);
         if(obj instanceof Component) {
@@ -252,7 +299,8 @@ public class XMLTreePanel extends JPanel {
 
     });
     input.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
+      @Override
+	public void keyPressed(KeyEvent e) {
         if(!editable) {
           return;
         }
@@ -266,7 +314,8 @@ public class XMLTreePanel extends JPanel {
 
     });
     input.addFocusListener(new FocusAdapter() {
-      public void focusLost(FocusEvent e) {
+      @Override
+	public void focusLost(FocusEvent e) {
         JComponent comp = (JComponent) e.getSource();
         comp.setBackground(Color.white);
       }
@@ -274,18 +323,7 @@ public class XMLTreePanel extends JPanel {
     });
     toolbar.add(input);
     // create xml pane and scroller
-    xmlPane = new JTextPane() {
-      public void paintComponent(Graphics g) {
-        if(OSPRuntime.antiAliasText) {
-          Graphics2D g2 = (Graphics2D) g;
-          RenderingHints rh = g2.getRenderingHints();
-          rh.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-          rh.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        }
-        super.paintComponent(g);
-      }
-
-    };
+    xmlPane = GUIUtils.newJTextPane();
     xmlPane.setPreferredSize(new Dimension(360, 200));
     xmlPane.setEditable(false);
     JScrollPane xmlScroller = new JScrollPane(xmlPane);
@@ -297,6 +335,9 @@ public class XMLTreePanel extends JPanel {
     JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScroller, dataPanel);
     add(splitPane, BorderLayout.CENTER);
     treeScroller.setPreferredSize(new Dimension(140, 200));
+    // with the default splitPane.setResizeWeight(0), any overage
+    // results in a closed pane. HTML5 may have ever so slightly different character widths.
+    splitPane.setDividerLocation(140); // BH 2020.03.25 setting this guarantees the preferred size initially
     displayProperty(root, editable);
   }
 
@@ -307,7 +348,8 @@ public class XMLTreePanel extends JPanel {
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     // listen for tree selections and display the property data
     tree.addTreeSelectionListener(new TreeSelectionListener() {
-      public void valueChanged(TreeSelectionEvent e) {
+      @Override
+	public void valueChanged(TreeSelectionEvent e) {
         XMLTreeNode node = (XMLTreeNode) tree.getLastSelectedPathComponent();
         if(node!=null) {
           displayProperty(node, editable);
@@ -316,7 +358,15 @@ public class XMLTreePanel extends JPanel {
 
     });
     // listen for mouse events to display array tables
-    tree.addMouseListener(new MouseAdapter() {
+    tree.addMouseListener(getMouseListener());
+    // put tree in scroller
+    treeScroller.setViewportView(tree);
+    return root;
+  }
+  
+  protected MouseListener getMouseListener() {
+  	return new MouseAdapter() {
+      @Override
       public void mouseClicked(MouseEvent e) {
         if(OSPRuntime.isPopupTrigger(e)) {
           // select node and show popup menu
@@ -331,11 +381,7 @@ public class XMLTreePanel extends JPanel {
           }
         }
       }
-
-    });
-    // put tree in scroller
-    treeScroller.setViewportView(tree);
-    return root;
+    };
   }
 
   private void showInspector(XMLTreeNode node) {
@@ -343,7 +389,7 @@ public class XMLTreePanel extends JPanel {
       return;
     }
     // show array inspector if available
-    if(node.getProperty().getPropertyType().equals("array")) { //$NON-NLS-1$
+    if(node.getProperty().getPropertyType() == XMLProperty.TYPE_ARRAY) { //$NON-NLS-1$
       XMLProperty arrayProp = node.getProperty();
       ArrayInspector inspector = ArrayInspector.getInspector(arrayProp);
       if(inspector!=null) {
@@ -361,7 +407,8 @@ public class XMLTreePanel extends JPanel {
         inspector.setEditable(editable);
         // listen for changes in the table array
         inspector.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-          public void propertyChange(PropertyChangeEvent e) {
+          @Override
+		public void propertyChange(PropertyChangeEvent e) {
             if(e.getPropertyName().equals("cell")) {           //$NON-NLS-1$
               // set new array value in array control (creates new XMLProperty)
               arrayControl.setValue(arrayName, arrayObj);
@@ -407,7 +454,8 @@ public class XMLTreePanel extends JPanel {
    * A cell renderer to show xml nodes.
    */
   private class XMLRenderer extends DefaultTreeCellRenderer {
-    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+    @Override
+	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
       XMLTreeNode node = (XMLTreeNode) value;
       if(node.isLeaf()) {
@@ -448,6 +496,6 @@ public class XMLTreePanel extends JPanel {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

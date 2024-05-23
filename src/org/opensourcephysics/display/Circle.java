@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -63,7 +63,8 @@ public class Circle implements Drawable {
    * @param panel
    * @param g
    */
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     int xpix = panel.xToPix(x)-pixRadius;
     int ypix = panel.yToPix(y)-pixRadius;
     g.setColor(color);
@@ -122,7 +123,8 @@ public class Circle implements Drawable {
    *
    * @return String
    */
-  public String toString() {
+  @Override
+public String toString() {
     String name = getClass().getName();
     name = name.substring(1+name.lastIndexOf("."))+'['; //$NON-NLS-1$
     name += "x="+x;                                     //$NON-NLS-1$
@@ -163,6 +165,6 @@ public class Circle implements Drawable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

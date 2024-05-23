@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -10,7 +10,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -507,122 +512,148 @@ public class TextLine {
     return leading;
   }
 
-  /**
-   * parse the text. When the text is parsed the width, height, leading
-   * are all calculated. The text will only be truly parsed if
-   * the graphics context has changed or the text has changed or
-   * the font has changed. Otherwise nothing is done when this
-   * method is called.
-   * @param g Graphics context.
-   */
-  public void parseText(Graphics g) {
-    TextState current = new TextState();
-    char ch;
-    Stack<TextState> state = new Stack<TextState>();
-    int w = 0;
-    if(lg!=g) {
-      parse = true;
-    }
-    lg = g;
-    if(!parse) {
-      return;
-    }
-    parse = false;
-    width = 0;
-    leading = 0;
-    ascent = 0;
-    descent = 0;
-    height = 0;
-    maxAscent = 0;
-    maxDescent = 0;
-    if((text==null)||(g==null)) {
-      return;
-    }
-    list.removeAllElements();
-    if(font==null) {
-      current.f = g.getFont();
-    } else {
-      current.f = font;
-    }
-    state.push(current);
-    list.addElement(current);
-    for(int i = 0; i<text.length(); i++) {
-      ch = text.charAt(i);
-      switch(ch) {
-         case '$' :
-           i++;
-           if(i<text.length()) {
-             current.s.append(text.charAt(i));
-           }
-           break;
-         /*
-         **                    Push the current state onto the state stack
-         **                    and start a new storage string
-         */
-         case '{' :
-           w = current.getWidth(g);
-           if(!current.isEmpty()) {
-             current = current.copyState();
-             list.addElement(current);
-           }
-           state.push(current);
-           current.x += w;
-           break;
-         /*
-         **                    Pop the state off the state stack and set the current
-         **                    state to the top of the state stack
-         */
-         case '}' :
-           w = current.x+current.getWidth(g);
-           state.pop();
-           current = state.peek().copyState();
-           list.addElement(current);
-           current.x = w;
-           break;
-         case '^' :
-           w = current.getWidth(g);
-           if(!current.isEmpty()) {
-             current = current.copyState();
-             list.addElement(current);
-           }
-           current.f = getScriptFont(current.f);
-           current.x += w;
-           current.y -= (int) ((current.getAscent(g))*sup_offset+0.5);
-           break;
-         case '_' :
-           w = current.getWidth(g);
-           if(!current.isEmpty()) {
-             current = current.copyState();
-             list.addElement(current);
-           }
-           current.f = getScriptFont(current.f);
-           current.x += w;
-           current.y += (int) ((current.getDescent(g))*sub_offset+0.5);
-           break;
-         default :
-           current.s.append(ch);
-           break;
-      }
-    }
-    Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
-    synchronized(list) {
-      vec = new Vector<TextState>(list);
-    } // added by W. Christian
-    for(int i = 0; i<vec.size(); i++) {
-      current = (vec.elementAt(i));
-      if(!current.isEmpty()) {
-        width += current.getWidth(g);
-        ascent = Math.max(ascent, Math.abs(current.y)+current.getAscent(g));
-        descent = Math.max(descent, Math.abs(current.y)+current.getDescent(g));
-        leading = Math.max(leading, current.getLeading(g));
-        maxDescent = Math.max(maxDescent, Math.abs(current.y)+current.getMaxDescent(g));
-        maxAscent = Math.max(maxAscent, Math.abs(current.y)+current.getMaxAscent(g));
-      }
-    }
-    height = ascent+descent+leading;
-    return;
-  }
+	/**
+	 * parse the text. When the text is parsed the width, height, leading are all
+	 * calculated. The text will only be truly parsed if the graphics context has
+	 * changed or the text has changed or the font has changed. Otherwise nothing is
+	 * done when this method is called.
+	 * 
+	 * @param g Graphics context.
+	 */
+	public void parseText(Graphics g) {
+		int w = 0;
+		if (lg != g) {
+			parse = true;
+		}
+		lg = g;
+		if (!parse) {
+			return;
+		}
+		parse = false;
+		width = 0;
+		leading = 0;
+		ascent = 0;
+		descent = 0;
+		height = 0;
+		maxAscent = 0;
+		maxDescent = 0;
+		if (text == null || g == null || text.length() == 0) {
+			return;
+		}
+		// BH 2020.03.04 no need to do all this if it's simple text
+		if (keepItSimple(text)) {
+			Font prevFont = g.getFont();
+			g.setFont(font);
+			FontMetrics fm = g.getFontMetrics();
+			width = fm.stringWidth(text);
+			ascent = fm.getAscent();
+			descent = fm.getDescent();
+			leading = fm.getLeading();
+			maxDescent = fm.getMaxDescent();
+			maxAscent = fm.getMaxAscent();
+			g.setFont(prevFont);
+		} else {
+			TextState current = new TextState();
+			char ch;
+			Stack<TextState> state = new Stack<TextState>();
+			list.removeAllElements();
+			if (font == null) {
+				current.f = g.getFont();
+			} else {
+				current.f = font;
+			}
+			state.push(current);
+			list.addElement(current);
+			for (int i = 0, n = text.length(); i < n; i++) {
+				ch = text.charAt(i);
+				switch (ch) {
+				case '$':
+					i++;
+					if (i < text.length()) {
+						current.s.append(text.charAt(i));
+					}
+					break;
+				/*
+				 ** Push the current state onto the state stack and start a new storage string
+				 */
+				case '{':
+					w = current.getWidth(g);
+					if (!current.isEmpty()) {
+						current = current.copyState();
+						list.addElement(current);
+					}
+					state.push(current);
+					current.x += w;
+					break;
+				/*
+				 ** Pop the state off the state stack and set the current state to the top of the
+				 * state stack
+				 */
+				case '}':
+					w = current.x + current.getWidth(g);
+					state.pop();
+					current = state.peek().copyState();
+					list.addElement(current);
+					current.x = w;
+					break;
+				case '^':
+					w = current.getWidth(g);
+					if (!current.isEmpty()) {
+						current = current.copyState();
+						list.addElement(current);
+					}
+					current.f = getScriptFont(current.f);
+					current.x += w;
+					current.y -= (int) ((current.getAscent(g)) * sup_offset + 0.5);
+					break;
+				case '_':
+					w = current.getWidth(g);
+					if (!current.isEmpty()) {
+						current = current.copyState();
+						list.addElement(current);
+					}
+					current.f = getScriptFont(current.f);
+					current.x += w;
+					current.y += (int) ((current.getDescent(g)) * sub_offset + 0.5);
+					break;
+				default:
+					current.s.append(ch);
+					break;
+				}
+			}
+			//Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
+			synchronized (list) {
+				vec = new Vector<TextState>(list);
+			} // added by W. Christian
+			for (int i = 0; i < vec.size(); i++) {
+				current = (vec.elementAt(i));
+				if (!current.isEmpty()) {
+					width += current.getWidth(g);
+					ascent = Math.max(ascent, Math.abs(current.y) + current.getAscent(g));
+					descent = Math.max(descent, Math.abs(current.y) + current.getDescent(g));
+					leading = Math.max(leading, current.getLeading(g));
+					maxDescent = Math.max(maxDescent, Math.abs(current.y) + current.getMaxDescent(g));
+					maxAscent = Math.max(maxAscent, Math.abs(current.y) + current.getMaxAscent(g));
+				}
+			}
+		}
+		height = ascent + descent + leading;
+		return;
+	}
 
+	private boolean keepItSimple(String text) {
+		for (int i = text.length(); --i >= 0;) {
+			switch (text.charAt(i)) {
+			case '$':
+			case '{':
+			case '}':
+			case '^':
+			case '_':
+				return false;
+			}
+		}
+		return true;
+	}
   /**
    * @return true if the text has never been set or is null
    */
@@ -645,56 +676,106 @@ public class TextLine {
     drawText(g, x, y);
   }
 
-  /**
-   * Parse the text then draw it without any rotation.
-   * @param g Graphics context
-   * @param x pixel position of the text
-   * @param y pixel position of the text
-   */
-  public void drawText(Graphics g, int x, int y) {
-    TextState ts;
-    int xoffset = x;
-    int yoffset = y;
-    if((g==null)||(text==null)) {
-      return;
-    }
-    Graphics lg = g.create();
-    if(lg==null) {
-      return; // added by W. Christian
-    }
-    parseText(g);
-    if(justification==CENTER) {
-      xoffset = x-width/2;
-    } else if(justification==RIGHT) {
-      xoffset = x-width;
-    }
-    if(background!=null) {
-      lg.setColor(background);
-      lg.fillRect(xoffset, yoffset-ascent, width, height);
-      lg.setColor(g.getColor());
-    }
-    if(font!=null) {
-      lg.setFont(font);
-    }
-    if(color!=null) {
-      lg.setColor(color);
-    }
-    Vector<TextState> vec; // added by W. Christian in case a parse is called during drawing.
-    synchronized(list) {
-      vec = new Vector<TextState>(list);
-    } // added by W. Christian
-    for(int i = 0; i<vec.size(); i++) {
-      ts = (vec.elementAt(i));
-      if(ts.f!=null) {
-        lg.setFont(ts.f);
-      }
-      if(ts.s!=null) {
-        lg.drawString(ts.toString(), ts.x+xoffset, ts.y+yoffset);
-      }
-    }
-    lg.dispose();
-    lg = null;
-  }
+	Vector<TextState> vec = new Vector<TextState>(); // added by W. Christian in case a parse is called during drawing.
+
+	/**
+	 * Parse the text then draw it without any rotation.
+	 * 
+	 * @param g Graphics context
+	 * @param x pixel position of the text
+	 * @param y pixel position of the text
+	 */
+	public void drawText(Graphics g, int x, int y) {
+		TextState ts;
+		int xoffset = x;
+		int yoffset = y;
+		if ((g == null) || (text == null)) {
+			return;
+		}
+		Graphics lg = g.create();
+		if (lg == null) {
+			return; // added by W. Christian
+		}
+		parseText(g);
+		if (justification == CENTER) {
+			xoffset = x - width / 2;
+		} else if (justification == RIGHT) {
+			xoffset = x - width;
+		}
+		if (background != null) {
+			lg.setColor(background);
+			lg.fillRect(xoffset, yoffset - ascent, width, height);
+			lg.setColor(g.getColor());
+		}
+		if (font != null) {
+			lg.setFont(font);
+		}
+		if (color != null) {
+			lg.setColor(color);
+		}
+		if (keepItSimple(text)) {
+			lg.drawString(text, 0 + xoffset, 0 + yoffset);
+		} else {
+			synchronized (list) {
+				vec.clear();
+				vec.addAll(list);
+				for (int i = 0; i < vec.size(); i++) {
+					ts = (vec.elementAt(i));
+					if (ts.f != null) {
+						lg.setFont(ts.f);
+					}
+					if (ts.s != null) {
+						lg.drawString(ts.toString(), ts.x + xoffset, ts.y + yoffset);
+					}
+				}
+			} // added by W. Christian
+		}
+		lg.dispose();
+		lg = null;
+	}
+
+	  protected AffineTransform trTL = new AffineTransform();
+	  
+	  protected void drawRotatedText(double theta, double x, double y, Graphics g) {
+	      trTL.setToRotation(-theta, x, y);
+	      ((Graphics2D) g).transform(trTL);
+	      drawText(g, (int) x, (int) y);
+	      trTL.setToRotation(theta, x, y);
+	      ((Graphics2D) g).transform(trTL);
+	  }
+
+	private BufferedImage image;
+	  
+	/**
+	 * Paint the font onto and image, and then paint that using a transform onto the actual graphic.
+	 * 
+	 * @param panel
+	 * @param g
+	 * @param theta
+	 * @param x
+	 * @param y
+	 */
+	protected void drawTextImageRotated(ImageObserver panel, Graphics g, double theta, double x, double y) {
+		int w = g.getFontMetrics().stringWidth(text) + 7;
+		int h = g.getFontMetrics().getHeight() + 10;
+		if (image == null || image.getWidth() != w || image.getHeight() != h) {
+			image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		}		
+		Graphics2D imageGraphics = image.createGraphics();
+		imageGraphics.setFont(g.getFont());
+		imageGraphics.setColor(Color.BLACK);
+		drawText(imageGraphics, w / 2 - 2, h - 5);
+		imageGraphics.dispose();
+
+		Graphics2D g2d = (Graphics2D) g;
+		g2d.translate(x - h - 2, y + w / 2);
+		trTL.setToRotation(-theta, 0, 0);
+		if (OSPRuntime.setRenderingHints)
+			g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		g2d.drawImage(image, trTL, panel);
+		g2d.translate(-x + h + 2, -y - w / 2);
+	}
+
 
   /**
    * @return Logical font name of the set font
@@ -937,7 +1018,8 @@ class TextState extends Object {
     return tmp;
   }
 
-  public String toString() {
+  @Override
+public String toString() {
     return s.toString();
   }
 
@@ -1016,6 +1098,6 @@ class TextState extends Object {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

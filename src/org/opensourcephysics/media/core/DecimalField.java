@@ -2,14 +2,14 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 /*
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2019  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
  * For additional information and documentation on Open Source Physics,
- * please see <https://www.compadre.org/osp/>.
+ * please see <http://www.opensourcephysics.org/>.
  */
 package org.opensourcephysics.media.core;
 
@@ -38,6 +38,7 @@ package org.opensourcephysics.media.core;
  * @author Douglas Brown
  * @version 1.0
  */
+@SuppressWarnings("serial")
 public class DecimalField extends NumberField {
 	
 	protected String defaultPattern;
@@ -49,8 +50,7 @@ public class DecimalField extends NumberField {
    * @param places the number of decimal places to display
    */
   public DecimalField(int columns, int places) {
-    super(columns);
-    fixedPattern = fixedPatternByDefault = true;
+    super(columns, 4, true);
     setDecimalPlaces(places);
   }
 
@@ -68,31 +68,33 @@ public class DecimalField extends NumberField {
       pattern += "0"; //$NON-NLS-1$
     }
     defaultPattern = pattern;
-    if (userPattern.equals("")) { //$NON-NLS-1$
-      format.applyPattern(pattern);
+    if (nf.userPattern.equals("")) { //$NON-NLS-1$
+      applyPattern(pattern);
     }
   }
 
   // Override NumberField methods so pattern cannot change
-  public void setSigFigs(int sigfigs) {}
+  @Override
+public void setSigFigs(int sigfigs) {}
 
   @Override
   public void setExpectedRange(double lower, double upper) {}
 
-  @Override
-  public void setFixedPattern(String pattern) {
-  	if (pattern==null) pattern = ""; //$NON-NLS-1$
-    pattern = pattern.trim();
-    if (pattern.equals(userPattern)) return;
-    userPattern = pattern;
-    if (userPattern.equals("")) { //$NON-NLS-1$
-      format.applyPattern(defaultPattern);
-    }
-    else {
-      format.applyPattern(userPattern);
-    }
-    setValue(prevValue);
-  }
+	@Override
+	public void setFixedPattern(String pattern) {
+		if (pattern == null)
+			pattern = ""; //$NON-NLS-1$
+		pattern = pattern.trim();
+		if (pattern.equals(nf.userPattern))
+			return;
+		nf.userPattern = pattern;
+		if (nf.userPattern.equals("")) { //$NON-NLS-1$
+			applyPattern(defaultPattern);
+		} else {
+			applyPattern(nf.userPattern);
+		}
+		setValue(prevValue);
+	}
 
 }
 
@@ -116,6 +118,6 @@ public class DecimalField extends NumberField {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

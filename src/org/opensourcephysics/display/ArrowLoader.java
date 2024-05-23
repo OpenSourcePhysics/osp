@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -19,7 +19,8 @@ public class ArrowLoader extends XMLLoader {
    * @param control XMLControl
    * @param obj Object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
     Arrow arrow = (Arrow) obj;
     control.setValue("x", arrow.x);                //$NON-NLS-1$
     control.setValue("y", arrow.y);                //$NON-NLS-1$
@@ -34,7 +35,8 @@ public class ArrowLoader extends XMLLoader {
    * @param control XMLControl
    * @return Object
    */
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     return new Arrow(0, 0, 0, 0);
   }
 
@@ -44,7 +46,8 @@ public class ArrowLoader extends XMLLoader {
    * @param obj Object
    * @return Object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     Arrow arrow = (Arrow) obj;
     arrow.x = control.getDouble("x");                        //$NON-NLS-1$
     arrow.y = control.getDouble("y");                        //$NON-NLS-1$
@@ -77,6 +80,6 @@ public class ArrowLoader extends XMLLoader {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

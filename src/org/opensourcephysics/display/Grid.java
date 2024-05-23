@@ -2,15 +2,15 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 
@@ -191,8 +191,11 @@ public class Grid implements Drawable {
       }
     }
   }
+  
+  private BasicStroke stroke2 = new BasicStroke(2);
 
-  public void draw(DrawingPanel panel, Graphics g) {
+  @Override
+public void draw(DrawingPanel panel, Graphics g) {
     if(!visible) {
       return;
     }
@@ -203,9 +206,9 @@ public class Grid implements Drawable {
       return;
     }
     Graphics2D g2 = (Graphics2D) g;
-    AffineTransform at = panel.getPixelTransform();
-    Shape s = generalPath.createTransformedShape(at);
+    Shape s = generalPath.createTransformedShape(panel.getPixelTransform());
     g2.setColor(color);
+    g2.setStroke(stroke2); // BH just a bit better in JavaScript
     g2.draw(s);
     g2.setColor(Color.black);
   }
@@ -263,6 +266,6 @@ public class Grid implements Drawable {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

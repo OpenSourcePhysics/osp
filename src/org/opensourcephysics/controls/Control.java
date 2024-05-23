@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -35,6 +35,10 @@ public interface Control {
    * @param val
    */
   public void setValue(String name, Object val);
+
+  default public void setValue(String name, double[] val, int decimalPlaces) {
+	  setValue(name, val);
+  }
 
   /**
    * Stores a name and a double value in the control.  GUI controls will usually display
@@ -119,9 +123,16 @@ public interface Control {
   /**
    * Gets the names of all properties stored in this control.
    *
-   * @return List
+   * @return a clone of the properties List
    */
   public java.util.Collection<String> getPropertyNames();
+
+  /**
+   * Gets the names of all properties stored in this control.
+   *
+   * @return the actual property list
+   */
+  public java.util.Collection<String> getPropertyNamesRaw();
 
   /**
    * Prints a string in the control's message area followed by a CR and LF.
@@ -188,6 +199,6 @@ public interface Control {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

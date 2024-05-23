@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.controls;
@@ -22,7 +22,8 @@ public class XMLLoader implements XML.ObjectLoader {
    * @param control the control
    * @param obj the object
    */
-  public void saveObject(XMLControl control, Object obj) {
+  @Override
+public void saveObject(XMLControl control, Object obj) {
 
   /** empty block */
   }
@@ -33,7 +34,8 @@ public class XMLLoader implements XML.ObjectLoader {
    * @param control the control
    * @return the new object
    */
-  public Object createObject(XMLControl control) {
+  @Override
+public Object createObject(XMLControl control) {
     try {
       return control.getObjectClass().newInstance();
     } catch(Exception ex) {
@@ -49,7 +51,8 @@ public class XMLLoader implements XML.ObjectLoader {
    * @param control the control
    * @param obj the object
    */
-  public Object loadObject(XMLControl control, Object obj) {
+  @Override
+public Object loadObject(XMLControl control, Object obj) {
     return obj;
   }
 
@@ -75,6 +78,6 @@ public class XMLLoader implements XML.ObjectLoader {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

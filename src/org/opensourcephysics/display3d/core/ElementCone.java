@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display3d.core;
@@ -112,7 +112,8 @@ public interface ElementCone extends Element {
   // XML loader
   // ----------------------------------------------------
   static abstract class Loader extends Element.Loader {
-    public void saveObject(XMLControl control, Object obj) {
+    @Override
+	public void saveObject(XMLControl control, Object obj) {
       super.saveObject(control, obj);
       ElementCone element = (ElementCone) obj;
       if(Double.isNaN(element.getTruncationHeight())) {
@@ -128,7 +129,8 @@ public interface ElementCone extends Element {
       control.setValue("maximum angle", element.getMaximumAngle()); //$NON-NLS-1$
     }
 
-    public Object loadObject(XMLControl control, Object obj) {
+    @Override
+	public Object loadObject(XMLControl control, Object obj) {
       super.loadObject(control, obj);
       ElementCone element = (ElementCone) obj;
       element.setTruncationHeight(control.getDouble("truncation height")); //$NON-NLS-1$
@@ -165,6 +167,6 @@ public interface ElementCone extends Element {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */

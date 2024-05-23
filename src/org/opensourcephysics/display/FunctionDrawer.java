@@ -2,7 +2,7 @@
  * Open Source Physics software is free software as described near the bottom of this code file.
  *
  * For additional information and documentation on Open Source Physics please see:
- * <https://www.compadre.org/osp/>
+ * <http://www.opensourcephysics.org/>
  */
 
 package org.opensourcephysics.display;
@@ -33,9 +33,13 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
   protected boolean measured = false; // set to true if function has been initialized.
   public Color color = Color.black;
   public boolean functionChanged = false;
+  protected boolean enabled = true;
 
+  public void setEnabled(boolean b) {
+	  enabled = b;
+  }
   /**
-   * Contstucts a FunctionDrawer with optimum resolution.
+   * Constructs a FunctionDrawer with optimum resolution.
    *
    * @param   f the function that will be drawn.
    */
@@ -57,10 +61,11 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
   }
 
   /**
-   * Evalutes the function.
+   * Evaluates the function.
    * @param x
    * @return value of the function
    */
+  @Override
   public double evaluate(double x) {
     return function.evaluate(x);
   }
@@ -138,56 +143,60 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
     return yrange;
   }
 
-  protected void checkRange(DrawingPanel panel) {
-    // check to see if the range or function has changed
-    if((xrange[0]==panel.getXMin())&&(xrange[1]==panel.getXMax())&&(numpts==panel.getWidth())&&!functionChanged) {
-      return;
-    }
-    functionChanged = false;
-    xrange[0] = panel.getXMin();
-    xrange[1] = panel.getXMax();
-    numpts = panel.getWidth();
-    generalPath.reset();
-    if(numpts<1) {
-      return;
-    }
-    yrange[0] = function.evaluate(xrange[0]);
-    yrange[1] = yrange[0]; // starting values for ymin and ymax
-    if(filled) {
-      generalPath.moveTo((float) xrange[0], 0);
-      generalPath.lineTo((float) xrange[0], (float) yrange[0]);
-    } else {
-      generalPath.moveTo((float) xrange[0], (float) yrange[0]);
-    }
-    double x = xrange[0];
-    double dx = (xrange[1]-xrange[0])/(numpts);
-    for(int i = 0; i<numpts; i++) {
-      x = x+dx;
-      double y = function.evaluate(x);
-      if(!Double.isNaN(x)&&!Double.isNaN(y)) {
-        y = Math.min(y, 1.0e+12);
-        y = Math.max(y, -1.0e+12);
-        generalPath.lineTo((float) x, (float) y);
-        if(y<yrange[0]) {
-          yrange[0] = y; // the minimum value
-        }
-        if(y>yrange[1]) {
-          yrange[1] = y; // the maximum value
-        }
-      }
-    }
-    if(filled) {
-      generalPath.lineTo((float) x, 0);
-      generalPath.closePath();
-    }
-  }
-
+	protected void checkRange(DrawingPanel panel) {
+		// check to see if the range or function has changed
+		if ((xrange[0] == panel.getXMin()) && (xrange[1] == panel.getXMax()) && (numpts == panel.getWidth())
+				&& !functionChanged) {
+			return;
+		}
+		functionChanged = false;
+		xrange[0] = panel.getXMin();
+		xrange[1] = panel.getXMax();
+		numpts = panel.getWidth();
+		generalPath.reset();
+		if (numpts < 1) {
+			return;
+		}
+		yrange[0] = function.evaluate(xrange[0]);
+		yrange[1] = yrange[0]; // starting values for ymin and ymax
+		if (filled) {
+			generalPath.moveTo((float) xrange[0], 0);
+			generalPath.lineTo((float) xrange[0], (float) yrange[0]);
+		} else {
+			generalPath.moveTo((float) xrange[0], (float) yrange[0]);
+		}
+		double x = xrange[0];
+		double dx = (xrange[1] - xrange[0]) / (numpts);
+		for (int i = 0; i < numpts; i++) {
+			x = x + dx;
+			double y = function.evaluate(x);
+			if (!Double.isNaN(x) && !Double.isNaN(y)) {
+				y = Math.min(y, 1.0e+12);
+				y = Math.max(y, -1.0e+12);
+				generalPath.lineTo((float) x, (float) y);
+				if (y < yrange[0]) {
+					yrange[0] = y; // the minimum value
+				}
+				if (y > yrange[1]) {
+					yrange[1] = y; // the maximum value
+				}
+			}
+		}
+		if (filled) {
+			generalPath.lineTo((float) x, 0);
+			generalPath.closePath();
+		}
+	}
+  
   /**
    * Draw the function on a drawing panel.
    * @param panel  the drawing panel
    * @param g      the graphics context
    */
+  @Override
   public void draw(DrawingPanel panel, Graphics g) {
+	  if (!enabled )
+		  return;
     if(!measured) {
       checkRange(panel);
     }
@@ -220,22 +229,27 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
   }
 
   // Implementation of measured interface.
+  @Override
   public boolean isMeasured() {
     return measured;
   }
 
+  @Override
   public double getXMin() {
     return xrange[0];
   }
 
+  @Override
   public double getXMax() {
     return xrange[1];
   }
 
+  @Override
   public double getYMin() {
     return yrange[0];
   }
 
+  @Override
   public double getYMax() {
     return yrange[1];
   }
@@ -262,6 +276,6 @@ public class FunctionDrawer implements Drawable, Measurable, Function {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2019  The Open Source Physics project
- *                     https://www.compadre.org/osp
+ * Copyright (c) 2024  The Open Source Physics project
+ *                     http://www.opensourcephysics.org
  */
