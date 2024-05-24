@@ -1441,8 +1441,19 @@ public class OSPRuntime {
 				if (file.getParentFile() != null && file.getParentFile().getName().indexOf("jdk") > -1) { //$NON-NLS-1$
 					file = file.getParentFile();
 				}
-				if (file.getName().indexOf("jdk") > -1) //$NON-NLS-1$
-					file = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+// master:
+// TODO: Doug, check commit 8db541 2019-11-12
+		  		if (file.getName().indexOf("jdk")>-1) { //$NON-NLS-1$
+		  			File jreFile = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
+		  			if (jreFile.exists()) file = jreFile;
+		  			else {
+		  				// newer jdks do NOT have a jre included so just use them directly
+		  				file = new File(file, "bin/java.exe"); //$NON-NLS-1$
+		  			}
+		  		}
+// SwingJS (old):
+//				if (file.getName().indexOf("jdk") > -1) //$NON-NLS-1$
+//					file = new File(file, "jre/bin/java.exe"); //$NON-NLS-1$
 				else if (file.getName().indexOf("jre") > -1) { //$NON-NLS-1$
 					file = new File(file, "bin/java.exe"); //$NON-NLS-1$
 				} else
