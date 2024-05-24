@@ -2346,7 +2346,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
 				open(OSPRuntime.getChooser().getSelectedFile());
 			}
-
 		}, null);
 	}
 

@@ -702,7 +702,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		timeFormat = NumberFormat.getNumberInstance(locale);
 	}
 
-	/**
+/**
 	 * Enables and disables this component.
 	 * 
 	 * @param enabled true to enable

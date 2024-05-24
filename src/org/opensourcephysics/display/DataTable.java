@@ -93,7 +93,7 @@ public class DataTable extends JTable {
 		public abstract double getValueAt(int row, int column);
 	
 	}
-
+	
 	/**
 	 * A marker type for TableModels that are associated with DataTable. including
 	 * ComplexDataSet, DataSet, DataSetManager, Histogram, and 

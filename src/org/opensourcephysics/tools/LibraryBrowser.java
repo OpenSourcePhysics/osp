@@ -3028,7 +3028,6 @@ public class LibraryBrowser extends JPanel {
 	class TabTitle extends JPanel {
 		private JLabel titleLabel, iconLabel;
 		private Icon normalIcon, boldIcon;
-
 		TabTitle(Icon lightIcon, Icon heavyIcon) {
 			super(new BorderLayout());
 			this.setOpaque(false);
