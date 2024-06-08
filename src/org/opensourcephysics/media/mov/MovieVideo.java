@@ -153,11 +153,10 @@ public abstract class MovieVideo extends VideoAdapter {
 			startTimes[0] = 0;
 			for (int i = 1; i < startTimes.length; i++) {
 				startTimes[i] = frameTimes.get(i) * 1000;
-				System.out.println(
-						"startTimes[" + i + "]=" + startTimes[i] + "\tdt=" + (startTimes[i] - startTimes[i - 1]));
+				//System.out.println("startTimes[" + i + "]=" + startTimes[i] + "\tdt=" + (startTimes[i] - startTimes[i - 1]));
 			}
 		}
-		System.out.println("MovieVideo.setStartTimes rawDuration=" + rawDuration + " frameCount=" + frameCount);
+		//System.out.println("MovieVideo.setStartTimes rawDuration=" + rawDuration + " frameCount=" + frameCount);
 	}
 
 	private void addFramePropertyListeners() {
@@ -217,7 +216,7 @@ public abstract class MovieVideo extends VideoAdapter {
 	public XMLControl setFromControl(XMLControl control) {
 		String platform = control.getString("platform");
 		if (platform == null || !OSPRuntime.isJS && platform.equals(PLATFORM_JAVA)) {
-			System.out.println("MovieVideo.setFromControl ignored; platform=" + getPlatform());
+			//System.out.println("MovieVideo.setFromControl ignored; platform=" + getPlatform());
 			return null;
 		}
 		sourcePlatform = platform;
@@ -228,8 +227,7 @@ public abstract class MovieVideo extends VideoAdapter {
 		startTimes = (double[]) control.getObject("start_times");
 		rawDuration = control.getDouble("duration");
 		frameRate = control.getInt("frame_rate");
-		System.out.println(
-				"MovieVideo.setFromControl from " + sourcePlatform + " " + rawDuration + " " + frameCount + " " + frameRate);
+		//System.out.println("MovieVideo.setFromControl from " + sourcePlatform + " " + rawDuration + " " + frameCount + " " + frameRate);
 		return control;
 	}
 
@@ -248,7 +246,7 @@ public abstract class MovieVideo extends VideoAdapter {
 			control.setValue("frame_rate", fps);
 			String platform = (vid.sourcePlatform == null ? vid.getPlatform() : vid.sourcePlatform);
 			control.setValue("platform", platform);
-			System.out.println("MovieVideo.save " + platform + " " + rawDuration + " " + fc + " " + fps);
+			//System.out.println("MovieVideo.save " + platform + " " + rawDuration + " " + fc + " " + fps);
 		}
 
 		public void setVideo(String path, MovieVideo video, String engine) {

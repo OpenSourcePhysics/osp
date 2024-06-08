@@ -341,7 +341,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			readyListener = HTML5Video.addActionListener(v.jsvideo, onevent, event);
 			if (v.debugHTMLVideo) {
 				// this will create an action listener for ALL events. 
-				System.out.println("JSMovieVideo.debugging=true; Setting listener for " + event);
+				//System.out.println("JSMovieVideo.debugging=true; Setting listener for " + event);
 				debugListeners = HTML5Video.addActionListener(v.jsvideo, new ActionListener() {
 
 					@Override
@@ -350,12 +350,12 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						@SuppressWarnings("unused")
 						Object jsEvent = o[1];
 						Object target = /** @j2sNative jsEvent.target.currentTime || */ null;
-						System.out.println("JSMovieVideo.debugging.actionPerformed " + e.getActionCommand() + " " + target);
+						//System.out.println("JSMovieVideo.debugging.actionPerformed " + e.getActionCommand() + " " + target);
 					}
 
 				});
 				for (int i = 0; i < debugListeners.length; i += 2) {
-					System.out.println("listening for " + debugListeners[i]);
+					//System.out.println("listening for " + debugListeners[i]);
 				}
 
 			}
@@ -517,7 +517,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 			double t = /** @j2sNative metadata.mediaTime || */ 0;
 			v.frameTimes.add(t);
 			v.frame++;
-			System.out.println("JSMovieVideo callback " + v.frameTimes.size() + " " + t);
+			//System.out.println("JSMovieVideo callback " + v.frameTimes.size() + " " + t);
 			v.firePropertyChange(PROPERTY_VIDEO_PROGRESS, v.fileName, v.frame++);
 			v.progress = VideoIO.progressForFraction(v.frame, v.frameCount);
 		}
