@@ -2948,11 +2948,14 @@ public class LibraryBrowser extends JPanel {
 	 * Shows the about dialog.
 	 */
 	protected void showAboutDialog() {
-		String aboutString = ToolsRes.getString("LibraryBrowser.Title") + " 2.0,  Dec 2012\n" //$NON-NLS-1$ //$NON-NLS-2$
+		String date = OSPRuntime.getLaunchJarBuildDate();
+		if ("".equals(date))
+			date = OSPRuntime.RELEASE_DATE;
+		
+		String aboutString = ToolsRes.getString("LibraryBrowser.Title") + " " + OSPRuntime.VERSION + "\nCompile date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				+ "Open Source Physics Project\n" //$NON-NLS-1$
 				+ "www.opensourcephysics.org"; //$NON-NLS-1$
-		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") //$NON-NLS-1$
-				+ " " + ToolsRes.getString("LibraryBrowser.Title"), //$NON-NLS-1$ //$NON-NLS-2$
+		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " " + getName(), //$NON-NLS-1$ //$NON-NLS-2$
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 
@@ -3336,6 +3339,9 @@ public class LibraryBrowser extends JPanel {
 		browser.addOSPLibrary(SHARED_LIBRARY);
 		browser.addComPADRECollection(LibraryComPADRE.EJS_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
 		browser.addComPADRECollection(LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
+		if ((args != null) && (args.length > 0) && (args[0] != null)) {
+			browser.open(args[0]);
+		} 
 //		browser.refreshCollectionsMenu();
 
 		// code below opens Tracker when LibraryBrowser is launched as an independent
