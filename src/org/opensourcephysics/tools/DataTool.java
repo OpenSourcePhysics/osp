@@ -3504,11 +3504,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		String date = OSPRuntime.getLaunchJarBuildDate();
 		if ("".equals(date))
 			date = OSPRuntime.RELEASE_DATE;
-		
-		String aboutString = getName() + " " + OSPRuntime.VERSION + "\nCompile date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				+ "Open Source Physics Project\n" //$NON-NLS-1$
+		String toolname = ToolsRes.getString("DataTool.Frame.Title");
+		String aboutString = ToolsRes.getString("LibraryBrowser.Version")+ " " + OSPRuntime.VERSION + "\nRelease date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				+ "Open Source Physics\n" //$NON-NLS-1$
 				+ "www.opensourcephysics.org"; //$NON-NLS-1$
-		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " " + getName(), //$NON-NLS-1$ //$NON-NLS-2$
+		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " " + toolname, //$NON-NLS-1$ //$NON-NLS-2$
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 	

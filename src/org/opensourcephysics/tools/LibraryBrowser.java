@@ -14,6 +14,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -68,6 +70,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.Timer;
+import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -623,6 +626,8 @@ public class LibraryBrowser extends JPanel {
 					treePanel.showInfo(treePanel.getSelectedNode(), "LibraryBrowser locale change");
 			}
 		});
+		FileDropHandler handler = new FileDropHandler();
+		setTransferHandler(handler);
 	}
 
 	/**
@@ -2952,10 +2957,12 @@ public class LibraryBrowser extends JPanel {
 		if ("".equals(date))
 			date = OSPRuntime.RELEASE_DATE;
 		
-		String aboutString = ToolsRes.getString("LibraryBrowser.Title") + " " + OSPRuntime.VERSION + "\nCompile date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				+ "Open Source Physics Project\n" //$NON-NLS-1$
+		String aboutString =  ToolsRes.getString("LibraryBrowser.Version")+ " " +OSPRuntime.VERSION 
+				+ "\nRelease date " + date + "\n" //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				+ "Open Source Physics\n" //$NON-NLS-1$
 				+ "www.opensourcephysics.org"; //$NON-NLS-1$
-		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " " + getName(), //$NON-NLS-1$ //$NON-NLS-2$
+		JOptionPane.showMessageDialog(this, aboutString, ToolsRes.getString("Dialog.About.Title") + " "  //$NON-NLS-1$ //$NON-NLS-2$ 
+				+ ToolsRes.getString("LibraryBrowser.Title"), //$NON-NLS-1$
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 
@@ -3627,4 +3634,39 @@ public class LibraryBrowser extends JPanel {
 		LibraryTreePanel.clearMaps();
 	}
 
+	public class FileDropHandler extends TransferHandler {
+
+		@Override
+		public boolean canImport(TransferHandler.TransferSupport support) {
+			return true;
+		}
+
+		@Override
+		public boolean importData(TransferHandler.TransferSupport support) {
+			List<File> fileList = getFileList(support.getTransferable());
+			try {
+				if (fileList != null) {
+					File f = fileList.get(0);
+					if (f.getName().toLowerCase().endsWith(".xml")) {
+						open(f.getAbsolutePath());
+					}
+					return true;
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+			return false;
+		}
+
+		@SuppressWarnings("unchecked")
+		private List<File> getFileList(Transferable t) {
+			try {
+				return (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+
+	}
+	
 }
