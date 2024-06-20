@@ -396,6 +396,6 @@ public interface JSUtilI {
      * @param success function to handle the returned map, if everything works out
      * @param onError function to handle the error message, if an error occurs
      */
-    void getMediaInfoAsync(byte[] videoData, String trackType, Consumer<Map<String, Object>> success, Consumer<String> onError);
+    void getMediaInfoAsync(byte[] videoData, String trackType, String path, Consumer<Map<String, Object>> success, Consumer<String> onError);
 
 }

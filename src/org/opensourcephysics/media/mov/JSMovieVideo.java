@@ -426,7 +426,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 										: canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
 						control = null;
 					}
-					continue;
+					return true;
 				case STATE_GET_MEDIAINFO_INIT:
 					v.videoDialog.setVisible(false);
 					Consumer<String> failed = new Consumer<String>() {
@@ -456,7 +456,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					} else {
 						long t2 = System.currentTimeMillis();
 						byte[] b = bytes;
-						OSPRuntime.jsutil.getMediaInfoAsync(bytes, "Video", new Consumer<Map<String, Object>>() {
+						OSPRuntime.jsutil.getMediaInfoAsync(bytes, "Video", "/core/_ES6/mediainfo.js", new Consumer<Map<String, Object>>() {
 
 							@Override
 							public void accept(Map<String, Object> info) {
@@ -475,7 +475,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 							}
 						}, failed);
 					}
-					return false;
+					// asynchronous stop
+					return true;
 				case STATE_PLAY_WITH_CALLBACK:
 					HTML5Video.requestVideoFrameCallback(v.jsvideo, new Consumer<Object>() {
 
