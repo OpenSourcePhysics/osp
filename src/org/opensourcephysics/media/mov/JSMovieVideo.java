@@ -28,6 +28,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -38,10 +40,12 @@ import javax.swing.SwingUtilities;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
+import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.AsyncVideoI;
 import org.opensourcephysics.media.core.DoubleArray;
 import org.opensourcephysics.media.core.ImageCoordSystem;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.SwingJSUtils.StateHelper;
 import javajs.async.SwingJSUtils.StateMachine;
@@ -62,6 +66,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 	boolean debugHTMLVideo = false; // voluminous event information
 
+	static boolean useMediaInfo = true; // could set false for comparing previous versions
+
 	State state;
 	public String err;
 
@@ -78,6 +84,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	private JDialog videoDialog;
 
 	protected int progress;
+
+	protected Map<String, Object> mediaInfo;
 
 	/**
 	 * 
@@ -226,12 +234,16 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		static final int STATE_PLAY_ALL_INIT      = 41;
 		static final int STATE_PLAY_ALL_DONE      = 42;
 
-		static final int STATE_FIND_FRAMES_INIT   = 00;
-		static final int STATE_FIND_FRAMES_LOOP   = 01;
-		static final int STATE_FIND_FRAMES_WAIT   = 02;
-		static final int STATE_FIND_FRAMES_READY  = 03;
+		static final int STATE_FIND_FRAMES_INIT   = 0;
+		static final int STATE_FIND_FRAMES_LOOP   = 1;
+		static final int STATE_FIND_FRAMES_WAIT   = 2;
+		static final int STATE_FIND_FRAMES_READY  = 3;
 		
-		static final int STATE_FIND_FRAMES_DONE   = 99;
+
+		static final int STATE_GET_MEDIAINFO_INIT = 4;
+		static final int STATE_GET_MEDIAINFO_DONE = 5;
+
+		static final int STATE_FIND_FRAMES_DONE   = 9;
 		
 		static final int STATE_LOAD_VIDEO_INIT    = 10;
 		static final int STATE_LOAD_VIDEO_READY   = 12;
@@ -245,7 +257,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		
 		private StateHelper helper;
 		private double t;
-		private double dt = 0;
 		/**
 		 * offset to add to all frame times when sending setCurrentTime
 		 */
@@ -350,7 +361,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						@SuppressWarnings("unused")
 						Object jsEvent = o[1];
 						Object target = /** @j2sNative jsEvent.target.currentTime || */ null;
-						//System.out.println("JSMovieVideo.debugging.actionPerformed " + e.getActionCommand() + " " + target);
+						System.out.println("JSMovieVideo.debugging.actionPerformed " + e.getActionCommand() + " " + target);
 					}
 
 				});
@@ -372,7 +383,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 		@Override
 		public boolean stateLoop() {
-			//System.out.println("JSMovieVideo.stateLoop " + helper.getState());
+			// System.out.println("JSMovieVideo.stateLoop " + helper.getState());
 			while (helper.isAlive()) {
 				switch (v.err == null ? helper.getState() : STATE_ERROR) {
 				case STATE_IDLE:
@@ -399,21 +410,72 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					v.size.width = d.width;
 					v.size.height = d.height;
 					v.rawDuration = HTML5Video.getDuration(v.jsvideo);
-					int estimatedFrameCount = (int) (v.rawDuration / 0.033334);
-					//this is all this does: HTML5Video.getFrameCount(v.jsvideo);
-					v.setFrameCount(estimatedFrameCount);
+					// int estimatedFrameCount = (int) (v.rawDuration / 0.033334);
+					// this is all this does: HTML5Video.getFrameCount(v.jsvideo);
+					// v.setFrameCount(estimatedFrameCount);
 					v.frameTimes = new ArrayList<Double>();
-					OSPLog.finer("JSMovieVideo LOAD_VIDEO_READY " + v.size + "\n duration:" + v.rawDuration + " est. frameCount:" + estimatedFrameCount);
+//					OSPLog.finer("JSMovieVideo LOAD_VIDEO_READY " + v.size + "\n duration:" + v.rawDuration + " est. frameCount:" + estimatedFrameCount);
 					if (v.size.width == 0) {
 						v.cantRead();
 						helper.next(STATE_FIND_FRAMES_READY);
 					} else {
 						if (control != null)
 							control = v.setFromControl(control);
-						helper.next(control != null ? STATE_SET_FROM_CONTROL : canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
+						helper.next(control != null ? STATE_SET_FROM_CONTROL
+								: useMediaInfo ? STATE_GET_MEDIAINFO_INIT
+										: canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
 						control = null;
 					}
 					continue;
+				case STATE_GET_MEDIAINFO_INIT:
+					v.videoDialog.setVisible(false);
+					Consumer<String> failed = new Consumer<String>() {
+
+						@Override
+						public void accept(String err) {
+							System.err.println("JSMovieVideo MediaInfo Error: " + err);
+							control = null;
+							helper.next(STATE_LOAD_VIDEO_READY);
+							stateLoop();
+						}
+					};
+
+					long t1 = System.currentTimeMillis();
+					byte[] bytes = null;
+					try {
+						bytes = ResourceLoader.getURLBytes(v.url.toString());
+						if (bytes == null) {
+							bytes = ResourceLoader.getLimitedStreamBytes(v.url.openStream(), -1, null, true);
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if (bytes == null) {
+						failed.accept("no byte[] for " + v.url);
+					} else {
+						long t2 = System.currentTimeMillis();
+						byte[] b = bytes;
+						OSPRuntime.jsutil.getMediaInfoAsync(bytes, "Video", new Consumer<Map<String, Object>>() {
+
+							@Override
+							public void accept(Map<String, Object> info) {
+								String err = v.setFromMediaTrackInfo(info);
+								if (err == null) {
+									System.out.println("JSMovieVideo reading " + b.length + " bytes " + (t2 - t1)
+											+ " ms; MediaInfo analysis " + (System.currentTimeMillis() - t2) + " ms");
+									for (Entry<String, Object> e : info.entrySet()) {
+										System.out.println(e.getKey() + "=" + e.getValue());
+									}
+									helper.setState(STATE_GET_MEDIAINFO_DONE);
+									stateLoop();
+								} else {
+									failed.accept("MediaInfo not usable: " + err);
+								}
+							}
+						}, failed);
+					}
+					return false;
 				case STATE_PLAY_WITH_CALLBACK:
 					HTML5Video.requestVideoFrameCallback(v.jsvideo, new Consumer<Object>() {
 
@@ -421,17 +483,17 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						public void accept(Object metadata) {
 							processVideoFrameCallback(metadata);
 						}
-						
+
 					});
 					helper.next(STATE_PLAY_ALL_INIT);
 					continue;
 				case STATE_PLAY_ALL_INIT:
 					setReadyListener("ended");
 					// Chrome will use this to gather a simple HTML5 array
-					// of timings from the Video.requestVideoFrameCallback() return. 
+					// of timings from the Video.requestVideoFrameCallback() return.
 					// interestingly, it can report twice per frame. This is almost
-					// certainly because the GPU is doubling the playback rate of 
-				    // the video with interpolations. The actual times seem oddly
+					// certainly because the GPU is doubling the playback rate of
+					// the video with interpolations. The actual times seem oddly
 					// incorrect, but we don't actually use them anyway.
 					HTML5Video.startVideo(v.jsvideo);
 					return false;
@@ -444,7 +506,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					if (v.rawDuration == 0)
 						v.rawDuration = HTML5Video.getDuration(v.jsvideo);
 					lastT = t = 0.0;
-					dt = 0;
 					if (canSeek) {
 						v.frameTimes.add(t);
 						v.seekMS(0);
@@ -483,8 +544,9 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					}
 					helper.setState(STATE_FIND_FRAMES_LOOP);
 					continue;
+				case STATE_GET_MEDIAINFO_DONE:
 				case STATE_SET_FROM_CONTROL:
-					offset = 0.5 / v.frameRate;
+					offset = 0.5 / v.nominalFrameRate;
 					//$FALL-THROUGH$
 				case STATE_FIND_FRAMES_DONE:
 					helper.setState(STATE_IDLE);
@@ -494,15 +556,17 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					v.progress = VideoIO.PROGRESS_VIDEO_READY;
 					continue;
 				case STATE_GET_IMAGE_INIT:
-					// this is the starting point for triggering 
+					// this is the starting point for triggering
 					// asyncronous image creation from the video anytime during
-					// animation of the frames in Tracker. 
+					// animation of the frames in Tracker.
 					helper.setState(STATE_GET_IMAGE_READY);
-					setReadyListener(playThroughOrSeeked );
+					setReadyListener(playThroughOrSeeked);
 					v.seekMS((offset + t) * 1000);
 					return true;
 				case STATE_GET_IMAGE_READY:
-					//about 0.1 sec to seek OSPLog.debug(Performance.timeCheckStr("JSMovieVideo.getImage ready", Performance.TIME_MARK));
+					// about 0.1 sec to seek
+					// OSPLog.debug(Performance.timeCheckStr("JSMovieVideo.getImage ready",
+					// Performance.TIME_MARK));
 					v.setFrameNumberContinued(thisFrame, t);
 					return false;
 				///////////////////////////////////////
@@ -599,7 +663,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		videoDialog.setVisible(false);
 		// clean up temporary objects
 		// throw IOException if no frames were loaded
-		if (startTimes == null) {
+		if (startTimesMS == null) {
 			if (frameTimes.size() == 0) {
 				firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, frame);
 				dispose();
@@ -683,7 +747,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 	@Override
 	protected String getPlatform() {
-		return /** @j2sNative navigator.userAgent ||*/"?";
+		String engine = (useMediaInfo ? "MediaInfo - " : "");
+		return engine + (/** @j2sNative navigator.userAgent ||*/"?");
 	}
 
 }

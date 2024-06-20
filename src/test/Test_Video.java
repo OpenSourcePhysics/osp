@@ -189,9 +189,8 @@ public class Test_Video {
 	}
 
 	JLabel label = new JLabel((String) null);
-	private double[] htmlFrameTimings = new double[3000];
-
 	private void createVideoLabel(File file, URL videoURL, String video) {
+		boolean asBytes = (file != null);
 		ImageIcon icon;
 		if (!isJS && file != null) {
 			icon = new ImageIcon("test/video_image.png");
@@ -201,7 +200,7 @@ public class Test_Video {
 			System.out.println(file.getAbsolutePath());
 			System.out.println(getMP4Codec(file.getAbsolutePath(), file.getName()));
 			return;
-		} else if (file != null) {
+		} else if (asBytes) {
 			try {
 				byte[] bytes;
 //				if (testRemote) {
@@ -220,7 +219,10 @@ public class Test_Video {
 		}
 		label.setIcon(icon);
 		jsvideo = (HTML5Video) label.getClientProperty("jsvideo");
-
+		Object info = label.getClientProperty("jsvideoinfo");
+		if (info != null) {
+			System.out.println(info);
+		}
 		HTML5Video.addActionListener(jsvideo, new ActionListener() {
 
 			@Override
@@ -283,8 +285,6 @@ public class Test_Video {
 	}
 
 	private void showProperty(String key) {
-		/** @j2sNative xxv = this.jsvideo */
-		
 		System.out.println(key + "=" + HTML5Video.getProperty(jsvideo, key));
 	}
 

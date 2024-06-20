@@ -96,9 +96,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	protected DataBufferInt clearRaster;
 
 	/**
-	 * startTimes are exact for Firefox and Xuggle, and approximate
-	 * in Chrome based on number of frames and overall raw duration;
-	 * passed through XMLControl "video" in TRK/TRZ to other platforms
+	 * startTimes in MS. Created from MediaInfo.analyzeData(JavaScript) or from
+	 * Xuggle(Java); passed through XMLControl "video" in TRK/TRZ to other platforms
 	 * 
 	 * used in:
 	 * 
@@ -106,11 +105,12 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	 * 
 	 * Video.getAverageFrameRate(), .getOutliers(), isValid()
 	 * 
-	 * MovieVideo.getFrameNumberBefore(), .setFromControl(), .setStartTimes(), .finalizeLoading()
+	 * MovieVideo.getFrameNumberBefore(), .setFromControl(), .setStartTimes(),
+	 * .finalizeLoading()
 	 * 
-	 *  
+	 * 
 	 */
-	protected double[] startTimes;
+	protected double[] startTimesMS;
 
 	/**
 	 * set to false by TrackerIO.getImageBytes()
@@ -945,10 +945,10 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	 */
 	@Override
 	public double getFrameTime(int i) {
-		if ((i >= startTimes.length) || (i < 0)) {
+		if ((i >= startTimesMS.length) || (i < 0)) {
 			return -1;
 		}
-		return startTimes[i];
+		return startTimesMS[i];
 	}
 
 	/**
@@ -1025,8 +1025,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	@Deprecated
 	public void setStartTime(double millis) {
 		millis = Math.abs(millis);
-		for (int i = 0; i < startTimes.length; i++) {
-			double t = startTimes[i];
+		for (int i = 0; i < startTimesMS.length; i++) {
+			double t = startTimesMS[i];
 			if (millis < t) { // find first frame with later start time
 				setStartFrameNumber(i - 1);
 				break;
@@ -1056,8 +1056,8 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	public void setEndTime(double millis) {
 		millis = Math.abs(millis);
 		millis = Math.min(getFrameCountDurationMS(), millis);
-		for (int i = 0; i < startTimes.length; i++) {
-			double t = startTimes[i];
+		for (int i = 0; i < startTimesMS.length; i++) {
+			double t = startTimesMS[i];
 			if (millis < t) { // find first frame with later start time
 				setEndFrameNumber(i - 1);
 				break;
