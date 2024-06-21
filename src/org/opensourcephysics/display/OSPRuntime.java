@@ -93,8 +93,8 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.1.7"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "03 Jun 2024"; //$NON-NLS-1$
+	public static final String VERSION = "6.1.7.240621"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "21 Jun 2024"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**

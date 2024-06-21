@@ -360,7 +360,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 		String target = getTarget();
 		if (target == null)
 			return null;
-		if (record instanceof LibraryCollection) {
+		if (LibraryBrowser.isPopulatedCollection(this)) {
 			return getBasePath() + target;
 		}
 		return XML.getResolvedPath(target, getBasePath());
@@ -475,7 +475,9 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 */
 	protected boolean setTarget(String path) {
 		if (record.setTarget(path)) {
-			setType(LibraryResource.getTypeFromPath(path, getHTMLPath()));
+			String type = LibraryResource.getTypeFromPath(path, getHTMLPath());
+			if (!LibraryResource.UNKNOWN_TYPE.equals(type))
+				setType(type);
 			LibraryTreePanel.htmlPanesByNode.remove(this);
 			record.setThumbnail(null);
 			treePanel.showInfo(this, "LibraryTreeNode.setTarget " + path);

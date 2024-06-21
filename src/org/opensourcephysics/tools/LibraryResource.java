@@ -80,12 +80,15 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	public static final String IMAGE_TYPE = "Image"; //$NON-NLS-1$
 	public static final String HTML_TYPE = "HTML"; //$NON-NLS-1$
 	public static final String PDF_TYPE = "PDF"; //$NON-NLS-1$
+	public static final String DATA_TYPE = "Data"; //$NON-NLS-1$
+	public static final String URL_TYPE = "URL"; //$NON-NLS-1$
 	protected static final String[] RESOURCE_TYPES = { TRACKER_TYPE, EJS_TYPE, VIDEO_TYPE, IMAGE_TYPE, HTML_TYPE,
-			PDF_TYPE, UNKNOWN_TYPE };
+			PDF_TYPE, DATA_TYPE, URL_TYPE, UNKNOWN_TYPE };
 
 	// static fields
 	protected static List<String> allResourceTypes = new ArrayList<String>();
-	protected static ResizableIcon htmlIcon, videoIcon, trackerIcon, ejsIcon, pdfIcon, unknownIcon, imageIcon;
+	protected static ResizableIcon htmlIcon, videoIcon, trackerIcon, ejsIcon, 
+	pdfIcon, unknownIcon, imageIcon, dataIcon, urlIcon, collectionIcon;
 	protected static DecimalFormat megabyteFormat;
 	protected static Font bodyFont = new JButton().getFont().deriveFont(12f);
 	protected static Font h1Font = bodyFont.deriveFont(24f);
@@ -108,8 +111,14 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		trackerIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/ejsicon.gif"; //$NON-NLS-1$
 		ejsIcon = ResourceLoader.getResizableIcon(imageFile);
+		imageFile = "/org/opensourcephysics/resources/tools/images/data.gif"; //$NON-NLS-1$
+		dataIcon = ResourceLoader.getResizableIcon(imageFile);
+		imageFile = "/org/opensourcephysics/resources/tools/images/url.gif"; //$NON-NLS-1$
+		urlIcon = ResourceLoader.getResizableIcon(imageFile);
 		imageFile = "/org/opensourcephysics/resources/tools/images/question_mark.gif"; //$NON-NLS-1$
 		unknownIcon = ResourceLoader.getResizableIcon(imageFile);
+		imageFile = "/org/opensourcephysics/resources/tools/images/yellowarrowfolder.gif"; //$NON-NLS-1$
+		collectionIcon = ResourceLoader.getResizableIcon(imageFile);
 		try {
 			megabyteFormat = (DecimalFormat) NumberFormat.getInstance();
 			megabyteFormat.applyPattern("0.0"); //$NON-NLS-1$
@@ -232,14 +241,17 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		}
 		thumbnail = null;
 		target = path;
-		setType(getTypeFromPath(path, getHTMLPath()));
+		String type = getTypeFromPath(path, getHTMLPath());
+		if (!UNKNOWN_TYPE.equals(type))
+			setType(type);
 		return true;
 	}
 
 	static String getTypeFromPath(String path, String htmlPath) {
 		if (path == null)
 			path = "";
-		String ext = (path.length() >= 4 ? XML.getExtension(path).toLowerCase() : htmlPath == null ? "" : "html");
+		String ext = (path.length() >= 4 ? XML.getExtension(path) : htmlPath == null ? "" : "html");		
+		ext = ext == null? "": ext.toLowerCase();
 		if (ext.contains("&trackerset"))
 			ext = "trk";
 		switch (ext) {
@@ -492,20 +504,25 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 * @return the icon
 	 */
 	public Icon getIcon() {
-		ResizableIcon icon = null;
-		if (type == TRACKER_TYPE)
-			icon = trackerIcon;
-		if (type == EJS_TYPE)
-			icon = ejsIcon;
-		if (type == IMAGE_TYPE)
-			icon = imageIcon;
-		if (type == VIDEO_TYPE)
-			icon = videoIcon;
-		if (type == HTML_TYPE)
-			icon = htmlIcon;
-		if (type == PDF_TYPE)
-			icon = pdfIcon;
-		return icon;
+		switch(type) {
+		case TRACKER_TYPE:
+			return trackerIcon;
+		case EJS_TYPE:
+			return ejsIcon;
+		case VIDEO_TYPE:
+			return videoIcon;
+		case IMAGE_TYPE:
+			return imageIcon;
+		case HTML_TYPE:
+			return htmlIcon;
+		case PDF_TYPE:
+			return pdfIcon;
+		case DATA_TYPE:
+			return dataIcon;
+		case URL_TYPE:
+			return urlIcon;
+		}
+		return null;
 	}
 
 	/**

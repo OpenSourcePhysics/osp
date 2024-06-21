@@ -474,19 +474,20 @@ public class LibraryTreePanel extends JPanel {
 		type = ToolsRes.getString("LibraryResource.Type." + type); //$NON-NLS-1$
 		typeField.setText(type);
 		boolean hasBasePath = !"".equals(node.record.getBasePath()); //$NON-NLS-1$
+		boolean hasChildren = node.children().hasMoreElements();
 		nameField.setEnabled(true);
 		basePathField.setEnabled(true);
 		htmlField.setEnabled(true);
 		typeField.setEnabled(true);
-		targetField.setEnabled(!isCollection);
+		targetField.setEnabled(!isCollection || !hasChildren);
 		nameLabel.setEnabled(true);
 		htmlLabel.setEnabled(true);
 		basePathLabel.setEnabled(true);
-		targetLabel.setEnabled(!isCollection);
+		targetLabel.setEnabled(!isCollection || !hasChildren);
 		typeLabel.setEnabled(true);
 		openHTMLButton.setEnabled(true);
 		openBasePathButton.setEnabled(true);
-		openFileButton.setEnabled(!isCollection);
+		openFileButton.setEnabled(!isCollection || !hasChildren);
 		basePathField.setForeground(hasBasePath || basePathField.hasFocus() ? defaultForeground : lightGreen);
 		nameField.setBackground(Color.white);
 		basePathField.setBackground(Color.white);
@@ -727,7 +728,8 @@ public class LibraryTreePanel extends JPanel {
 					return;
 				showInfo(node, "LibraryTreePanel.treeselectionlistener");
 				enableButtons();
-				if (node.record != null && node.record instanceof LibraryCollection && node.getTarget() != null)
+				if (node.record != null && node.record instanceof LibraryCollection 
+						&& node.getTarget() != null && node.getTarget().startsWith("&"))
 					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
 			}
 		};
@@ -953,8 +955,9 @@ public class LibraryTreePanel extends JPanel {
 						node.setBasePath(basePathField.getText());
 						setChanged();
 					}
+					boolean noBase = node.record.getBasePath() == null;
+					basePathField.setForeground(noBase? lightGreen: defaultForeground);
 				}
-				basePathField.setForeground(lightGreen);
 			}
 		});
 		basePathField.addFocusListener(new FocusAdapter() {
@@ -1019,7 +1022,8 @@ public class LibraryTreePanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
-				if (node != null && !(node.record instanceof LibraryCollection)) {
+				if (node != null && !(node.record instanceof LibraryCollection
+						&& node.children().hasMoreElements())) {
 					node.setTarget(targetField.getText());
 				}
 			}
@@ -2672,9 +2676,14 @@ public class LibraryTreePanel extends JPanel {
 			Color c = getForeground();
 			if (node.record instanceof LibraryCollection) {
 				icon = expanded ? getOpenIcon() : getClosedIcon();
-				// the color when it has not been loaded.
-				if (node.getTarget() != null)
-					c = Color.red;
+				// the icon when the collection has a target.
+				if (node.getTarget() != null) {
+					icon = LibraryResource.collectionIcon;
+					if (node.getTarget().contains("&OSPSubject=")) {
+						// compadre subcollection
+						c = Color.RED;
+					}
+				}
 			}
 			setToolTipText(node.getToolTip());
 			if (icon == null) {

@@ -42,6 +42,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Function;
@@ -49,6 +51,7 @@ import java.util.function.Function;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.display.OSPRuntime;
@@ -917,6 +920,56 @@ public class ImageVideo extends VideoAdapter {
 			return sub + "0" + ext;
 		}
 		return imagePath;
+	}
+	
+	/**
+	 * Returns a list of all numbered images that follow the original name pattern.
+	 * Note this does NOT check to see if the path resources exist.
+	 *
+	 * @return the list
+	 */
+	public static ArrayList<String> getStackPaths(String imagePath) {
+		// look for image sequence (numbered image names)		
+		String extension = ""; //$NON-NLS-1$
+		int i = imagePath.lastIndexOf('.');
+		if (i > 0 && i < imagePath.length() - 1) {
+			extension = imagePath.substring(i).toLowerCase();
+			imagePath = imagePath.substring(0, i); // now free of extension
+		}
+		int len = imagePath.length();
+		int digits = 0;
+		while (digits <= 4 && --len >= 0 && Character.isDigit(imagePath.charAt(len))) {
+			digits++;
+		}
+		int limit;
+		ArrayList<String> imagePaths = new ArrayList<String>();
+		switch (digits) {
+		case 0:
+			// no number found, so return single image
+			imagePaths.add(imagePath + extension);
+			return imagePaths;
+		default:
+			// 1 -> 10, 2 -> 100, etc.
+			limit = (int) Math.pow(10, digits);
+		}
+		
+		String root = imagePath.substring(0, ++len);
+		int n = Integer.parseInt(imagePath.substring(len));
+		try {
+			imagePaths.add(imagePath + extension);			
+			while (n++ < limit) {
+				// fill with leading zeros if nec
+				String num = "000" + n;
+				imagePath = root + (num.substring(num.length() - digits)) + extension;
+				imagePaths.add(imagePath);					
+			}
+		} catch (NumberFormatException ex) {
+			ex.printStackTrace();
+		}
+		if (imagePaths.size() > 1) {
+			imagePaths.remove(imagePaths.size()-1);
+		}
+		return imagePaths;
 	}
 
 	// ______________________________ static XML.Loader_________________________

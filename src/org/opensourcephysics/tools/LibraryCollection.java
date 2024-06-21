@@ -154,6 +154,9 @@ public class LibraryCollection extends LibraryResource {
 			if (!collection.resources.isEmpty()) {
 				control.setValue("resources", collection.getResources()); //$NON-NLS-1$
 			}
+//			else if (collection.getTarget() != null) {
+//				control.setValue(COLLECTION_TYPE);
+//			}
 		}
 
 		/**
@@ -185,6 +188,10 @@ public class LibraryCollection extends LibraryResource {
 				for (LibraryResource next : resources) {
 					collection.addResource(next);
 				}
+			}
+			else {
+				String target = control.getString("target");
+				collection.setTarget(target);
 			}
 //			LibraryBrowser.addSearchMapResource(collection);
 			return collection;

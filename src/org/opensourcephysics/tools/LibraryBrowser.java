@@ -30,8 +30,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,6 +122,9 @@ public class LibraryBrowser extends JPanel {
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
 	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
+	protected static final String WEB_EJS = "https://ejscloud.inf.um.es/editor?id=e5d1bc3c-03e4-4ed7-8a0a-c804ff508d2d&url=";
+	protected static final String TRACKER_ONLINE = "https://physlets.org/tracker/trackerJS/?j2sargs=";
+	protected static final String DATATOOL_ONLINE = "https://physlets.org/tracker/trackerJS/DataTool.html?j2sargs=";
 	public static final String HINT_LOAD_RESOURCE = "LOAD";
 	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
@@ -140,6 +147,7 @@ public class LibraryBrowser extends JPanel {
 	public static boolean fireHelpEvent = false;
 	public static int maxRecentCollectionSize = 18;
 	private static int wide = 900, high = 560;
+	protected static boolean useOnlineOnly = true;
 
 	static {
 		buttonBorder = BorderFactory.createEtchedBorder();
@@ -304,6 +312,13 @@ public class LibraryBrowser extends JPanel {
 		}
 
 		return browser;
+	}
+	
+	public static boolean isPopulatedCollection(LibraryTreeNode node) {
+		if (node.record instanceof LibraryCollection && node.children().hasMoreElements()) {
+			return true;
+		}
+		return false;
 	}
 	
 	public void setAlwaysOnTop(boolean alwaysOnTop) {
@@ -1426,7 +1441,9 @@ public class LibraryBrowser extends JPanel {
 				LibraryResource record = null;
 				if (newValue instanceof LibraryTreeNode) {
 					node = (LibraryTreeNode) newValue;
-					if (node.record instanceof LibraryCollection) {
+					String target = node.getTarget();
+					if (isPopulatedCollection(node) 
+							|| (target != null && target.startsWith("&OSPSubject="))) {
 						processTargetCollection(node);
 						return;
 					}
@@ -1746,7 +1763,8 @@ public class LibraryBrowser extends JPanel {
 		String target = record.getAbsoluteTarget();
 		if (target != null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".html") //$NON-NLS-1$
-				|| target.toLowerCase().endsWith(".htm"))) { //$NON-NLS-1$
+				|| target.toLowerCase().endsWith(".htm")
+				|| LibraryResource.URL_TYPE.equals(record.getType()))) { //$NON-NLS-1$
 //			target = XML.getResolvedPath(target, record.getBasePath());
 			target = ResourceLoader.getURIPath(target);
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -1754,8 +1772,98 @@ public class LibraryBrowser extends JPanel {
 			setCursor(Cursor.getDefaultCursor());
 			return;
 		}
+		if (record instanceof LibraryCollection && target != null 
+				&& target.toLowerCase().endsWith(".xml")) {
+			open(record.getAbsoluteTarget());
+		}
 		// fire the event to TFrame and other listeners
-		firePropertyChange(PROPERTY_LIBRARY_TARGET, hint, record); // $NON-NLS-1$
+		PropertyChangeListener[] listeners = getPropertyChangeListeners(PROPERTY_LIBRARY_TARGET);
+		if (listeners.length > 0 // this browser must belong to Tracker
+				&& !LibraryResource.EJS_TYPE.equals(record.getType())
+				&& !LibraryResource.URL_TYPE.equals(record.getType())
+				&& !LibraryResource.COLLECTION_TYPE.equals(record.getType())
+				&& !LibraryResource.DATA_TYPE.equals(record.getType())) {
+			firePropertyChange(PROPERTY_LIBRARY_TARGET, hint, record); // $NON-NLS-1$
+		}
+		else {
+			// no listeners, so this is a stand-alone library browser
+			String absTarget = record.getAbsoluteTarget();
+			String type = record.getType();
+			if (LibraryResource.UNKNOWN_TYPE.equals(type)) {
+				type = LibraryResource.getTypeFromPath(absTarget, null);
+			}
+			
+			switch (type) {
+			case LibraryResource.TRACKER_TYPE:
+			case LibraryResource.VIDEO_TYPE:
+			case LibraryResource.IMAGE_TYPE:
+				String trackerHome = (String) OSPRuntime.getPreference("TRACKER_HOME");
+				boolean launched = false;
+				if (trackerHome != null && !useOnlineOnly) {
+					trackerHome = XML.forwardSlash(trackerHome);
+					// launch local Tracker
+					try {
+						JREFinder jreFinder = JREFinder.getFinder();
+						File jreFile = jreFinder.getDefaultJRE(64, trackerHome, true);
+						if (jreFile != null) {
+							final ArrayList<String> cmd = new ArrayList<String>();
+							cmd.add(XML.forwardSlash(jreFile.getAbsolutePath()) + "/bin/java");
+							cmd.add("-jar"); //$NON-NLS-1$
+							cmd.add(trackerHome + "/tracker_starter.jar");
+							cmd.add(absTarget);
+
+							// prepare to execute the command
+							launched = true;
+							ProcessBuilder builder = new ProcessBuilder(cmd);
+							final Process process = builder.start();
+							int result = process.waitFor();
+							
+							// if process returns immediately with exit code 1, try online
+							if (result > 0) {
+								launched = false;
+							}
+							
+						}
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				if (!launched) {
+					try {
+						String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+						OSPDesktop.displayURL(TRACKER_ONLINE + "\""+encodedUrl+"\"");
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					}				
+				}
+				break;
+			case LibraryResource.EJS_TYPE:
+				try {
+					String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+					OSPDesktop.displayURL(WEB_EJS + encodedUrl);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				break;
+			case LibraryResource.DATA_TYPE:
+				try {
+					String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+					OSPDesktop.displayURL(DATATOOL_ONLINE + encodedUrl);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				break;
+			case LibraryResource.URL_TYPE:
+				try {
+					String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+					OSPDesktop.displayURL(DATATOOL_ONLINE + encodedUrl);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				break;
+			}
+		}
 
 		// if loading a local file from the recent collection, move the record to top (most recent)
 		if (hint == HINT_LOAD_RESOURCE) {

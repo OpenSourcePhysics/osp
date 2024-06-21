@@ -355,15 +355,22 @@ public class LibraryComPADRE {
 			record.setProperty("download_filename", attachment.filename); //$NON-NLS-1$
 			String type = getChildValue(node, "osp-type"); //$NON-NLS-1$
 			if (isDesiredOSPType(node)) {
-				if ("EJS".equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
+				if (LibraryResource.EJS_TYPE.equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$
 					type = LibraryResource.EJS_TYPE;
 					record.setType(type);
-				} else if ("Tracker".equals(desiredOSPType)) { //$NON-NLS-1$
+				} else if (LibraryResource.TRACKER_TYPE.equals(desiredOSPType)) { //$NON-NLS-1$
 					type = LibraryResource.TRACKER_TYPE;
 					record.setType(type);
-				} else {
-					record.setType(LibraryResource.UNKNOWN_TYPE);
+				} else if (type.toLowerCase().contains("track")) {
+					type = LibraryResource.TRACKER_TYPE;
+					record.setType(type);
 				}
+				else if (type.toLowerCase().contains("ej")) {
+					type = LibraryResource.EJS_TYPE;
+					record.setType(type);
+				}
+				else
+					record.setType(LibraryResource.UNKNOWN_TYPE);
 			}
 
 			String description = getChildValue(node, "description"); //$NON-NLS-1$
