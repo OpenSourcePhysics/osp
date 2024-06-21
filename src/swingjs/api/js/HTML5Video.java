@@ -354,6 +354,7 @@ public interface HTML5Video extends DOMNode {
 		 * @j2sNative
 		 * 
 		 * jsvideo.dialog = dialog;
+		 * jsvideo.label = label;
 		 * 
 		 */
 		Object[] j2sListener = HTML5Video.addActionListener(jsvideo, new ActionListener() {
@@ -511,7 +512,7 @@ public interface HTML5Video extends DOMNode {
 		return (int) (getDuration(jsvideo) / 0.033334);
 	}
 
-	public static void startVideo(HTML5Video jsvideo) {
+	public static void startVideo(HTML5Video jsevideo) {
 		@SuppressWarnings("unused")
 		HTML5VideoDialog d = /** @j2sNative jsvideo.dialog || */null;
 		try {
