@@ -122,7 +122,7 @@ public class LibraryBrowser extends JPanel {
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
 	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
-	protected static final String WEB_EJS = "https://ejscloud.inf.um.es/editor?id=e5d1bc3c-03e4-4ed7-8a0a-c804ff508d2d&url=";
+	protected static final String WEB_EJS = "https://www.um.es/fem/wikis/runwebejs/?url=";
 	protected static final String TRACKER_ONLINE = "https://physlets.org/tracker/trackerJS/?j2sargs=";
 	protected static final String DATATOOL_ONLINE = "https://physlets.org/tracker/trackerJS/DataTool.html?j2sargs=";
 	public static final String HINT_LOAD_RESOURCE = "LOAD";

@@ -2159,6 +2159,7 @@ public class OSPRuntime {
 			{
 				// try the old way
 				org.opensourcephysics.desktop.ostermiller.Browser.init();
+				url = url.replaceAll("\\s+", "");  //WC: ostermiller fails with leading whitespace in URL
 				org.opensourcephysics.desktop.ostermiller.Browser.displayURL(url);
 			}
 
