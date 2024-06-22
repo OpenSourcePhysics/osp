@@ -48,6 +48,7 @@ public class OSPDesktop {
 	 */
 	public static boolean displayURL(String url) {
 		try {
+			/** @j2sNative debugger; */
 			if (OSPRuntime.isJS) {
 				if (url.startsWith("file") || url.startsWith("/")) {
 					// allow for data from a JAR file
