@@ -1181,7 +1181,8 @@ public class LibraryBrowser extends JPanel {
 				String text = commandField.getText();
 				boolean enable = !"".equals(text);
 				commandButton.setEnabled(enable); //$NON-NLS-1$
-				downloadButton.setEnabled(enable && ResourceLoader.isHTTP(text)); //$NON-NLS-1$
+//				downloadButton.setEnabled(enable && ResourceLoader.isHTTP(text)); //$NON-NLS-1$
+				downloadButton.setEnabled(enable);
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1986,7 +1987,9 @@ public class LibraryBrowser extends JPanel {
 
 	protected void doDownload() {
 		String urlPath = commandField.getText().trim();
-		if (urlPath == null || !ResourceLoader.isHTTP(urlPath))
+//		if (urlPath == null || !ResourceLoader.isHTTP(urlPath))
+//			return;
+		if (urlPath == null || "".equals(urlPath))
 			return;
 		String uriPath = ResourceLoader.getURIPath(urlPath);
 
