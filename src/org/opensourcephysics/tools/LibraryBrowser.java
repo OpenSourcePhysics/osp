@@ -1760,6 +1760,7 @@ public class LibraryBrowser extends JPanel {
 	protected void processTargetSelection(LibraryResource record, Object hint) {
 		if (record == null)
 			return;
+		/** @j2sNative debugger; */
 		String target = record.getAbsoluteTarget();
 		if (target != null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".html") //$NON-NLS-1$
@@ -1832,7 +1833,8 @@ public class LibraryBrowser extends JPanel {
 				if (!launched) {
 					try {
 						String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
-						OSPDesktop.displayURL(TRACKER_ONLINE + "\""+encodedUrl+"\"");
+						//OSPDesktop.displayURL(TRACKER_ONLINE + "\""+encodedUrl+"\"");
+						OSPDesktop.displayURL(TRACKER_ONLINE +encodedUrl);
 					} catch (UnsupportedEncodingException e) {
 						e.printStackTrace();
 					}				
