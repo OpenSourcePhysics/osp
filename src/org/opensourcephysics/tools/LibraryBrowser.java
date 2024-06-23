@@ -1783,8 +1783,8 @@ public class LibraryBrowser extends JPanel {
 		if (listeners.length > 0 // this browser must belong to Tracker
 				&& !LibraryResource.EJS_TYPE.equals(record.getType())
 				&& !LibraryResource.URL_TYPE.equals(record.getType())
-				&& !LibraryResource.COLLECTION_TYPE.equals(record.getType())
-				&& !LibraryResource.DATA_TYPE.equals(record.getType())) {
+				&& !LibraryResource.COLLECTION_TYPE.equals(record.getType())) {
+//				&& !LibraryResource.DATA_TYPE.equals(record.getType())) {
 			firePropertyChange(PROPERTY_LIBRARY_TARGET, hint, record); // $NON-NLS-1$
 		}
 		else {
@@ -1849,7 +1849,7 @@ public class LibraryBrowser extends JPanel {
 					e.printStackTrace();
 				}
 				break;
-			case LibraryResource.DATA_TYPE:
+			case LibraryResource.DATA_TYPE:				
 				try {
 					String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
 					OSPDesktop.displayURL(DATATOOL_ONLINE + encodedUrl);
