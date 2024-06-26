@@ -466,6 +466,17 @@ public class LibraryTreePanel extends JPanel {
 		boolean isValidTarget = true;
 		if (node.getTarget() != null) {
 			isValidTarget = node.getTargetURL() != null;
+			if (!isValidTarget && LibraryResource.EJS_TYPE.equals(node.record.getType())) {
+				String fullTarget = node.getTarget();
+				int n = fullTarget.indexOf("&name=");
+				if (n > 0) {
+					// strip off EJS name to see if valid
+					node.record.setTarget(fullTarget.substring(0, n));
+					isValidTarget = node.getTargetURL() != null;
+					// restore full target
+					node.record.setTarget(fullTarget);
+				}
+			}
 		}
 		targetField.setForeground(isValidTarget ? defaultForeground : darkRed);
 		targetField.setBackground(Color.white);

@@ -1843,7 +1843,17 @@ public class LibraryBrowser extends JPanel {
 				break;
 			case LibraryResource.EJS_TYPE:
 				try {
-					String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+					String tar = absTarget;
+					String name = "&name=" + record.getName();
+					int n = absTarget.indexOf("&name=");
+					if (n > 0) {
+						name  = absTarget.substring(n);
+						tar = absTarget.substring(0, n);
+					}
+					
+					String encodedUrl = URLEncoder.encode(tar, StandardCharsets.UTF_8.toString());
+					encodedUrl += name;
+					
 					OSPDesktop.displayURL(WEB_EJS + encodedUrl);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();

@@ -259,8 +259,9 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			return LibraryResource.HTML_TYPE;
 		case "trk":
 		case "trz":
-		case "zip":
 			return LibraryResource.TRACKER_TYPE;
+		case "zip":
+			return LibraryResource.UNKNOWN_TYPE;
 		case "pdf":
 			return LibraryResource.PDF_TYPE;
 		case "ejs":
