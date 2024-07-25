@@ -19,7 +19,7 @@ public class CursorTest {
 		JLabel label = new JLabel("JavaScript Cursor");
 
 		JButton button = new JButton();
-		button.setText("Add");
+		button.setText("Add EventListener");
 		
 		button.addActionListener(new ActionListener(){
 
