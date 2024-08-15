@@ -65,57 +65,50 @@ public class CursorTest {
 			// Define the radius of the circle
 			int radius = Math.min(width, height) / 4;
 			// Set the color to red
-			g.setColor(customCursor == null ? Color.YELLOW : dragging ? Color.BLUE : Color.RED);
+			g.setColor(dragging ? Color.BLUE : customCursor == null ? Color.YELLOW : Color.RED);
 			// Draw the circle
 			g.fillOval(centerX - radius, centerY - radius, 2 * radius, 2 * radius);
 		}
 
 		protected void addEventListener() {
-			if (customCursor != null) {
-				customCursor = null;
-				setCursor(myCursor);
-			} else {
-				customCursor = /** @j2sNative $('#customCursor')[0] || */
-						null;
-				setCursor(null);
-			}
+			customCursor = (customCursor != null ? null : /** @j2sNative $('#customCursor')[0] || */
+					null);
+			setCursor(customCursor == null ? myCursor : null);
 			getParent().repaint();
 		}
 
 		@SuppressWarnings("unused")
 		protected void moveMouseCursor(MouseEvent e, String mode) {
 			// Function to move the custom cursor
-			if (customCursor == null) {
-				return;
+			if (customCursor != null) {	
+				String display = "block";
+				String background = "rgba(0,255,0,0.3)";
+				switch (mode) {
+				case "move":
+				case "enter":
+					background = "transparent";
+					break;
+				case "drag":
+				case "down":
+					break;
+				case "up":
+				case "exit":
+					background = "transparent";
+					display = "none";
+					break;
+				}
+				/** @j2sNative 
+				var event = e.bdata.jqevent;
+				var x = event.clientX;
+				var y = event.clientY;
+				this.customCursor.style.left = x + "px";
+				this.customCursor.style.top = y + "px";
+	        	background && (this.customCursor.style.backgroundColor = background);
+			    display && (this.customCursor.style.display = display);
+					
+				 * 
+				 */
 			}
-
-			String display = "block";
-			String background = "rgba(0,255,0,0.3)";
-			switch (mode) {
-			case "move":
-			case "enter":
-				background = "transparent";
-				break;
-			case "drag":
-			case "down":
-				break;
-			case "up":
-			case "exit":
-				background = "transparent";
-				display = "none";
-				break;
-			}
-			/** @j2sNative 
-			var event = e.bdata.jqevent;
-			var x = event.clientX;
-			var y = event.clientY;
-			this.customCursor.style.left = x + "px";
-			this.customCursor.style.top = y + "px";
-        	background && (this.customCursor.style.backgroundColor = background);
-		    display && (this.customCursor.style.display = display);
-				
-			 * 
-			 */
 			getParent().repaint();
 		}
 		
