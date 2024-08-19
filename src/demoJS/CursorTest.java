@@ -126,7 +126,6 @@ public class CursorTest {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			Point pt = getLocationOnScreen();
 			System.out.println("CursorTest - mouse clicked\n" 
 			+ "panel: " + getLocationOnScreen() + "\n"
 			+ "cursor: " + e.getLocationOnScreen());
