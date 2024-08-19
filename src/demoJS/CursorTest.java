@@ -98,15 +98,16 @@ public class CursorTest {
 					display = "none";
 					break;
 				}
+				Point pt = e.getLocationOnScreen();
+				// OK this is now the "x" and "y" below commented out.
 				/** @j2sNative 
-				var event = e.bdata.jqevent;
-				var x = event.clientX;
-				var y = event.clientY;
-				this.customCursor.style.left = x + "px";
-				this.customCursor.style.top = y + "px";
+				//var event = e.bdata.jqevent;
+				//var x = event.clientX;
+				//var y = event.clientY;
+				this.customCursor.style.left = pt.x + "px";
+				this.customCursor.style.top = pt.y + "px";
 	        	background && (this.customCursor.style.backgroundColor = background);
 			    display && (this.customCursor.style.display = display);
-					
 				 * 
 				 */
 			}
