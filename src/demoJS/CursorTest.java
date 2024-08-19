@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -125,6 +126,10 @@ public class CursorTest {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
+			Point pt = getLocationOnScreen();
+			System.out.println("CursorTest - mouse clicked\n" 
+			+ "panel: " + getLocationOnScreen() + "\n"
+			+ "cursor: " + e.getLocationOnScreen());
 		}
 
 		@Override
@@ -171,7 +176,7 @@ public class CursorTest {
 		//panel.add(label);
 		panel.add(button);
 
-		frame.add(panel, BorderLayout.SOUTH);
+		frame.add(panel, BorderLayout.NORTH);
 		frame.setSize(300, 300);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
