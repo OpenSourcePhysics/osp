@@ -35,51 +35,51 @@ public class CursorTest2 {
 		JLabel label = new JLabel("JavaScript Cursor");
 	/** @j2sNative console.log('JavaScript addEventListener.'); 
 		debugger; 
-		const customCursor = document.getElementById('customCursor');
-		customCursor.style.backgroundColor = 'green';
-		
-		// Function to move the custom cursor
-	    function setCustomCursor(x,y) {
-	        customCursor.style.left = `${x}px`;
-	        customCursor.style.top = `${y}px`;
-	        customCursor.style.display = 'block';
-	        console.log('setCustomCursor x=' + x+ '  y='+y);
-	    }
-	    
-	    // Function to move the custom cursor
-	    function moveCustomCursor(event) {
-	        let x, y;
-	        if (event.touches) {
-	            x = event.touches[0].clientX;
-	            y = event.touches[0].clientY;
-	        } else {
-	            x = event.clientX;
-	            y = event.clientY;
-	        }
-          setCustomCursor(x,y);
-	    }
-	
-	    document.addEventListener('mousemove', moveCustomCursor);
-	    document.addEventListener('touchmove', moveCustomCursor);
-	
-	    document.addEventListener('mousedown', () => {
-	        customCursor.style.backgroundColor = 'yellow'; // Change to your desired click color
-	        console.log('mousedown event');
-	    });
-	    document.addEventListener('mouseup', () => {
-	        customCursor.style.backgroundColor = 'green'; // Change back to transparent
-	        console.log('mouseup event');
-	    });
-	
-	    document.addEventListener('touchstart', () => {
-	        customCursor.style.backgroundColor = 'yellow'; // Change to your desired click color
-	        console.log('touchstart event');
-	    });
-	    document.addEventListener('touchend', () => {
-	        customCursor.style.backgroundColor = 'green'; // Change back to transparent
-	        //customCursor.style.display = 'none';
-	        console.log('touchend event');
-	    });
+const customCursor = document.getElementById('customCursor');
+customCursor.style.backgroundColor = 'green';
+
+// Function to move the custom cursor
+  function setCustomCursor(x,y) {
+      customCursor.style.left = `${x}px`;
+      customCursor.style.top = `${y}px`;
+      customCursor.style.display = 'block';
+      console.log('setCustomCursor x=' + x+ '  y='+y);
+  }
+  
+  // Function to move the custom cursor
+  function moveCustomCursor(event) {
+      let x, y;
+      if (event.touches) {
+          x = event.touches[0].clientX;
+          y = event.touches[0].clientY;
+      } else {
+          x = event.clientX;
+          y = event.clientY;
+      }
+      setCustomCursor(x,y);
+  }
+
+  document.addEventListener('mousemove', moveCustomCursor);
+  document.addEventListener('touchmove', moveCustomCursor);
+
+  document.addEventListener('mousedown', () => {
+      customCursor.style.backgroundColor = 'yellow'; // Change to your desired click color
+      console.log('mousedown event');
+  });
+  document.addEventListener('mouseup', () => {
+      customCursor.style.backgroundColor = 'green'; // Change back to transparent
+      console.log('mouseup event');
+  });
+
+  document.addEventListener('touchstart', () => {
+      customCursor.style.backgroundColor = 'yellow'; // Change to your desired click color
+      console.log('touchstart event');
+  });
+  document.addEventListener('touchend', () => {
+      customCursor.style.backgroundColor = 'green'; // Change back to transparent
+      //customCursor.style.display = 'none';
+      console.log('touchend event');
+  });
 				   
 		*/	
 

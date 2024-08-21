@@ -32,7 +32,7 @@ public class CursorTest {
 		/**
 		 * @j2sNative
 		 * 
-		 *  $("body").append('<link href="https://physlets.org/swingjs/ipad.css" rel="stylesheet" type="text/css">');
+		 *  $("body").append('<link href="ipad.css" rel="stylesheet" type="text/css">');
 		 * 
 		 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
 		 * 

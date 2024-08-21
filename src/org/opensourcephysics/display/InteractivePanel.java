@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.display;
 import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
@@ -21,6 +22,7 @@ import javax.swing.event.MouseInputAdapter;
  */
 @SuppressWarnings("serial")
 public class InteractivePanel extends DrawingPanel implements InteractiveMouseHandler {
+	
   public static final int MOUSE_PRESSED = 1;
   public static final int MOUSE_RELEASED = 2;
   public static final int MOUSE_DRAGGED = 3;
@@ -34,6 +36,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
   protected InteractiveMouseHandler interactive = null;
   private Interactive iaDraggable = null; // interactive object that is being dragged
   private Selectable iaSelectable = null; // interactive object that has been selected
+	Object customCursor;
+	boolean isMobile=OSPRuntime.isJS;  // for testing
 
   /**
    * Constructs an InteractivePanel with the given handler.
@@ -51,6 +55,62 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 		super();
 		isInteractive = true;
 		interactive = this; // this panel is the default handler
+		customCursor = /** @j2sNative $('#customCursor')[0] || */
+			null;
+	}
+	
+  /**
+   * Moves the custom JavaScript cursor when running on a mobile device.
+   * @param e  MouseEvent
+   * @param mode  String 
+   */
+	@SuppressWarnings("unused")
+	protected void moveJSCursor(MouseEvent e, String mode) {
+		if(!isMobile) return;
+		// Function to move the custom cursor
+		if (customCursor != null) {	
+			String display = "block";
+			String background = "rgba(0,255,0,0.3)";
+			switch (mode) {
+			case "move":
+			case "enter":
+				background = "transparent";
+				break;
+			case "drag":
+			case "down":
+				break;
+			case "up":
+			case "exit":
+				background = "transparent";
+				display = "none";
+				break;
+			}
+			Point pt = e.getLocationOnScreen();
+			/** @j2sNative 
+			  this.customCursor.style.left = pt.x + "px";
+			  this.customCursor.style.top = pt.y + "px";
+        background && (this.customCursor.style.backgroundColor = background);
+		    display && (this.customCursor.style.display = display);
+			 * 
+			 */
+		}
+	}
+	
+  /**
+   * Sets the JavaScript cursor color when running on a mobile device.
+   * @param e  MouseEvent
+   * @param mode  String 
+   */
+	@SuppressWarnings("unused")
+	protected void setCustomCursorColor(String color) {
+		if(!isMobile) return;
+		// Function to move the custom cursor
+		if (customCursor != null) {	
+			/** @j2sNative 
+        this.customCursor.style.backgroundColor = color;
+			 * 
+			 */
+		}
 	}
 
 	@Override
@@ -145,6 +205,7 @@ protected void scaleY(ArrayList<Drawable> tempList) {
 public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
     switch(panel.getMouseAction()) {
        case InteractivePanel.MOUSE_CLICKED :
+      	 //moveJSCursor(evt, "down");
          Interactive clickedIA = getInteractive();
          if((panel.getMouseClickCount()<2)||(clickedIA==null)||!(clickedIA instanceof Selectable)) {
            return;
@@ -160,6 +221,7 @@ public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
          }
          break;
        case InteractivePanel.MOUSE_DRAGGED :
+      	 moveJSCursor(evt, "drag");
          if(iaDraggable==null) {
            return;                // nothing to drag
          }
@@ -184,6 +246,7 @@ public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
          }
          break;
        case InteractivePanel.MOUSE_RELEASED :
+      	 moveJSCursor(evt, "up");
          if((autoscaleX||autoscaleY)&&!getIgnoreRepaint()) {
            panel.repaint();       // repaint to keep the screen up to date
          }
@@ -328,12 +391,13 @@ public void setShowCoordinates(boolean show) {
      * Handle the mouse pressed event.
      * @param e
      */
-    @SuppressWarnings("unused")
+  @SuppressWarnings("unused")
 	@Override
 	public void mousePressed(MouseEvent e) {
+      moveJSCursor(e, "down");
       mouseEvent = e;
       mouseAction = MOUSE_PRESSED;
-      if(interactive!=null) { // is there an object available to hande the mouse event
+      if(interactive!=null) { // is there an object available to handle the mouse event
         interactive.handleMouseAction(InteractivePanel.this, e);
         iaDraggable = null;   // force the panel to search all drawables
         iaDraggable = getInteractive();
@@ -343,6 +407,7 @@ public void setShowCoordinates(boolean show) {
           } else {
             setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
           }
+          setCustomCursorColor("rgba(255,255,0,0.5)");
         }
       }
       if(isShowCoordinates()) {
@@ -359,6 +424,7 @@ public void setShowCoordinates(boolean show) {
     @SuppressWarnings("unused")
 	@Override
 	public void mouseReleased(MouseEvent e) {
+    	moveJSCursor(e, "up");
       mouseEvent = e;
       mouseAction = MOUSE_RELEASED;
       if(interactive!=null) {
@@ -378,6 +444,7 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseEntered(MouseEvent e) {
+    	moveJSCursor(e, "enter");
       if(isShowCoordinates()) {
         setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       }
@@ -394,6 +461,7 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseExited(MouseEvent e) {
+    	moveJSCursor(e, "exit");
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       mouseEvent = e;
       mouseAction = MOUSE_EXITED;
@@ -408,6 +476,7 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseClicked(MouseEvent e) {
+    	//moveJSCursor(e, "down");
       mouseEvent = e;
       mouseAction = MOUSE_CLICKED;
       if(interactive==null) {
@@ -423,6 +492,7 @@ public void setShowCoordinates(boolean show) {
     @SuppressWarnings("unused")
 	@Override
 	public void mouseDragged(MouseEvent e) {
+    	moveJSCursor(e, "dragged");
       mouseEvent = e;
       mouseAction = MOUSE_DRAGGED;
       if(interactive!=null) {
@@ -441,6 +511,7 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseMoved(MouseEvent e) {
+    	moveJSCursor(e, "move");
       mouseEvent = e;
       mouseAction = MOUSE_MOVED;
       iaDraggable = null;
@@ -455,6 +526,7 @@ public void setShowCoordinates(boolean show) {
           } else {
             setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
           }
+          setCustomCursorColor("rgba(255,255,0, 0.5)");// yellow
         }
       }
     }
