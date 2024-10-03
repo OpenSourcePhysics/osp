@@ -34,11 +34,13 @@ public class CursorTest2 {
 
 
 	protected static void jsCustomCursor(String action, MouseEvent e) {
+		System.out.println(action + " " + e);
 		/**
 		 * @j2sNative 
 		 * switch (action) { 
 		 * case "pressed":
 		 *   $('#customCursor').css({"display":'block'});
+		 *   setCustomCursor(e); 
 		 *   break; 
 		 * case "released": 
 		 *   $('#customCursor').css({"display":'none'});
@@ -53,6 +55,8 @@ public class CursorTest2 {
 	}
 
 	// end JavaScript methods
+
+	static boolean clickToggle, dragging, pressed;
 	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Custom Cursor Example");
@@ -75,8 +79,8 @@ public class CursorTest2 {
             // Define the radius of the circle
             int radius = Math.min(width, height) / 4;
             // Set the color to red
-            g.setColor(Color.RED);
             // Draw the circle
+            g.setColor(clickToggle ? Color.BLUE : Color.RED);
             g.fillOval(centerX - radius, centerY - radius, 2 * radius, 2 * radius);
         }
     };
@@ -86,15 +90,29 @@ public class CursorTest2 {
     drawingPanel.addMouseListener( new MouseListener() {
 
 			@Override
-			public void mouseClicked(MouseEvent e) {}
+			public void mouseClicked(MouseEvent e) {
+				if (dragging) {
+					dragging = false;
+					return;
+				}
+				// flash blue circle
+				clickToggle = !clickToggle;
+				jsCustomCursor("clicked", e);
+				drawingPanel.repaint();
+			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
+				if (pressed) // multitouch will press multiple times before release
+					return;
+				dragging = false;
+				pressed = true;
 				jsCustomCursor("pressed", e);
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				pressed = false;
 				jsCustomCursor("released", e);
 			}
 			
@@ -110,6 +128,7 @@ public class CursorTest2 {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
+				dragging = true;
 				jsCustomCursor("dragged", e);
 			}
 
