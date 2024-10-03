@@ -4,85 +4,62 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public class CursorTest2 {
+	
+	// begin JavaScript methods
 	
 	static  {
 		/**
 		 * @j2sNative
 		 * 
 		 *  $("body").append('<link href="https://physlets.org/swingjs/ipad.css" rel="stylesheet" type="text/css">');
-		 * 
 		 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
-		 * 
+		 * 		
+		 *  setCustomCursor = function(e) {
+		 *    var x = e.getXOnScreen$();
+		 *    var y = e.getYOnScreen$();
+		 *    var c = $('#customCursor')
+		 *    	.css({"left": x + "px", "top": y + "px", "display": "block"});
+		 *  }
+		 */
+	}
+
+
+	protected static void jsCustomCursor(String action, MouseEvent e) {
+		/**
+		 * @j2sNative 
+		 * switch (action) { 
+		 * case "pressed":
+		 *   $('#customCursor').css({"display":'block'});
+		 *   break; 
+		 * case "released": 
+		 *   $('#customCursor').css({"display":'none'});
+		 *   break;
+		 * case "dragged": 
+		 * case "moved": 
+		 *   setCustomCursor(e); 
+		 *   break;
+		 * }
 		 * 
 		 */
 	}
 
+	// end JavaScript methods
+	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Custom Cursor Example");
 		frame.setLayout(new BorderLayout());
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout());
 		JLabel label = new JLabel("JavaScript Cursor");
-	/** @j2sNative console.log('JavaScript addEventListener.'); 
-		debugger; 
-const customCursor = document.getElementById('customCursor');
-customCursor.style.backgroundColor = 'green';
-
-// Function to move the custom cursor
-  function setCustomCursor(x,y) {
-      customCursor.style.left = `${x}px`;
-      customCursor.style.top = `${y}px`;
-      customCursor.style.display = 'block';
-      console.log('setCustomCursor x=' + x+ '  y='+y);
-  }
-  
-  // Function to move the custom cursor
-  function moveCustomCursor(event) {
-      let x, y;
-      if (event.touches) {
-          x = event.touches[0].clientX;
-          y = event.touches[0].clientY;
-      } else {
-          x = event.clientX;
-          y = event.clientY;
-      }
-      setCustomCursor(x,y);
-  }
-
-  document.addEventListener('mousemove', moveCustomCursor);
-  document.addEventListener('touchmove', moveCustomCursor);
-
-  document.addEventListener('mousedown', () => {
-      customCursor.style.backgroundColor = 'yellow'; // Change to your desired click color
-      console.log('mousedown event');
-  });
-  document.addEventListener('mouseup', () => {
-      customCursor.style.backgroundColor = 'green'; // Change back to transparent
-      console.log('mouseup event');
-  });
-
-  document.addEventListener('touchstart', () => {
-      customCursor.style.backgroundColor = 'yellow'; // Change to your desired click color
-      console.log('touchstart event');
-  });
-  document.addEventListener('touchend', () => {
-      customCursor.style.backgroundColor = 'green'; // Change back to transparent
-      //customCursor.style.display = 'none';
-      console.log('touchend event');
-  });
-				   
-		*/	
-
 		panel.add(label);
 
     JPanel drawingPanel = new JPanel() {
@@ -113,23 +90,14 @@ customCursor.style.backgroundColor = 'green';
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-			e.getX();
-			System.err.println("mouse pressed getX="+e.getX()+ " onscreen x="+ e.getXOnScreen());
-			/** @j2sNative
-			  console.log('JavaScript mousePressed.'); 
-			  customCursor.style.backgroundColor = 'yellow'; // Change to your desired click color
-			  customCursor.style.display = 'block'; 
-			 */
+				jsCustomCursor("pressed", e);
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-			/** @j2sNative
-			    console.log('JavaScript mouseReleased.'); 
-			    customCursor.style.backgroundColor = 'green'; // Change back to red
-			 */
+				jsCustomCursor("released", e);
 			}
-
+			
 			@Override
 			public void mouseEntered(MouseEvent e) {}
 
@@ -142,30 +110,16 @@ customCursor.style.backgroundColor = 'green';
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				/** @j2sNative
-	        debugger;
-		    */
-				int screenX=e.getXOnScreen();
-				int screenY=e.getYOnScreen();
-				Point loc= frame.getLocation();
-				int topScreenX=screenX+loc.x;
-				int topScreenY=screenY+loc.y;
-				System.out.println("mouse dragged screenX="+screenX+ " topScreenX="+ topScreenX );
-				System.out.println("mouse dragged screenY="+screenY+ " topScreenY="+ topScreenY );
-				/** @j2sNative 
-		    setCustomCursor(topScreenX, topScreenY);
-		    */
-				
+				jsCustomCursor("dragged", e);
 			}
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
+				jsCustomCursor("moved", e);
 			}
-    	
+
     });
-        
+
     frame.add(drawingPanel,BorderLayout.CENTER);
         
 		frame.add(panel,BorderLayout.SOUTH);
