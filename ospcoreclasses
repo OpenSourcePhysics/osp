@@ -623,7 +623,9 @@ org/opensourcephysics/controls/XMLTreeChooser.js
 org/opensourcephysics/controls/XMLTreeNode.js
 org/opensourcephysics/controls/XMLTreePanel.js
 org/opensourcephysics/desktop/OSPDesktop.js
+org/opensourcephysics/display/AbstractInteractive.js
 org/opensourcephysics/display/AppFrame.js
+org/opensourcephysics/display/BoundedShape.js
 org/opensourcephysics/display/CellBorder.js
 org/opensourcephysics/display/ColorIcon.js
 org/opensourcephysics/display/ComplexDataset.js
@@ -645,6 +647,8 @@ org/opensourcephysics/display/GUIUtils.js
 org/opensourcephysics/display/Hidable.js
 org/opensourcephysics/display/HighlightableDataset.js
 org/opensourcephysics/display/Interactive.js
+org/opensourcephysics/display/InteractiveArrow.js
+org/opensourcephysics/display/InteractiveShape.js
 org/opensourcephysics/display/InteractiveMouseHandler.js
 org/opensourcephysics/display/InteractivePanel.js
 org/opensourcephysics/display/LogMeasurable.js
@@ -796,6 +800,7 @@ sun/awt/PostEventQueue.js
 sun/awt/RequestFocusController.js
 sun/awt/SunGraphicsCallback.js
 sun/awt/SunToolkit.js
+sun/awt/geom/Curve.js
 sun/awt/image/ByteComponentRaster.js
 sun/awt/image/ByteInterleavedRaster.js
 sun/awt/image/DataStealer.js

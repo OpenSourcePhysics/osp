@@ -20,11 +20,33 @@ public class CursorTest2 {
 		/**
 		 * @j2sNative
 		 * 
-		 *  $("body").append('<link href="https://physlets.org/swingjs/ipad.css" rel="stylesheet" type="text/css">');
+		 *  $("body").append('<link href="./ipad.css" rel="stylesheet" type="text/css">');
 		 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
 		 * 		
 		 *  setCustomCursor = function(e) {
 		 *    var x = e.getXOnScreen$();
+		 *    var y = e.getYOnScreen$();
+		 *    var c = $('#customCursor')
+		 *    	.css({"left": x + "px", "top": y + "px"});
+		 *  }
+		 */
+		
+		/**
+		 * @j2sNative
+		 * 		
+		 *  hideCustomCursor = function(e) {
+		 *  	var x = e.getXOnScreen$();
+		 *    var y = e.getYOnScreen$();
+		 *    var c = $('#customCursor')
+		 *    	.css({"left": x + "px", "top": y + "px", "display": "none"});
+		 *  }
+		 */
+		
+		/**
+		 * @j2sNative
+		 * 		
+		 *  showCustomCursor = function(e) {
+		 *  	var x = e.getXOnScreen$();
 		 *    var y = e.getYOnScreen$();
 		 *    var c = $('#customCursor')
 		 *    	.css({"left": x + "px", "top": y + "px", "display": "block"});
@@ -39,15 +61,28 @@ public class CursorTest2 {
 		 * @j2sNative 
 		 * switch (action) { 
 		 * case "pressed":
-		 *   $('#customCursor').css({"display":'block'});
+		 *   $('#customCursor').css({"backgroundColor":'yellow'});
 		 *   setCustomCursor(e); 
 		 *   break; 
 		 * case "released": 
-		 *   $('#customCursor').css({"display":'none'});
+		 *   $('#customCursor').css({"background-color":'green'});
+		 *   setCustomCursor(e);
 		 *   break;
 		 * case "dragged": 
 		 * case "moved": 
 		 *   setCustomCursor(e); 
+		 *   break;
+		 * case "entered": 
+		 *   $('#customCursor').css({"backgroundColor":'green'});
+		 *   $('#customCursor').css({"width":'20px'});
+		 *   $('#customCursor').css({"height":'20px'});
+		 *   showCustomCursor(e); 
+		 *   break;	
+		 * case "exited": 
+		 *   $('#customCursor').css({"backgroundColor":'transparent'});
+		 *   $('#customCursor').css({"width":'0px'});
+		 *   $('#customCursor').css({"height":'0px'});
+		 *   hideCustomCursor(e); 
 		 *   break;
 		 * }
 		 * 
@@ -56,7 +91,7 @@ public class CursorTest2 {
 
 	// end JavaScript methods
 
-	static boolean clickToggle, dragging, pressed;
+	static boolean clickToggle, dragging, pressed, inside;
 	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Custom Cursor Example");
@@ -97,7 +132,6 @@ public class CursorTest2 {
 				}
 				// flash blue circle
 				clickToggle = !clickToggle;
-				jsCustomCursor("clicked", e);
 				drawingPanel.repaint();
 			}
 
@@ -113,14 +147,23 @@ public class CursorTest2 {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				pressed = false;
+				dragging = false;
 				jsCustomCursor("released", e);
 			}
 			
 			@Override
-			public void mouseEntered(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {
+				inside = true;
+				jsCustomCursor("entered", e);
+			}
 
 			@Override
-			public void mouseExited(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {
+				inside = false;
+				dragging=false;
+				pressed = false;
+				jsCustomCursor("exited", e);
+			}
 		});
     
     drawingPanel.addMouseMotionListener( new MouseMotionListener() {

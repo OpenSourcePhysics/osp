@@ -7,7 +7,13 @@
 
 package demoJS;
 import org.opensourcephysics.display.*;
+
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 /**
  * InteractiveShapeApp tests the InteractiveShape class by creating a rectangle and an arrow.
@@ -17,18 +23,6 @@ import javax.swing.JFrame;
  * @version 1.0
  */
 public class InteractiveShapeApp {
-	
-	static  {
-		/**
-		 * @j2sNative
-		 * 
-		 *  $("body").append('<link href="ipad.css" rel="stylesheet" type="text/css">');
-		 * 
-		 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
-		 * 
-		 * 
-		 */
-	}
 	
   /**
    * Starts the InteractiveShapeApp application.
