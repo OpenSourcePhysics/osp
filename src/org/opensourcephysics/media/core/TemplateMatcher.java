@@ -318,11 +318,13 @@ public class TemplateMatcher {
 	 *
 	 * @param target     the image to search
 	 * @param searchRect the rectangle to search within the target image
-	 * @param searchPts optional [x, y] points to search within the rectangle (may be null)
+	 * @param searchPts  optional [x, y] points to search within the rectangle (may be null)
+	 * @param theta 		 angle of the line, ignored if searchPts is null
 	 * @return the optimized template location at which the best match, if any, is found
 	 */
-	public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect, int[][] searchPts) {
-
+	public TPoint getMatchLocation(BufferedImage target, Rectangle searchRect, int[][] searchPts,
+			double x0, double y0, double theta) {
+		boolean isLinear = searchPts!=null;
 		wTarget = target.getWidth();
 		hTarget = target.getHeight();
 		// determine insets needed to accommodate template
@@ -350,10 +352,6 @@ public class TemplateMatcher {
 		target = ensureType(target, wTarget, hTarget, BufferedImage.TYPE_INT_RGB);
 		targetPixels = new int[wTest * hTest];
 		transferPixels(getPixels(target), xMin, yMin, wTarget, targetPixels, wTest);
-		// find the rectangle point with the minimum difference squared
-		double minDiffSq = largeNumber; // larger than typical differences
-		int xMatch = 0, yMatch = 0;
-		double avgDiffSq = 0;
 		if (searchPts == null) {
 			searchPts = new int[sw * sh][2];
 			int index = 0;
@@ -365,6 +363,11 @@ public class TemplateMatcher {
 				}
 			}			
 		}
+		
+		// find the point with the minimum difference squared
+		double minDiffSq = largeNumber; // larger than typical differences
+		int matchIndex = -1;
+		double avgDiffSq = 0;
 		int n = 0;
 		for (int i = 0; i < searchPts.length; i++) {
 			if (searchPts[i][0] >= sw || searchPts[i][1] >= sh || searchPts[i][0] < 0 || searchPts[i][1] < 0)
@@ -375,41 +378,68 @@ public class TemplateMatcher {
 			n++;
 			if (diffSq < minDiffSq) {
 				minDiffSq = diffSq;
-				xMatch = searchPts[i][0];
-				yMatch = searchPts[i][1];
+				matchIndex = i;
 			}
 		}
 		avgDiffSq /= n;
 		peakHeight = avgDiffSq / minDiffSq - 1;
 		peakWidth = Double.NaN;
+		int xMatch = searchPts[matchIndex][0];
+		int yMatch = searchPts[matchIndex][1];
 		double dx = 0, dy = 0;
 		
 		if (!Double.isInfinite(peakHeight)) {
-			// if match is not exact, fit a parabola to diffs
+			// match is not exact so fit a parabola to diffs
 			double[] pixels = new double[] {-1, 0, 1};
-			// fill data arrays
-			xValues[1] = yValues[1] = minDiffSq;
-			for (int i = -1; i < 2; i++) {
-				if (i == 0)
-					continue;
-				double diff = getRGBDiffSquaredAtTestPoint(xMatch + i, yMatch);
-				xValues[i + 1] = diff;
-				diff = getRGBDiffSquaredAtTestPoint(xMatch, yMatch + i);
-				yValues[i + 1] = diff;
+			if (isLinear && matchIndex>0 && matchIndex<searchPts.length-1) {
+				// fill data arrays
+				int x = searchPts[matchIndex - 1][0];
+				int y = searchPts[matchIndex - 1][1];
+				xValues[0] = getRGBDiffSquaredAtTestPoint(x, y);
+				xValues[1] = minDiffSq;
+				x = searchPts[matchIndex + 1][0];
+				y = searchPts[matchIndex + 1][1];
+				xValues[2] = getRGBDiffSquaredAtTestPoint(x, y);
+
+				// fit parabola
+				parabola.fitData(pixels, xValues);
+				double[] c = parabola.getCoefficients();		
+				double dl = -c[1] / (2 * c[2]); // -b/2a
+				peakWidth = Math.sqrt(2*c[0]/c[2]); // 2c/a
+
+				dx = dl*Math.cos(theta);
+				dy = dl*Math.sin(theta);				
 			}
-			// fit parabola
-			parabola.fitData(pixels, xValues);
-			double[] c = parabola.getCoefficients();		
-			dx = -c[1] / (2 * c[2]); // -b/2a
-			peakWidth = Math.sqrt(2*c[0]/c[2]); // 2c/a
-			
-			parabola.fitData(pixels, yValues);
-			c = parabola.getCoefficients();		
-			dy = -c[1] / (2 * c[2]); // -b/2a
-
-			peakWidth = 0.5 * (peakWidth + Math.sqrt(2 * c[0] / c[2]));
+			else {
+				// fill data arrays
+				xValues[1] = yValues[1] = minDiffSq;
+				for (int i = -1; i < 2; i++) {
+					if (i == 0)
+						continue;
+					double diffSq = getRGBDiffSquaredAtTestPoint(xMatch + i, yMatch);
+					xValues[i + 1] = diffSq;
+					diffSq = getRGBDiffSquaredAtTestPoint(xMatch, yMatch + i);
+					yValues[i + 1] = diffSq;
+				}
+				// fit parabola
+				
+				parabola.fitData(pixels, xValues);
+				double[] c = parabola.getCoefficients();		
+				dx = -c[1] / (2 * c[2]); // -b/2a
+				peakWidth = Math.sqrt(2*c[0]/c[2]); // 2c/a
+				
+				parabola.fitData(pixels, yValues);
+				c = parabola.getCoefficients();		
+				dy = -c[1] / (2 * c[2]); // -b/2a
+				peakWidth = 0.5 * (peakWidth + Math.sqrt(2 * c[0] / c[2]));
+				
+				if (Double.isNaN(dx))
+					dx = 0;
+				if (Double.isNaN(dy))
+					dy = 0;
+			}
 		}
-
+		
 		if (!Double.isNaN(peakWidth) && peakWidth > 1) {
 			peakHeight /= peakWidth;
 		}
@@ -417,7 +447,8 @@ public class TemplateMatcher {
 		xMatch += sx - left - trimLeft;
 		yMatch += sy - top - trimTop;
 		refreshMatchImage(target, xMatch, yMatch);
-		return new TPoint(xMatch + dx, yMatch + dy);
+		TPoint p = new TPoint(xMatch + dx, yMatch + dy);
+		return p;
 	}
 
 	/**
