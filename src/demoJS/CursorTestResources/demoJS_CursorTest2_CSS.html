@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SwingJS test CursorTest2</title><meta charset="utf-8" />
+<link href="./ipad.css" rel="stylesheet" type="text/css">
+<script src="swingjs/swingjs2.js"></script>
+<script>
+if (!self.SwingJS)alert('swingjs2.js was not found. It needs to be in swingjs folder in the same directory as ' + document.location.href)
+Info = {
+  code: null,
+  main: "demoJS.CursorTest2",
+  core: "_ospall",
+  resourceZip: "misc-assets.zip",
+  assets: "DEFAULT",
+  width: 850,
+  height: 550,
+  readyFunction: null,
+	j2sPath: 'swingjs/j2s',
+	console:'none',
+	allowjavascript: true
+}
+</script>
+</head>
+<body>	
+    <h1>Click and drag to test the custom JavaScript cursor.</h1>
+	<script>
+	SwingJS.getApplet('testApplet', Info)
+	</script>
+</body>
+</html>

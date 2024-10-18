@@ -7,6 +7,7 @@
 
 package org.opensourcephysics.display;
 import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
@@ -15,12 +16,16 @@ import javax.swing.event.MouseInputAdapter;
 /**
  * InteractivePanel is a drawing panel that invokes the handleMouseAction method in
  * Interactive objects.
+ * 
+ * Version 2.0 adds a custom CSS cursor when this code is transpiled to JavaScript.
+ * 
  * @author Wolfgang Christian
  * @author Francisco Esquembre
- * @version 1.0
+ * @version 2.0 
  */
 @SuppressWarnings("serial")
 public class InteractivePanel extends DrawingPanel implements InteractiveMouseHandler {
+	
   public static final int MOUSE_PRESSED = 1;
   public static final int MOUSE_RELEASED = 2;
   public static final int MOUSE_DRAGGED = 3;
@@ -28,12 +33,95 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
   public static final int MOUSE_ENTERED = 5;
   public static final int MOUSE_EXITED = 6;
   public static final int MOUSE_MOVED = 7;
+  protected String cursorColor= "transparent";
   protected boolean containsInteractive = false;
   protected int mouseAction = 0;
   protected MouseEvent mouseEvent = null;
   protected InteractiveMouseHandler interactive = null;
   private Interactive iaDraggable = null; // interactive object that is being dragged
   private Selectable iaSelectable = null; // interactive object that has been selected
+	Object customCursor;
+	boolean isMobile=OSPRuntime.isJS;  // for testing
+	
+	// begin JavaScript methods
+	
+	static  {
+		/**
+		 * @j2sNative
+		 * 
+		 *  $("body").append('<link href="./ipad.css" rel="stylesheet" type="text/css">');
+		 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
+		 * 		
+		 *  setCustomCursor = function(e) {
+		 *    var x = e.getXOnScreen$();
+		 *    var y = e.getYOnScreen$();
+		 *    var c = $('#customCursor')
+		 *    	.css({"left": x + "px", "top": y + "px"});
+		 *  }
+		 */
+		
+		/**
+		 * @j2sNative
+		 * 		
+		 *  hideCustomCursor = function(e) {
+		 *  	var x = e.getXOnScreen$();
+		 *    var y = e.getYOnScreen$();
+		 *    var c = $('#customCursor')
+		 *    	.css({"left": x + "px", "top": y + "px", "display": "none"});
+		 *  }
+		 */
+		
+		/**
+		 * @j2sNative
+		 * 		
+		 *  showCustomCursor = function(e) {
+		 *  	var x = e.getXOnScreen$();
+		 *    var y = e.getYOnScreen$();
+		 *    var c = $('#customCursor')
+		 *    	.css({"left": x + "px", "top": y + "px", "display": "block" });
+		 *  }
+		 */
+	}
+
+
+	protected static void jsCustomCursor(String action, String cursorColor, MouseEvent e) {
+		System.out.println(action + " " + e);
+
+		/**
+		 * @j2sNative 
+		 * switch (action) { 
+		 * case "pressed":
+		 *   $('#customCursor').css({"backgroundColor":cursorColor});
+		 *   setCustomCursor(e); 
+		 *   break; 
+		 * case "released": 
+		 *   $('#customCursor').css({"background-color":cursorColor});
+		 *   setCustomCursor(e);
+		 *   break;
+		 * case "dragged": 
+		 * case "moved": 
+		 *   $('#customCursor').css({"backgroundColor":cursorColor});
+		 *   setCustomCursor(e); 
+		 *   break;
+		 * case "entered": 
+		 *   $('#customCursor').css({"backgroundColor":cursorColor});
+		 *   $('#customCursor').css({"width":'20px'});
+		 *   $('#customCursor').css({"height":'20px'});
+		 *   showCustomCursor(e); 
+		 *   break;	
+		 * case "exited": 
+		 *   $('#customCursor').css({"backgroundColor":'transparent'});
+		 *   $('#customCursor').css({"width":'0px'});
+		 *   $('#customCursor').css({"height":'0px'});
+		 *   hideCustomCursor(e); 
+		 *   break;
+		 * }
+		 * 
+		 */
+	}
+
+	// end JavaScript methods
+
 
   /**
    * Constructs an InteractivePanel with the given handler.
@@ -52,6 +140,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 		isInteractive = true;
 		interactive = this; // this panel is the default handler
 	}
+	
 
 	@Override
 	protected void setMouseListeners() {
@@ -145,6 +234,7 @@ protected void scaleY(ArrayList<Drawable> tempList) {
 public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
     switch(panel.getMouseAction()) {
        case InteractivePanel.MOUSE_CLICKED :
+      	 InteractivePanel.jsCustomCursor("released","transparent", evt);
          Interactive clickedIA = getInteractive();
          if((panel.getMouseClickCount()<2)||(clickedIA==null)||!(clickedIA instanceof Selectable)) {
            return;
@@ -160,6 +250,7 @@ public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
          }
          break;
        case InteractivePanel.MOUSE_DRAGGED :
+      	 InteractivePanel.jsCustomCursor("dragged", cursorColor, evt);
          if(iaDraggable==null) {
            return;                // nothing to drag
          }
@@ -184,6 +275,7 @@ public void handleMouseAction(InteractivePanel panel, MouseEvent evt) {
          }
          break;
        case InteractivePanel.MOUSE_RELEASED :
+      	 InteractivePanel.jsCustomCursor("released", cursorColor, evt);
          if((autoscaleX||autoscaleY)&&!getIgnoreRepaint()) {
            panel.repaint();       // repaint to keep the screen up to date
          }
@@ -328,23 +420,28 @@ public void setShowCoordinates(boolean show) {
      * Handle the mouse pressed event.
      * @param e
      */
-    @SuppressWarnings("unused")
+  @SuppressWarnings("unused")
 	@Override
 	public void mousePressed(MouseEvent e) {
       mouseEvent = e;
       mouseAction = MOUSE_PRESSED;
-      if(interactive!=null) { // is there an object available to hande the mouse event
+      if(interactive!=null) { // is there an object available to handle the mouse event
         interactive.handleMouseAction(InteractivePanel.this, e);
         iaDraggable = null;   // force the panel to search all drawables
         iaDraggable = getInteractive();
         if(iaDraggable!=null) {
           if(iaDraggable instanceof Selectable) {
             setMouseCursor(((Selectable) iaDraggable).getPreferredCursor());
+            cursorColor= "lightgreen";
           } else {
             setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            cursorColor= "lightskyblue";
           }
+        }else {
+        	cursorColor= "transparent";
         }
       }
+      InteractivePanel.jsCustomCursor("pressed", cursorColor, e);
       if(isShowCoordinates()) {
         String s = coordinateStrBuilder.getCoordinateString(InteractivePanel.this, e);
         if (setMessage(s, MessageDrawable.BOTTOM_LEFT) && !messagesAsJLabels)
@@ -359,6 +456,7 @@ public void setShowCoordinates(boolean show) {
     @SuppressWarnings("unused")
 	@Override
 	public void mouseReleased(MouseEvent e) {
+    	InteractivePanel.jsCustomCursor("released", cursorColor, e);
       mouseEvent = e;
       mouseAction = MOUSE_RELEASED;
       if(interactive!=null) {
@@ -378,6 +476,7 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseEntered(MouseEvent e) {
+    	InteractivePanel.jsCustomCursor("entered", cursorColor, e);
       if(isShowCoordinates()) {
         setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
       }
@@ -394,6 +493,8 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseExited(MouseEvent e) {
+    	cursorColor="transparent";
+    	InteractivePanel.jsCustomCursor("exited", cursorColor, e);
       setMouseCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
       mouseEvent = e;
       mouseAction = MOUSE_EXITED;
@@ -408,6 +509,7 @@ public void setShowCoordinates(boolean show) {
      */
     @Override
 	public void mouseClicked(MouseEvent e) {
+    	InteractivePanel.jsCustomCursor("pressed",cursorColor, e);
       mouseEvent = e;
       mouseAction = MOUSE_CLICKED;
       if(interactive==null) {
@@ -423,6 +525,7 @@ public void setShowCoordinates(boolean show) {
     @SuppressWarnings("unused")
 	@Override
 	public void mouseDragged(MouseEvent e) {
+    	InteractivePanel.jsCustomCursor("dragged",cursorColor, e);
       mouseEvent = e;
       mouseAction = MOUSE_DRAGGED;
       if(interactive!=null) {
@@ -440,7 +543,7 @@ public void setShowCoordinates(boolean show) {
      * @param e
      */
     @Override
-	public void mouseMoved(MouseEvent e) {
+	public void mouseMoved(MouseEvent e) { 	
       mouseEvent = e;
       mouseAction = MOUSE_MOVED;
       iaDraggable = null;
@@ -449,14 +552,18 @@ public void setShowCoordinates(boolean show) {
         Interactive iad = getInteractive();
         if(iad==null) {
           setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+          cursorColor= "transparent";
         } else {
           if(iad instanceof Selectable) {
             setMouseCursor(((Selectable) iad).getPreferredCursor());
+            cursorColor= "lightgreen";
           } else {
             setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            cursorColor= "lightskyblue";
           }
         }
       }
+      InteractivePanel.jsCustomCursor("moved", cursorColor, e);
     }
 
   }
