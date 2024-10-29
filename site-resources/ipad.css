@@ -21,18 +21,22 @@
 .custom-cursor::before {
   width: 20px;
   /* Horizontal line length */
-  height: 2px;
+  height: 3px;
   /* Horizontal line thickness */
+  border: 1px solid white;  /* White border */
+  box-sizing: border-box;   /* Ensures border is included in width/height */
   top: 50%;
   left: 0;
   transform: translateY(-50%);
 }
 
 .custom-cursor::after {
-  width: 2px;
+  width: 3px;
   /* Vertical line thickness */
   height: 20px;
   /* Vertical line length */
+  border: 1px solid white;  /* White border */
+  box-sizing: border-box;   /* Ensures border is included in width/height */
   top: 0;
   left: 50%;
   transform: translateX(-50%);

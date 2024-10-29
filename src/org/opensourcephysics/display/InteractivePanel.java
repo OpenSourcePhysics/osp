@@ -7,7 +7,6 @@
 
 package org.opensourcephysics.display;
 import java.awt.Cursor;
-import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
@@ -41,8 +40,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
   private Interactive iaDraggable = null; // interactive object that is being dragged
   private Selectable iaSelectable = null; // interactive object that has been selected
 	Object customCursor;
-	boolean isMobile=OSPRuntime.isJS;  // for testing
-	
+
 	// begin JavaScript methods
 	
 	static  {
@@ -85,8 +83,9 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 
 
 	protected static void jsCustomCursor(String action, String cursorColor, MouseEvent e) {
-		System.out.println(action + " " + e);
-
+		System.out.println(action +" isMobile="+OSPRuntime.isMobileWC);
+		System.out.println(" event=" + e);
+    if(!OSPRuntime.isMobileWC) return;
 		/**
 		 * @j2sNative 
 		 * switch (action) { 
@@ -432,10 +431,12 @@ public void setShowCoordinates(boolean show) {
         if(iaDraggable!=null) {
           if(iaDraggable instanceof Selectable) {
             setMouseCursor(((Selectable) iaDraggable).getPreferredCursor());
-            cursorColor= "lightgreen";
+            //cursorColor= "lightgreen";
+            cursorColor= "rgba(0, 128, 0, 0.25)";
           } else {
             setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            cursorColor= "lightskyblue";
+            //cursorColor= "lightskyblue";
+            cursorColor= "rgba(0, 0, 128, 0.25)";
           }
         }else {
         	cursorColor= "transparent";
@@ -556,10 +557,12 @@ public void setShowCoordinates(boolean show) {
         } else {
           if(iad instanceof Selectable) {
             setMouseCursor(((Selectable) iad).getPreferredCursor());
-            cursorColor= "lightgreen";
+            //cursorColor= "lightgreen";
+            cursorColor= "rgba(0, 128, 0, 0.25)";
           } else {
             setMouseCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            cursorColor= "lightskyblue";
+            //cursorColor= "lightskyblue";
+            cursorColor= "rgba(0, 0, 128, 0.25)";
           }
         }
       }
