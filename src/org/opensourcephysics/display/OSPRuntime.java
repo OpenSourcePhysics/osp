@@ -448,7 +448,7 @@ public class OSPRuntime {
 	// the transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
-	public static boolean isMobileWC =
+	public static boolean cssCursor =
 			/** @j2sNative /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || */
 			/** @j2sNative /Macintosh/.test(navigator.userAgent) && 'ontouchend' in document || */
 			false;
