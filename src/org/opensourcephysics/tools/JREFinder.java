@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -155,12 +156,20 @@ public class JREFinder {
 				Set<File> result = new TreeSet<File>();
 				result = findJREsInDirectory(dir, result);
 				if (!result.isEmpty()) {
+					// ordering of Files in TreeSet is apparently NOT always alphabetical!
+					// so alphabetize by JRE folder name
+					TreeMap<String, File> map = new TreeMap<String, File>();
 					for (File f : result) {
-						// return first found that matches desired bitness
+						// collect those that satisfy bitness
 						if (vmBitness == 32 && is32BitVM(f.getPath()))
-							return f;
-						if (vmBitness == 64 && !is32BitVM(f.getPath()))
-							return f;
+							map.put(f.getName(), f);
+						else if (vmBitness == 64 && !is32BitVM(f.getPath()))
+							map.put(f.getName(), f);
+					}
+					if (!map.isEmpty()) {
+						// return first JRE in map
+						String s = map.keySet().iterator().next();
+						return map.get(s);
 					}
 				}
 			}
