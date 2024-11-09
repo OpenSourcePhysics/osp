@@ -895,9 +895,6 @@ swingjs/api/js/JQueryObject.js
 swingjs/api/js/JSFunction.js
 swingjs/api/js/JSInterface.js
 swingjs/jquery/JQueryUI.js
-swingjs/jquery/j2sComboBox.js
-swingjs/jquery/j2sMenu.js
-swingjs/jquery/j2sSlider.js
 swingjs/jzlib/Adler32.js
 swingjs/jzlib/CRC32.js
 swingjs/jzlib/Checksum.js
