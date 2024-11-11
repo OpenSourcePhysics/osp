@@ -955,6 +955,36 @@ public class LibraryBrowser extends JPanel {
 		if (fileName.endsWith(".trz")) { //$NON-NLS-1$
 			record.setType(LibraryResource.TRACKER_TYPE);
 		}
+		
+		boolean isTRZ = (fileName.endsWith(".zip") && filter == TRACKER_FILTER)
+				|| fileName.endsWith(".trz");
+		if (isTRZ) {
+			// look for html in TRZ files
+			Map<String, ZipEntry> contents = ResourceLoader.getZipContents(path, true);
+			if (contents != null ) {
+				// determine baseName 
+				String baseName = XML.stripExtension(XML.getName(path)); // first guess: filename
+				for (String next : contents.keySet()) {
+					if (next.indexOf("_thumbnail") > -1) {
+						String thumb = XML.getName(next);
+						baseName = thumb.substring(0, thumb.indexOf("_thumbnail"));
+						break;
+					}
+				}
+				for (String next : contents.keySet()) {
+					if (next.endsWith(".html") || next.endsWith(".htm")) { //$NON-NLS-1$ //$NON-NLS-2$
+						String nextName = XML.getName(next);
+						if (XML.stripExtension(nextName).equals(baseName + "_info")) { //$NON-NLS-1$
+							// set html path to info html
+							String trzName = XML.getName(path);
+							record.setHTMLPath(trzName + "!/" + next);
+							break; 
+						}
+					}
+				}
+			}
+		}
+
 		return record;
 	}
 
@@ -3352,29 +3382,54 @@ public class LibraryBrowser extends JPanel {
 			if (!doCache)
 				ResourceLoader.clearZipCache();
 
-			boolean isLocalTRZ = (!ResourceLoader.isHTTP(realPath)
-					&& ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
+			boolean isTRZ = (ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
+			boolean isLocal = (!ResourceLoader.isHTTP(realPath));
 
 			if (resource != null) {
 				LibraryTreePanel treePanel = null;
-				// open local files in the recentCollection instead of in their own tab
-				if (isLocalTRZ) {
-					String recentCollectionPath = getOSPPath() + RECENT_COLLECTION_NAME;
-					path = recentCollectionPath;
-					LibraryCollection collection = getRecentCollection();
-					LibraryResource child = loadResource(realPath);
-					if (child != null) {
+				if (isTRZ) {
+					// look for html in TRZ files
+					Map<String, ZipEntry> contents = ResourceLoader.getZipContents(realPath, true);
+					if (contents != null ) {
+						// determine baseName 
+						String baseName = XML.stripExtension(XML.getName(realPath)); // first guess: filename
+						for (String next : contents.keySet()) {
+							if (next.indexOf("_thumbnail") > -1) {
+								String thumb = XML.getName(next);
+								baseName = thumb.substring(0, thumb.indexOf("_thumbnail"));
+								resource.setName(baseName); // pig do I want this?
+								break;
+							}
+						}
+						for (String next : contents.keySet()) {
+							if (next.endsWith(".html") || next.endsWith(".htm")) { //$NON-NLS-1$ //$NON-NLS-2$
+								String nextName = XML.getName(next);
+								if (XML.stripExtension(nextName).equals(baseName + "_info")) { //$NON-NLS-1$
+									// set html path to info html
+									String trzName = XML.getName(realPath);
+									resource.setHTMLPath(trzName + "!/" + next);
+									break; 
+								}
+							}
+						}
+					}
+					if (isLocal) {
+						// open local files in the recentCollection instead of in their own tab
+						String recentCollectionPath = getOSPPath() + RECENT_COLLECTION_NAME;
+						path = recentCollectionPath;
+						LibraryCollection collection = getRecentCollection();
+//						LibraryResource child = resource;
 						// does collection already have resource with same target?
 						LibraryResource duplicate = null;
 						LibraryResource[] resArray = collection.getResources();
 						for (int i = 0; i < resArray.length; i++) {
 							LibraryResource next = resArray[i];
-							if (next.getTarget().equals(child.getTarget())) {
+							if (next.getTarget().equals(resource.getTarget())) {
 								duplicate = next;
 								break;
 							}
 						}
-						if (collection.insertResource(child, 0)) {
+						if (collection.insertResource(resource, 0)) {
 							if (duplicate != null) {
 								collection.removeResource(duplicate);
 							}
@@ -3384,22 +3439,22 @@ public class LibraryBrowser extends JPanel {
 							for (int i = 0; i < n; i++) {
 								collection.removeResource(resources[resources.length - 1 - i]);
 							}
-							child.collectionPath = recentCollectionPath;
+							resource.collectionPath = recentCollectionPath;
 //			  			XMLControl control = new XMLControlElement(collection);
 //			    		control.setValue("real_path", recentCollectionPath); //$NON-NLS-1$
 //			    		control.write(recentCollectionPath);
 						}
 						// name child before getting tree path
-						String prevName = child.getName();
+//							String prevName = resource.getName();
 //		  			child.setName(getNodeName(child)); // DB! in ver 5.1.5 this looked for html title in trz
-						treePath = child.getTreePath(null);
-						child.setName(prevName);
+						treePath = resource.getTreePath(null);
+//							resource.setName(prevName);
 						index = getTabIndexFromPath(recentCollectionPath);
+						resource = collection;
 					}
-					resource = collection;
 				}
 				treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
-				if (isLocalTRZ) {
+				if (isLocal && isTRZ) {
 					// tab is non-editable XML
 					treePanel.setRootResource(resource, path, false, true);
 				} else {
@@ -3436,6 +3491,9 @@ public class LibraryBrowser extends JPanel {
 					tabbedPane.setToolTipTextAt(index, path);
 
 					treePanel.setSelectionPath(treePath);
+					
+					LibraryTreeNode node = treePanel.getSelectedNode();
+					treePanel.new NodeLoader(node).execute();
 
 					// start background SwingWorker to load metadata and set up search database
 					if (treePanel.metadataLoader != null) {
