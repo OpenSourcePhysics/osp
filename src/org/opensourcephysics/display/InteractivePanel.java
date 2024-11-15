@@ -83,8 +83,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 
 
 	protected static void jsCustomCursor(String action, String cursorColor, MouseEvent e) {
-		System.out.println(action +" isMobile="+OSPRuntime.isMobileWC);
-		System.out.println(" event=" + e);
+//		System.out.println(action +" isMobile="+OSPRuntime.isMobileWC);
+//		System.out.println(" event=" + e);
     if(!OSPRuntime.isMobileWC) return;
 		/**
 		 * @j2sNative 
