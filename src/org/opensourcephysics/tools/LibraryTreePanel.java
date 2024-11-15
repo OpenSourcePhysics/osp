@@ -1616,10 +1616,23 @@ public class LibraryTreePanel extends JPanel {
 			return false;
 		}
 		if (i == JOptionPane.YES_OPTION) {
-			if (save() == null)
+			if ("temp".equals(getName())) {
+				setName("");
+				String path = browser.saveAs();
+				return path != null;
+			}
+			else if (save() == null)
 				return false;
-		} else
-			revert();
+		} else {// i == JOptionPane.NO_OPTION
+			if ("temp".equals(getName())) {
+				String tempPath = pathToRoot;
+				if (tempPath != null) {
+					File tempFile = new File(tempPath);
+					tempFile.delete();
+				}
+			}
+			else revert();
+		}
 		return true;
 	}
 

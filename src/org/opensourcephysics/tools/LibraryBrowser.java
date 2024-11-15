@@ -107,9 +107,9 @@ public class LibraryBrowser extends JPanel {
 
 	// static constants
 	@SuppressWarnings("javadoc")
-	public static final String TRACKER_LIBRARY = "https://physlets.org/tracker/library/tracker_library.xml"; //$NON-NLS-1$
+	public static final String TRACKER_LIBRARY = "https://opensourcephysics.github.io/resources/CAB/tracker_library.xml"; //$NON-NLS-1$
 	@SuppressWarnings("javadoc")
-	public static final String SHARED_LIBRARY = "https://physlets.org/tracker/library/shared_library.xml"; //$NON-NLS-1$
+	public static final String SHARED_LIBRARY = "https://opensourcephysics.github.io/resources/CAB/shared_library.xml"; //$NON-NLS-1$
 	protected static final String AND = " AND "; //$NON-NLS-1$
 	protected static final String OR = " OR "; //$NON-NLS-1$
 	protected static final String OPENING = "("; //$NON-NLS-1$
@@ -123,8 +123,8 @@ public class LibraryBrowser extends JPanel {
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
 	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
 	protected static final String WEB_EJS = "https://www.um.es/fem/wikis/runwebejs/?url=";
-	protected static final String TRACKER_ONLINE = "https://physlets.org/tracker/trackerJS/?j2sargs=";
-	protected static final String DATATOOL_ONLINE = "https://physlets.org/tracker/trackerJS/DataTool.html?j2sargs=";
+	protected static final String TRACKER_ONLINE = "https://opensourcephysics.github.io/tracker/trackerJS/?j2sargs=";
+	protected static final String DATATOOL_ONLINE = "https://opensourcephysics.github.io/tracker/trackerJS/DataTool.html?j2sargs=";
 	public static final String HINT_LOAD_RESOURCE = "LOAD";
 	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
@@ -794,6 +794,11 @@ public class LibraryBrowser extends JPanel {
 							if (treePanel == null)
 								break;
 							treePanel.setEditing(true);
+							treePanel.setChanged();
+							// new collection is saved in a temp xml file
+							treePanel.setName("temp");
+							String temp = ToolsRes.getString("LibraryBrowser.MenuItem.New");
+							treePanel.rootNode.setName(temp);
 							refreshGUI();
 							break;
 						}
@@ -1562,9 +1567,7 @@ public class LibraryBrowser extends JPanel {
 		newItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String path = createNewCollection();
-				library.addRecent(path, false);
-				refreshRecentMenu();
+				createNewCollection();
 			}
 		});
 		openItem = new JMenuItem();
@@ -2304,6 +2307,8 @@ public class LibraryBrowser extends JPanel {
 				String text = library.getNameMap().get(next);
 				if (text == null)
 					text = XML.getName(next);
+				if (text.contains("temp_"))
+					continue;
 				JMenuItem item = new JMenuItem(text);
 				item.setActionCommand(next);
 				item.setToolTipText(next);
@@ -2396,7 +2401,24 @@ public class LibraryBrowser extends JPanel {
 		LibraryTreePanel treePanel = getSelectedTreePanel();
 		if (treePanel == null)
 			return null;
-		String path = treePanel.save();
+		
+		String path = null;
+		if ("temp".equals(treePanel.getName())) {
+			treePanel.setName("");
+			String tempPath = treePanel.pathToRoot;
+			path = saveAs();
+			if (path != null && tempPath != null) {
+				File tempFile = new File(tempPath);
+				tempFile.delete();
+				library.addRecent(path, false);
+				refreshRecentMenu();
+			}
+		}
+		else {
+			path = treePanel.save();
+		}
+
+//		String path = treePanel.save();
 		refreshGUI();
 		return path;
 	}
@@ -3030,10 +3052,28 @@ public class LibraryBrowser extends JPanel {
 	 * @return the path to the new collection
 	 */
 	protected String createNewCollection() {
-		String title = ToolsRes.getString("LibraryBrowser.FileChooser.Title.SaveCollectionAs"); //$NON-NLS-1$
-		String path = getChooserSavePath(title);
-		if (path != null) {
+		// get default path to OSP folder 
+		String osppath = LibraryBrowser.getOSPPath();
+		String path = null;
+		if (osppath != null) {
+			// save a temp xml file
+			String name = "temp_";
+			path = osppath + name + "0.xml";
+			File file = new File(path);
+			if (file.exists()) {
+				int i = 1;
+				while (i < 100) {
+					path = osppath + name + i + ".xml";
+					file = new File(path);
+					if (!file.exists()) {
+						break;
+					}
+					i++;
+				}
+			}
+
 			LibraryCollection collection = new LibraryCollection(null);
+			
 			// save new collection
 			XMLControl control = new XMLControlElement(collection);
 			control.write(path);
@@ -3159,27 +3199,15 @@ public class LibraryBrowser extends JPanel {
 		if(res!=null) {
 			 imageCode = "<p align=\"center\"><img src=\"" + res.getURL() + "\"></p>"; //$NON-NLS-1$ //$NON-NLS-2$
 		}
-		//String imageCode = "<p align=\"center\"><img src=\"" + res.getURL() + "\"></p>"; //$NON-NLS-1$ //$NON-NLS-2$
-		String code = imageCode + "<h1>Open Source Physics Digital Library Browser</h1>" + //$NON-NLS-1$
-				"<p>The OSP Digital Library Browser enables you to browse, organize and access collections of digital library resources " //$NON-NLS-1$
-				+ "such as EJS models and Tracker experiments. Collections and resources may be on a local drive or remote server.</p>"
-				+ "<ul>"
-				+ "  <li>Open a collection by choosing from the <strong>Collections</strong> menu or entering a URL directly in the toolbar "
-				+ "as with a web browser.</li>"
-				+ "	 <li>Collections are organized and displayed in a tree. Each tree node is a resource or sub-collection. "
-				+ "Click a node to learn about the resource or double-click to download and/or open it in EJS or Tracker.</li>"
-				+ "	 <li>Build and organize your own local collection by clicking the <strong>Open Editor</strong> button. "
-				+ "Collections are stored as xml documents that contain references to the actual resource files. "
-				+ "For more information, see the Help menu.</li>"
-				+ "	 <li>Share your collections by uploading all files to the web or a local network. For more information, see the Help menu.</li>"
-				+ "</ul>" + "<h2>ComPADRE Digital Library</h2>"
-				+ "<p>The ComPADRE Pathway, a part of the National Science Digital Library, is a growing network of educational resource "
-				+ "collections supporting teachers and students in Physics and Astronomy. As a user you may explore collections designed to meet "
-				+ "your specific needs and help build the network by recommending resources, commenting on resources, and starting or joining "
-				+ "discussions. For more information, see &lt;<b><a href=\"https://www.compadre.org/osp/\">http://www.compadre.org/osp/</a></b>&gt;. "
-				+ "To recommend an OSP resource for ComPADRE, visit the Suggest a Resource page at &lt;<b><a href="
-				+ "\"https://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a></b>&gt;.&nbsp; "
-				+ "Contact the OSP Collection editor, Wolfgang Christian, for additional information.</p>";
+		
+		String code = imageCode + "<div style=\"font-family:'Verdana'\"><h1 align=\"center\">Open Source Physics Library Browser</h1>"
+				+ "<p>Use the OSP Library Browser to browse online collections of Tracker projects, EJS simulations and other learning resources.</p><ul> <li>Open a collection by choosing from the Collections menu or entering a URL directly in the toolbar as with a web browser.</li>"
+				+ "<li>Collections are organized and displayed in a tree. Each tree node is a resource or sub-collection. Click a node to learn about the resource or double-click to download and/or open it in Tracker, EJS, DataTool or your web browser.</li>"
+				+ "<li>To build your own collection choose File|New Collection. Add your own resources or copy and paste from other collections. Collections are saved as xml documents that contain references to the actual resource files. For more information, choose Help.</li>"
+				+ "</ul><p><strong>ComPADRE</strong> is a network of online resource collections and community web sites supporting physics education with content, tools, and expert advice. Open a ComPADRE collection by choosing from the Collections|ComPADRE Library menu."
+				+ "  You can help build the ComPADRE collection by reviewing resources, participating in discussions, and adding your own OSP resources. For more information, see <a href=\"https://www.compadre.org/osp/\">http://www.compadre.org/osp/</a>. "
+				+ "To recommend a resource for ComPADRE, visit <em>Suggest a Resource</em> at <a href=\"https://www.compadre.org/osp/items/suggest.cfm\">http://www.compadre.org/osp/items/suggest.cfm</a>. Contact Wolfgang Christian, the OSP Collection editor, for more information.</p>"
+				+ "</div>";
 		return code;
 	}
 
@@ -3397,7 +3425,7 @@ public class LibraryBrowser extends JPanel {
 							if (next.indexOf("_thumbnail") > -1) {
 								String thumb = XML.getName(next);
 								baseName = thumb.substring(0, thumb.indexOf("_thumbnail"));
-								resource.setName(baseName); // pig do I want this?
+								resource.setName(baseName); // do we want this?
 								break;
 							}
 						}
