@@ -121,10 +121,11 @@ public class LibraryBrowser extends JPanel {
 	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
-	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
+//	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
+	protected static final String WEB_SEARCH_BASE_PATH = "https://opensourcephysics.github.io/resources/Search/";
 	protected static final String WEB_EJS = "https://www.um.es/fem/wikis/runwebejs/?url=";
-	protected static final String TRACKER_ONLINE = "https://opensourcephysics.github.io/tracker/trackerJS/?j2sargs=";
-	protected static final String DATATOOL_ONLINE = "https://opensourcephysics.github.io/tracker/trackerJS/DataTool.html?j2sargs=";
+	protected static final String TRACKER_ONLINE = "https://opensourcephysics.github.io/tracker-online/?j2sargs=";
+	protected static final String DATATOOL_ONLINE = "https://opensourcephysics.github.io/tracker-online/DataTool.html?j2sargs=";
 	public static final String HINT_LOAD_RESOURCE = "LOAD";
 	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
@@ -2612,10 +2613,11 @@ public class LibraryBrowser extends JPanel {
 //		if (!isSearchMapLoaded) {
 //			chooseSearchTargets();
 //		}
-		
+		boolean pig = false;
+
 		loadSearchPathMap();
 		// add local search cache files first when running in Java
-		if (!OSPRuntime.isJS) {	
+		if (pig && !OSPRuntime.isJS) {	
 			List<File> cacheFiles = ResourceLoader.getSearchFileList();
 			for (String nextPath: searchPathMap.values()) {
 				File cacheFile = ResourceLoader.getSearchCacheFile(nextPath);
@@ -2642,11 +2644,13 @@ public class LibraryBrowser extends JPanel {
 				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
 				File f = ResourceLoader.getSearchCacheFile(path);
 				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
+				System.out.println("pig checking "+searchPath);
 				control = new XMLControlElement(searchPath);
 				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
 					collection.collectionPath = path;
 					addSearchResource(collection);
+					System.out.println("piggggggggggg woohoo found "+searchPath);
 				}
 			}
 		}
