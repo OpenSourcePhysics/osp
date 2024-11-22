@@ -2613,11 +2613,10 @@ public class LibraryBrowser extends JPanel {
 //		if (!isSearchMapLoaded) {
 //			chooseSearchTargets();
 //		}
-		boolean pig = false;
 
 		loadSearchPathMap();
 		// add local search cache files first when running in Java
-		if (pig && !OSPRuntime.isJS) {	
+		if (!OSPRuntime.isJS) {	
 			List<File> cacheFiles = ResourceLoader.getSearchFileList();
 			for (String nextPath: searchPathMap.values()) {
 				File cacheFile = ResourceLoader.getSearchCacheFile(nextPath);
@@ -2644,13 +2643,11 @@ public class LibraryBrowser extends JPanel {
 				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
 				File f = ResourceLoader.getSearchCacheFile(path);
 				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
-				System.out.println("pig checking "+searchPath);
 				control = new XMLControlElement(searchPath);
 				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
 					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
 					collection.collectionPath = path;
 					addSearchResource(collection);
-					System.out.println("piggggggggggg woohoo found "+searchPath);
 				}
 			}
 		}
