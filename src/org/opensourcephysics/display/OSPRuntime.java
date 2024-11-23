@@ -453,7 +453,9 @@ public class OSPRuntime {
 			/** @j2sNative /Macintosh/.test(navigator.userAgent) && 'ontouchend' in document || */
 			false;
 	
-	// browser Navigator parameters added by WC
+	public static boolean hasKeyboard = !cssCursor;
+
+//  browser Navigator parameters added by WC
 //	private static boolean isOSX=false;
 //	private static boolean isiOS=false;
 //	private static boolean isiPad=false;
@@ -657,7 +659,8 @@ public class OSPRuntime {
 
 	public final static int WEB_CONNECTED_TEST_JAVA_TIMEOUT_MS = 1000;
 	public final static int WEB_CONNECTED_TEST_JS_TIMEOUT_MS = 1000;
-	public final static String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify";
+//	public final static String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify";
+	public final static String WEB_CONNECTED_TEST_URL = "https://opensourcephysics.github.io/tracker-website/css/library.css";
 
 	// BH test option public final static String WEB_CONNECTED_TEST_URL =
 	// "https://cactus.nci.nih.gov/chemical/structure/caffeine/file?format=sdf&get3d=true";
