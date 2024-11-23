@@ -456,7 +456,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					} else {
 						long t2 = System.currentTimeMillis();
 						byte[] b = bytes;
-						OSPRuntime.jsutil.getMediaInfoAsync(bytes, "Video", "/core/_ES6/mediainfo.js", new Consumer<Map<String, Object>>() {
+						//Underscore removed from ES6 by WC
+						OSPRuntime.jsutil.getMediaInfoAsync(bytes, "Video", "/core/ES6/mediainfo.js", new Consumer<Map<String, Object>>() {
 
 							@Override
 							public void accept(Map<String, Object> info) {
