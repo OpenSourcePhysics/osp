@@ -30,7 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -81,6 +80,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
 import org.opensourcephysics.controls.ListChooser;
 import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
@@ -118,7 +118,7 @@ public class LibraryBrowser extends JPanel {
 	protected static final String MY_COLLECTION_NAME = "my_collection.xml"; //$NON-NLS-1$
 	protected static final String RECENT_COLLECTION_NAME = "recent_collection.xml"; //$NON-NLS-1$
 	protected static final String LIBRARY_HELP_NAME = "library_browser_help.html"; //$NON-NLS-1$
-	protected static final String LIBRARY_HELP_BASE = "http://www.opensourcephysics.org/online_help/tools/"; //$NON-NLS-1$
+	protected static final String LIBRARY_HELP_ONLINE = "https://opensourcephysics.github.io/tracker-website/help/library_browser.html"; //$NON-NLS-1$
 	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
 	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
 //	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
@@ -3168,22 +3168,25 @@ public class LibraryBrowser extends JPanel {
 			firePropertyChange("help", null, null); //$NON-NLS-1$
 			return;
 		}
-		String helpPath = XML.getResolvedPath(LIBRARY_HELP_NAME, LIBRARY_HELP_BASE);
-		if (ResourceLoader.getResource(helpPath) == null) {
+		String helpPath = LIBRARY_HELP_ONLINE;
+		if (ResourceLoader.getResource(helpPath) != null) {
+			OSPDesktop.displayURL(helpPath); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		else {
 			String classBase = "/org/opensourcephysics/resources/tools/html/"; //$NON-NLS-1$
 			helpPath = XML.getResolvedPath(LIBRARY_HELP_NAME, classBase);
+			if ((helpFrame == null) || !helpPath.equals(helpFrame.getTitle())) {
+				helpFrame = new TextFrame(helpPath);
+				helpFrame.enableHyperlinks();
+				helpFrame.setSize(1000, 700);
+				// center on the screen
+				Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+				int x = (dim.width - helpFrame.getBounds().width) / 2;
+				int y = (dim.height - helpFrame.getBounds().height) / 2;
+				helpFrame.setLocation(x, y);
+			}
+			helpFrame.setVisible(true);
 		}
-		if ((helpFrame == null) || !helpPath.equals(helpFrame.getTitle())) {
-			helpFrame = new TextFrame(helpPath);
-			helpFrame.enableHyperlinks();
-			helpFrame.setSize(760, 560);
-			// center on the screen
-			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-			int x = (dim.width - helpFrame.getBounds().width) / 2;
-			int y = (dim.height - helpFrame.getBounds().height) / 2;
-			helpFrame.setLocation(x, y);
-		}
-		helpFrame.setVisible(true);
 	}
 
 	/**
