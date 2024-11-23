@@ -56,7 +56,8 @@ public class CursorTest2 {
 
 
 	protected static void jsCustomCursor(String action, MouseEvent e) {
-		System.out.println(action + " " + e);
+		if (action != "moved")
+			System.out.println(action + " "  + e.getWhen() + " " + e);
 		/**
 		 * @j2sNative 
 		 * switch (action) { 
@@ -131,6 +132,7 @@ public class CursorTest2 {
 					return;
 				}
 				// flash blue circle
+				System.out.print("clickcount=" + e.getClickCount());
 				clickToggle = !clickToggle;
 				drawingPanel.repaint();
 			}
