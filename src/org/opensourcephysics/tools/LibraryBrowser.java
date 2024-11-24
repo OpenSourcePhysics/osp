@@ -304,6 +304,15 @@ public class LibraryBrowser extends JPanel {
 			}
 			frame.pack();
 			if (newFrame) {
+				// if isJS, reduce the browser preferred height
+				if (OSPRuntime.isJS) {
+					int dh = frame.getHeight() - browser.getHeight();
+					double factor = 1 + (FontSizer.getFactor() - 1) * 0.5;
+					int w = (int) (factor * wide);
+					int h = (int) (factor * high);
+					browser.setPreferredSize(new Dimension(w, h - dh));
+					frame.pack();
+				}
 				// center on screen
 				Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 				int x = (dim.width - frame.getBounds().width) / 2;
