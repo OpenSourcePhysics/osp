@@ -877,6 +877,8 @@ swingjs/JSImage.js
 swingjs/JSImagekit.js
 swingjs/JSKeyEvent.js
 swingjs/JSMenuManager.js
+swingjs/JSMouse.js
+swingjs/JSMouse2.js
 swingjs/JSScreenDevice.js
 swingjs/JSThreadGroup.js
 swingjs/JSToolkit.js
