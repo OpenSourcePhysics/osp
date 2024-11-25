@@ -95,6 +95,7 @@ import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
+import javajs.async.AsyncDialog;
 import javajs.async.AsyncFileChooser;
 
 /**
@@ -1806,6 +1807,19 @@ public class LibraryBrowser extends JPanel {
 			return;
 		/** @j2sNative debugger; */
 		String target = record.getAbsoluteTarget();
+		
+		// check for missing web targets
+		if (ResourceLoader.isHTTP(target) && !existsOnWeb(target)) {	
+			new AsyncDialog().showMessageDialog(frame, 
+					ToolsRes.getString("LibraryBrowser.Dialog.NoResources.File")
+					+ " \"" + XML.getName(target) + "\" "
+					+ ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), 
+					ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Title"), 
+					JOptionPane.WARNING_MESSAGE, 
+					(e) -> {});
+			return;
+		}
+		
 		if (target != null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".html") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".htm")
