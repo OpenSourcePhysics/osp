@@ -31,6 +31,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -96,6 +97,7 @@ import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
+import javajs.async.AsyncDialog;
 import javajs.async.AsyncFileChooser;
 
 /**
@@ -1808,6 +1810,19 @@ public class LibraryBrowser extends JPanel {
 			return;
 		/** @j2sNative debugger; */
 		String target = record.getAbsoluteTarget();
+		
+		// check for missing web targets
+		if (ResourceLoader.isHTTP(target) && !existsOnWeb(target)) {	
+			new AsyncDialog().showMessageDialog(frame, 
+					ToolsRes.getString("LibraryBrowser.Dialog.NoResources.File")
+					+ " \"" + XML.getName(target) + "\" "
+					+ ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Message"), 
+					ToolsRes.getString("LibraryBrowser.Dialog.NoResources.Title"), 
+					JOptionPane.WARNING_MESSAGE, 
+					(e) -> {});
+			return;
+		}
+		
 		if (target != null && (target.toLowerCase().endsWith(".pdf") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".html") //$NON-NLS-1$
 				|| target.toLowerCase().endsWith(".htm")
@@ -2505,6 +2520,7 @@ public class LibraryBrowser extends JPanel {
 	}
 	
 	public static boolean existsOnWeb(String URLPath){
+		if (true) return true; // pig
     try {
       HttpURLConnection.setFollowRedirects(false);
       // note : you may also need
@@ -2512,7 +2528,8 @@ public class LibraryBrowser extends JPanel {
       HttpURLConnection con =
          (HttpURLConnection) new URL(URLPath).openConnection();
       con.setRequestMethod("HEAD");
-      return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+      int code = con.getResponseCode();
+      return (code == HttpURLConnection.HTTP_OK);
     }
     catch (Exception e) {
        e.printStackTrace();
