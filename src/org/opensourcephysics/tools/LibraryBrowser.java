@@ -12,7 +12,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -31,7 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -191,7 +189,7 @@ public class LibraryBrowser extends JPanel {
 	protected JMenu fileMenu, recentMenu, collectionsMenu, manageMenu, helpMenu;
 	protected JMenuItem newItem, openItem, saveItem, saveAsItem, closeItem, closeAllItem, exitItem, deleteItem,
 			collectionsItem, searchItem, cacheItem, aboutItem, logItem, helpItem;
-	protected JButton commandButton, editButton, refreshButton, downloadButton, searchTargetButton;
+	protected JButton openButton, editButton, refreshButton, downloadButton, searchTargetButton;
 	protected ActionListener loadCollectionAction;
 	protected boolean exitOnClose;
 	protected JTabbedPane tabbedPane;
@@ -1229,7 +1227,7 @@ public class LibraryBrowser extends JPanel {
 			public void insertUpdate(DocumentEvent e) {
 				String text = commandField.getText();
 				boolean enable = !"".equals(text);
-				commandButton.setEnabled(enable); //$NON-NLS-1$
+				openButton.setEnabled(enable); //$NON-NLS-1$
 //				downloadButton.setEnabled(enable && ResourceLoader.isHTTP(text)); //$NON-NLS-1$
 				downloadButton.setEnabled(enable);
 				textChanged = keyPressed;
@@ -1239,7 +1237,7 @@ public class LibraryBrowser extends JPanel {
 					LibraryTreeNode node = treePanel.getSelectedNode();
 					if (node != null && node.isRoot() && node.record instanceof LibraryCollection
 							&& treePanel.pathToRoot.equals(text)) {
-						commandButton.setEnabled(false);
+						openButton.setEnabled(false);
 					  downloadButton.setEnabled(false);
 					}
 				} else {
@@ -1251,7 +1249,7 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				boolean enable = !"".equals(commandField.getText());
-				commandButton.setEnabled(enable); //$NON-NLS-1$
+				openButton.setEnabled(enable); //$NON-NLS-1$
 				downloadButton.setEnabled(enable); //$NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
@@ -1291,7 +1289,7 @@ public class LibraryBrowser extends JPanel {
 			}
 		});
 
-		commandButton = new OSPButton(commandAction);
+		openButton = new OSPButton(commandAction);
 		
 		downloadButton = new OSPButton(downloadAction);
 		downloadButton.setIcon(downloadIcon);
@@ -1559,7 +1557,7 @@ public class LibraryBrowser extends JPanel {
 		toolbar.setBorder(BorderFactory.createCompoundBorder(etched, empty));
 		toolbar.add(commandLabel);
 		toolbar.add(commandField);
-		toolbar.add(commandButton);
+		toolbar.add(openButton);
 		toolbar.add(downloadButton);
 		toolbar.addSeparator();
 		toolbar.add(searchTargetButton);
@@ -1758,6 +1756,22 @@ public class LibraryBrowser extends JPanel {
 	}
 	
 
+	protected void flashOpen() {
+//		if (!OSPRuntime.isJS)
+//			return;
+		openButton.setForeground(Color.yellow);
+		Timer t = new javax.swing.Timer(500, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openButton.setForeground(Color.black);
+			}
+			
+		});
+		t.setRepeats(false);
+		t.start();
+	}
+
 	/**
 	 * Sets a message in the message label.
 	 * 
@@ -1768,7 +1782,7 @@ public class LibraryBrowser extends JPanel {
 		boolean isEmpty = (message == null || "".equals(message.trim()));
 		messageButton.setText(isEmpty? " ": message);
 		messageButton.setBackground(color != null? color: Color.WHITE);
-		messageButton.setFont(color != null? commandButton.getFont(): commandField.getFont());
+		messageButton.setFont(color != null? openButton.getFont(): commandField.getFont());
 		if (color != null)
 			messageButton.requestFocusInWindow();
 	}
@@ -2097,7 +2111,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	protected void doCommand() {
-		if (!commandButton.isEnabled())
+		if (!openButton.isEnabled())
 			return;
 		commandField.setBackground(Color.white);
 		commandField.setForeground(LibraryTreePanel.defaultForeground);
@@ -2190,7 +2204,7 @@ public class LibraryBrowser extends JPanel {
 	 */
 	public void setComandButtonEnabled(boolean enabled) {
 		String text = commandField.getText();
-		commandButton.setEnabled(enabled && !"".equals(text)); //$NON-NLS-1$
+		openButton.setEnabled(enabled && !"".equals(text)); //$NON-NLS-1$
 	}
 
 	/**
@@ -2239,7 +2253,7 @@ public class LibraryBrowser extends JPanel {
 			logItem.setText(ToolsRes.getString("MenuItem.Log")); //$NON-NLS-1$
 			aboutItem.setText(ToolsRes.getString("MenuItem.About")); //$NON-NLS-1$
 			commandLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Target")); //$NON-NLS-1$
-			commandButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Load")); //$NON-NLS-1$
+			openButton.setText(ToolsRes.getString("LibraryTreePanel.Button.Load")); //$NON-NLS-1$
 			commandField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Command.Tooltip")); //$NON-NLS-1$
 			searchLabel.setText(ToolsRes.getString("LibraryBrowser.Label.Search")+":"); //$NON-NLS-1$
 			searchField.setToolTipText(ToolsRes.getString("LibraryBrowser.Field.Search.Tooltip")); //$NON-NLS-1$
@@ -2288,7 +2302,7 @@ public class LibraryBrowser extends JPanel {
 			editButton.setEnabled(false);
 			refreshButton.setEnabled(false);
 			commandField.setText(null);
-			commandButton.setEnabled(false);
+			openButton.setEnabled(false);
 			downloadButton.setEnabled(false);
 			saveAsItem.setEnabled(false);
 		}

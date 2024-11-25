@@ -434,7 +434,10 @@ public class LibraryTreePanel extends JPanel {
 		browser.commandField.setForeground(available ? defaultForeground : darkRed);
 		browser.commandField.setCaretPosition(0);
 		if (node.isRoot())
-			browser.commandButton.setEnabled(false);
+			browser.openButton.setEnabled(false);
+		else if (available) {
+				browser.flashOpen();
+		}
 	}
 
 	private void showEditorData(LibraryTreeNode node, boolean isCollection) {
@@ -757,9 +760,11 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
-				} else if (isLoadEvent(e, node)) {
-					// to LibraryBrowser					
+				} else {
+					checkLoadEvent(e, node,()->{
+					// asynchronously to LibraryBrowser					
 					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
+				});
 				}
 			}
 
@@ -767,21 +772,39 @@ public class LibraryTreePanel extends JPanel {
 			 * BH allowing for single-click on icon. Double clicks are difficult to handle.
 			 * 
 			 * 
-			 * @param e a MouseEvent
+			 * @param e    a MouseEvent
 			 * @param node a LibraryTreeNode
 			 * @return true if event should load the node
 			 */
-			private boolean isLoadEvent(MouseEvent e, LibraryTreeNode node) {
+			private void checkLoadEvent(MouseEvent e, LibraryTreeNode node, Runnable load) {
 				String target = node.getAbsoluteTarget();
 				if (target == null)
-					return false;
-				if (LibraryComPADRE.isComPADREPath(target))
-					return true;
+					return;
+				if (LibraryComPADRE.isComPADREPath(target)) {
+					load.run();
+					return;
+				}
+
 				// BH 2022.12.02 but #143 was looking at target.id with wrong id
-				// Note that JavaScript has trouble detecting the double-click in this case. 
-				// I don't remember why that is. 
-				return (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS" || */
-					e.getClickCount() == 2);
+				// Note that JavaScript has trouble detecting the double-click in this case.
+				// I don't remember why that is.
+				if (e.getClickCount() == 2) {
+					load.run();
+					return;
+				}
+				boolean doNotify = (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS"|| */ e.getX() < 75);
+				if (doNotify) {
+					javajs.async.AsyncDialog.showYesNoAsync(LibraryBrowser.frame,
+							"Do you want to open " + node.getName() + "?", "Open Project", new ActionListener() {
+
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									if (e.getID() == JOptionPane.YES_OPTION)
+										load.run();
+								}
+
+							});
+				}
 			}
 		};
 		// create toolbar and buttons
