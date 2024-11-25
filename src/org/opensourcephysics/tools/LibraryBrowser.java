@@ -1808,9 +1808,11 @@ public class LibraryBrowser extends JPanel {
 			return;
 		/** @j2sNative debugger; */
 		String target = record.getAbsoluteTarget();
+		String uriPath = ResourceLoader.getURIPath(target);
 		
 		// check for missing web targets
-		if (ResourceLoader.isHTTP(target) && !existsOnWeb(target)) {	
+		if (ResourceLoader.isHTTP(uriPath) 
+				&& !ResourceLoader.isURLAvailable(uriPath)) {	
 			new AsyncDialog().showMessageDialog(frame, 
 					ToolsRes.getString("LibraryBrowser.Dialog.NoResources.File")
 					+ " \"" + XML.getName(target) + "\" "
@@ -1826,15 +1828,14 @@ public class LibraryBrowser extends JPanel {
 				|| target.toLowerCase().endsWith(".htm")
 				|| LibraryResource.URL_TYPE.equals(record.getType()))) { //$NON-NLS-1$
 //			target = XML.getResolvedPath(target, record.getBasePath());
-			target = ResourceLoader.getURIPath(target);
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			OSPDesktop.displayURL(target);
+			OSPDesktop.displayURL(uriPath);
 			setCursor(Cursor.getDefaultCursor());
 			return;
 		}
 		if (record instanceof LibraryCollection && target != null 
 				&& target.toLowerCase().endsWith(".xml")) {
-			open(record.getAbsoluteTarget());
+			open(target);
 		}
 		// fire the event to TFrame and other listeners
 		PropertyChangeListener[] listeners = getPropertyChangeListeners(PROPERTY_LIBRARY_TARGET);
@@ -1847,10 +1848,9 @@ public class LibraryBrowser extends JPanel {
 		}
 		else {
 			// no listeners, so this is a stand-alone library browser
-			String absTarget = record.getAbsoluteTarget();
 			String type = record.getType();
 			if (LibraryResource.UNKNOWN_TYPE.equals(type)) {
-				type = LibraryResource.getTypeFromPath(absTarget, null);
+				type = LibraryResource.getTypeFromPath(target, null);
 			}
 			
 			switch (type) {
@@ -1870,7 +1870,7 @@ public class LibraryBrowser extends JPanel {
 							cmd.add(XML.forwardSlash(jreFile.getAbsolutePath()) + "/bin/java");
 							cmd.add("-jar"); //$NON-NLS-1$
 							cmd.add(trackerHome + "/tracker_starter.jar");
-							cmd.add(absTarget);
+							cmd.add(target);
 
 							// prepare to execute the command
 							launched = true;
@@ -1891,7 +1891,7 @@ public class LibraryBrowser extends JPanel {
 				}
 				if (!launched) {
 					try {
-						String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+						String encodedUrl = URLEncoder.encode(target, StandardCharsets.UTF_8.toString());
 						//OSPDesktop.displayURL(TRACKER_ONLINE + "\""+encodedUrl+"\"");
 						OSPDesktop.displayURL(TRACKER_ONLINE +encodedUrl);
 					} catch (UnsupportedEncodingException e) {
@@ -1901,12 +1901,12 @@ public class LibraryBrowser extends JPanel {
 				break;
 			case LibraryResource.EJS_TYPE:
 				try {
-					String tar = absTarget;
+					String tar = target;
 					String name = "&name=" + record.getName();
-					int n = absTarget.indexOf("&name=");
+					int n = target.indexOf("&name=");
 					if (n > 0) {
-						name  = absTarget.substring(n);
-						tar = absTarget.substring(0, n);
+						name  = target.substring(n);
+						tar = target.substring(0, n);
 					}
 					
 					String encodedUrl = URLEncoder.encode(tar, StandardCharsets.UTF_8.toString());
@@ -1919,7 +1919,7 @@ public class LibraryBrowser extends JPanel {
 				break;
 			case LibraryResource.DATA_TYPE:				
 				try {
-					String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+					String encodedUrl = URLEncoder.encode(target, StandardCharsets.UTF_8.toString());
 					OSPDesktop.displayURL(DATATOOL_ONLINE + encodedUrl);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
@@ -1927,7 +1927,7 @@ public class LibraryBrowser extends JPanel {
 				break;
 			case LibraryResource.URL_TYPE:
 				try {
-					String encodedUrl = URLEncoder.encode(absTarget, StandardCharsets.UTF_8.toString());
+					String encodedUrl = URLEncoder.encode(target, StandardCharsets.UTF_8.toString());
 					OSPDesktop.displayURL(DATATOOL_ONLINE + encodedUrl);
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
@@ -2516,24 +2516,6 @@ public class LibraryBrowser extends JPanel {
 			searchResourceMap.put(s, resource);
 		}
 	}
-	
-	public static boolean existsOnWeb(String URLPath){
-		if (true) return true; // pig
-    try {
-      HttpURLConnection.setFollowRedirects(false);
-      // note : you may also need
-      //        HttpURLConnection.setInstanceFollowRedirects(false)
-      HttpURLConnection con =
-         (HttpURLConnection) new URL(URLPath).openConnection();
-      con.setRequestMethod("HEAD");
-      int code = con.getResponseCode();
-      return (code == HttpURLConnection.HTTP_OK);
-    }
-    catch (Exception e) {
-       e.printStackTrace();
-       return false;
-    }
-  }  
 	
 	protected TreeMap<String, String> getSearchPathMap() {
 		loadSearchPathMap();
