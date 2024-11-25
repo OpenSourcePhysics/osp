@@ -17,6 +17,7 @@ public class CursorTest2 {
 	// begin JavaScript methods
 	
 	static  {
+
 		/**
 		 * @j2sNative
 		 * 
