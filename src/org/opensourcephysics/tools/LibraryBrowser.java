@@ -12,6 +12,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -1212,11 +1213,12 @@ public class LibraryBrowser extends JPanel {
 		commandLabel = new JLabel();
 		commandLabel.setAlignmentX(CENTER_ALIGNMENT);
 		commandLabel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 2));
-		commandField = new JTextField() {
+		commandField = new JTextField() {	
 			@Override
 			public Dimension getPreferredSize() {
 				Dimension dim = super.getPreferredSize();
-				dim.width = Math.max(dim.width, 400);
+//BH why this? AWT will handle the width
+//				dim.width = Math.max(dim.width, 400);
 				return dim;
 			}
 		};
