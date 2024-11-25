@@ -422,7 +422,9 @@ public class LibraryTreePanel extends JPanel {
 		boolean available = node.isRoot();
 		if (path != null && !available) {
 			if (ResourceLoader.isHTTP(path)) {
-				available = browser.isWebConnected(null);
+				String uriPath = ResourceLoader.getURIPath(path);
+				available = ResourceLoader.isURLAvailable(uriPath);
+//				available = browser.isWebConnected(null);
 				if (!available) {
 					available = (isCollection ? ResourceLoader.getSearchCacheFile(path)
 							: ResourceLoader.getOSPCacheFile(path, node.record.getProperty("download_filename"))).exists();
