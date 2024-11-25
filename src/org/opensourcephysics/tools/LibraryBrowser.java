@@ -30,6 +30,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -2517,6 +2518,7 @@ public class LibraryBrowser extends JPanel {
 	}
 	
 	public static boolean existsOnWeb(String URLPath){
+		if (true) return true; // pig
     try {
       HttpURLConnection.setFollowRedirects(false);
       // note : you may also need
@@ -2524,7 +2526,8 @@ public class LibraryBrowser extends JPanel {
       HttpURLConnection con =
          (HttpURLConnection) new URL(URLPath).openConnection();
       con.setRequestMethod("HEAD");
-      return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+      int code = con.getResponseCode();
+      return (code == HttpURLConnection.HTTP_OK);
     }
     catch (Exception e) {
        e.printStackTrace();
