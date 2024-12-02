@@ -824,11 +824,7 @@ public class LibraryTreePanel extends JPanel {
 					}
 				};
 				
-				if (OSPRuntime.isJS) {
-					r.run();
-				} else {
-					OSPRuntime.setTimeout("loadEvent", 800, true, r);
-				}
+				OSPRuntime.setTimeout("loadEvent", 800, true, r);
 			}
 		};
 
