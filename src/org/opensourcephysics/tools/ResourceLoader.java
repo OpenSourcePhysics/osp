@@ -3269,7 +3269,10 @@ public class ResourceLoader {
 			}
 			Path path = f.toPath();
 			Files.createDirectories(path.getParent());
-			Files.write(path, getURLContents(new URL(getURIPath(webPath))));
+			byte[] bytes = getURLContents(new URL(getURIPath(webPath)), false);
+			if (bytes == null)
+				return;
+			Files.write(path, bytes);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

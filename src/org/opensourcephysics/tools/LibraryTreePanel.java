@@ -185,10 +185,11 @@ public class LibraryTreePanel extends JPanel {
 	protected MouseAdapter treeMouseListener, convertPathMouseListener;
 	protected TreeSelectionListener treeSelectionListener;
 	protected XMLControl pasteControl;
-	protected boolean isEditing, isChanged, isXMLPath, ignoreChanges;
+	protected boolean isEditing, isChanged, isXMLPath, ignoreChanges, launchLater;
 	protected XMLControl revertControl;
 	protected int typeFieldWidth;
 	protected String command;
+	protected TreePath prevTreePath;
 	protected Metadata emptyMetadata = new Metadata();
 	protected MetadataLoader metadataLoader;
 	protected Set<EntryField> entryFields = new HashSet<EntryField>();
@@ -736,7 +737,7 @@ public class LibraryTreePanel extends JPanel {
 		treeSelectionListener = new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				//System.out.println("LibraryTreePanel.selection listener " + e);
+				prevTreePath = e.getOldLeadSelectionPath();
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
 				LibraryTreeNode node = getSelectedNode();
@@ -762,11 +763,14 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
-				} else {
+				} else if (prevTreePath.equals(path)){
+					
 					checkLoadEvent(e, node,()->{
-					// asynchronously to LibraryBrowser					
-					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
-				});
+						// asynchronously to LibraryBrowser					
+						firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
+					});
+				} else {
+					prevTreePath = path;
 				}
 			}
 
@@ -779,6 +783,7 @@ public class LibraryTreePanel extends JPanel {
 			 * @return true if event should load the node
 			 */
 			private void checkLoadEvent(MouseEvent e, LibraryTreeNode node, Runnable load) {
+				
 				String target = node.getAbsoluteTarget();
 				if (target == null)
 					return;
@@ -790,25 +795,43 @@ public class LibraryTreePanel extends JPanel {
 				// BH 2022.12.02 but #143 was looking at target.id with wrong id
 				// Note that JavaScript has trouble detecting the double-click in this case.
 				// I don't remember why that is.
-				if (e.getClickCount() == 2) {
+				int n = e.getClickCount();
+				launchLater = n == 1;
+				if (n == 2) {
+					launchLater = false;
 					load.run();
 					return;
 				}
-				boolean doNotify = (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS"|| */ e.getX() < 75);
-				if (doNotify) {
-					javajs.async.AsyncDialog.showYesNoAsync(LibraryBrowser.frame,
-							"Do you want to open " + node.getName() + "?", "Open Project", new ActionListener() {
-
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									if (e.getID() == JOptionPane.YES_OPTION)
-										load.run();
-								}
-
-							});
+				
+				Runnable r = new Runnable() {
+					@Override
+					public void run() {
+				    // previously used by BH
+//				  boolean doNotify = (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS"|| */ e.getX() < 75);
+						if (launchLater) {
+							javajs.async.AsyncDialog.showYesNoAsync(LibraryBrowser.frame,
+									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Message")
+									+ " \"" + node.getName() + "\"?", 
+									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Title"), 
+									new ActionListener() {
+										@Override
+										public void actionPerformed(ActionEvent e) {
+											if (e.getID() == JOptionPane.YES_OPTION)
+												load.run();
+										}
+									});
+						}					
+					}
+				};
+				
+				if (OSPRuntime.isJS) {
+					r.run();
+				} else {
+					OSPRuntime.setTimeout("loadEvent", 800, true, r);
 				}
 			}
 		};
+
 		// create toolbar and buttons
 		addCollectionButton = new JButton(addCollectionAction);
 		addResourceButton = new JButton(addResourceAction);
