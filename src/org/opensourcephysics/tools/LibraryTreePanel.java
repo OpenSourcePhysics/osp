@@ -763,7 +763,7 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
-				} else if (prevTreePath.equals(path)){
+				} else if (path.equals(prevTreePath)){
 					
 					checkLoadEvent(e, node,()->{
 						// asynchronously to LibraryBrowser					
