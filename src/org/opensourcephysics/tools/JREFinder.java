@@ -167,11 +167,6 @@ public class JREFinder {
 							map.put(f.getName(), f);
 					}
 					if (!map.isEmpty()) {
-						String pig = "";
-						for (String s: map.keySet()) {
-							pig += s + ", ";
-						}
-						OSPLog.warning(pig);
 						// return first JRE in map
 						String s = map.keySet().iterator().next();
 						return map.get(s);
