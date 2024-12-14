@@ -167,6 +167,11 @@ public class JREFinder {
 							map.put(f.getName(), f);
 					}
 					if (!map.isEmpty()) {
+						String pig = "";
+						for (String s: map.keySet()) {
+							pig += s + ", ";
+						}
+						OSPLog.warning(pig);
 						// return first JRE in map
 						String s = map.keySet().iterator().next();
 						return map.get(s);
@@ -234,6 +239,9 @@ public class JREFinder {
 			try {
 				// search for bundled jre
 				String trackerhome = System.getenv("TRACKER_HOME"); //$NON-NLS-1$
+				if (trackerhome == null) {
+					trackerhome = (String)OSPRuntime.getPreference("TRACKER_HOME");
+				}
 				if (trackerhome != null) {
 					File file = new File(trackerhome);
 					if (file.exists()) {
