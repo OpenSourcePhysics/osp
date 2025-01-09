@@ -1880,7 +1880,7 @@ public class LibraryBrowser extends JPanel {
 					// launch local Tracker
 					try {
 						JREFinder jreFinder = JREFinder.getFinder();
-						File jreFile = jreFinder.getDefaultJRE(64, trackerHome, true);
+						File jreFile = jreFinder.getDefaultJRE(64, trackerHome, true, "OpenJDK");
 						if (jreFile != null) {
 							final ArrayList<String> cmd = new ArrayList<String>();
 							cmd.add(XML.forwardSlash(jreFile.getAbsolutePath()) + "/bin/java");
