@@ -465,7 +465,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	 * @param looping <code>true</code> to turn looping on
 	 */
 	public void setLooping(boolean looping) {
-		clipControl.setLooping(looping);
+		if (isEnabled())
+			clipControl.setLooping(looping);
 	}
 
 	/**
@@ -712,6 +713,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
+		rateSpinner.setEnabled(enabled);
+		slider.setEnabled(enabled);
 		disabled = !enabled;
 	}
 
@@ -1576,6 +1579,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
 	protected void updatePlayButtonsPosted(boolean playing) {
 		//updatePosted = false;
+		if (getVideoClip() == null) return;
 		int stepCount = getVideoClip().getStepCount();
 		boolean canPlay = stepCount > 1;
 		playButton.setEnabled(canPlay && (playing || getStepNumber() < stepCount - 1));
