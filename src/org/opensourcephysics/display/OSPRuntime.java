@@ -94,7 +94,7 @@ import swingjs.api.JSUtilI;
 public class OSPRuntime {
 
 	public static final String VERSION = "6.2.1"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "9 Jan 2025"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "15 Jan 2025"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -2421,6 +2421,6 @@ public class OSPRuntime {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2025 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

@@ -145,11 +145,11 @@ public class JREFinder {
 	 * @param vmBitness the bitness desired
 	 * @param path      the first path to search--if found, return as default
 	 * @param searchAll true to search paths other than the specified one
-	 * @param preferred preferred JRE file name prefix. May be null.
+	 * @param prefix preferred prefix on JRE file name. May be null.
 	 * @return the default JRE directory, or null if none found
 	 */
 	public File getDefaultJRE(int vmBitness, String path, 
-			boolean searchAll, String preferred) {
+			boolean searchAll, String prefix) {
 		// first look in path
 		if (path != null) {
 			File dir = new File(path);
@@ -170,12 +170,12 @@ public class JREFinder {
 					if (!map.isEmpty()) {
 						// if preferred != null, return LAST jre that starts with preferred
 						// since it should be the latest version (typical: "OpenJDK-21.0.5-jre")
-						if (preferred != null) {
+						if (prefix != null) {
 							String s = null;
 							Iterator<String> it = map.keySet().iterator();
 							while (it.hasNext()) {
 								String next = it.next();
-								if (next.startsWith(preferred))
+								if (next.startsWith(prefix))
 									s = next;
 							}
 							if (s != null)
