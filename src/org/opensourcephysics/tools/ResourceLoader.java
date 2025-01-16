@@ -155,23 +155,23 @@ public class ResourceLoader {
 
 
 	static {
-		String url = OSPRuntime.WEB_CONNECTED_TEST_URL;
-		int ms = OSPRuntime.WEB_CONNECTED_TEST_JS_TIMEOUT_MS;
-		System.out.println("ResourceLoader checking for connection..." + url + " timeout " + ms);
-		// do an asynchronous test, returning TRUE or FALSE 
-		/** @j2sNative
-		 * 
-		 *  J2S.$ajax({
-		 *    async:true,
-		 *    url:url, 
-		 *    success:function(){System.out.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.TRUE))},
-		 *    error:function(xhr,status){System.err.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.FALSE));alert("The ComPADRE server could not be reached.  You may not be connected to the internet.");},
-		 *    timeout:ms
-		 *    });
-		 *  
-		 */ 		
+//		String url = OSPRuntime.WEB_CONNECTED_TEST_URL;
+//		int ms = OSPRuntime.WEB_CONNECTED_TEST_JS_TIMEOUT_MS;
+//		System.out.println("ResourceLoader checking for connection..." + url + " timeout " + ms);
+//		// do an asynchronous test, returning TRUE or FALSE 
+//		/** @j2sNative
+//		 * 
+//		 *  J2S.$ajax({
+//		 *    async:true,
+//		 *    url:url, 
+//		 *    success:function(){System.out.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.TRUE))},
+//		 *    error:function(xhr,status){System.err.println("ResourceLoader.webTestOK = " + (C$.webTestOK = Boolean.FALSE));alert("The ComPADRE server could not be reached.  You may not be connected to the internet.");},
+//		 *    timeout:ms
+//		 *    });
+//		 *  
+//		 */ 		
 		{
-		  new Thread(()->{webConnected = isWebConnected();}, "ResourceLoader.isWebConnected").start();
+		  new Thread(()->{webConnected = OSPRuntime.isJS? true: isWebConnected();}, "ResourceLoader.isWebConnected").start();
 		}
 	}
 	/**
