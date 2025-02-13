@@ -219,10 +219,10 @@ public class JREFinder {
 	 * or Program Files\Java\jre-X\bin\java.exe typical 32-bit jdk in 64-bit
 	 * Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe OSX: typical
 	 * bundled jre:
-	 * {TRACKER_HOME}/../PlugIns/Java.runtime/Contents/Home/jre/bin/java typical:
-	 * /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre/bin/java
+	 * {TRACKER_HOME}/../runtime/Contents/Home/jre/bin/java typical:
+	 * /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/java
 	 * symlink at: /Library/Java/Home/bin/java?? also in bundled jre in Tracker.app:
-	 * /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+	 * /Applications/Tracker.app/Contents/runtime/Contents/Home/
 	 * also in /Library/Java also in /Library/Internet Plug-Ins
 	 * 
 	 * Linux: typical bundled jre: {TRACKER_HOME}/jre/bin/java typical:
@@ -255,7 +255,7 @@ public class JREFinder {
 					File file = new File(trackerhome);
 					if (file.exists()) {
 						if (OSPRuntime.isMac()) {
-							String path = file.getParent() + "/PlugIns/Java.runtime"; //$NON-NLS-1$
+							String path = file.getParent() + "/runtime"; //$NON-NLS-1$
 							searchPaths.add(new File(path));
 						} else {
 							searchPaths.add(file);
@@ -363,7 +363,7 @@ public class JREFinder {
 
 			// look in Contents/Home if parent is a plugin or runtime
 			// eg /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
-			// eg Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home
+			// eg Tracker.app/Contents/runtime/Contents/Home
 			if (dir.getName().contains(".plugin") || dir.getName().contains(".runtime")) { //$NON-NLS-1$ //$NON-NLS-2$
 				File child = new File(dir, "Contents"); //$NON-NLS-1$
 				if (child.exists()) {

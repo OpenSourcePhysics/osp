@@ -93,8 +93,8 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.2.1"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "15 Jan 2025"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.0"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "13 Feb 2025"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -1470,7 +1470,7 @@ public class OSPRuntime {
 				// /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre
 				// jdk private: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home
 				// in Tracker.app:
-				// /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+				// /Applications/Tracker.app/Contents/runtime/Contents/Home/
 				// also in /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
 				// also sometimes in /Library/Java...??
 				// symlink at: /Library/Java/Home/bin/java??
