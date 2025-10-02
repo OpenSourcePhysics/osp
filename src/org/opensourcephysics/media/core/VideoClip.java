@@ -101,7 +101,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	private int stepSize = 1;
 	private int stepCount = 10; // default stepCount is 10 if video is null
 	private int nullVideoFrameCount = stepCount; // default frameCount same as stepCount
-	private int maxFrameCount = 300000; // approx 2h45m at 30fps
+	private int maxFrameCount = 500001; // approx 4h38m at 30fps
 	private double startTime = 0; // start time in milliseconds
 	protected boolean isDefaultStartTime = true;
 	private int[] stepFrames;
