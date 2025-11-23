@@ -493,15 +493,20 @@ public class ClipInspector extends JDialog {
     startField.setIntValue(clip.getStartFrameNumber());
     stepSizeField.setIntValue(clip.getStepSize());
     t0Field.setValue(clip.getStartTime()/1000);
+    t0Field.setToolTipText(t0Field.getValue()+t0Field.getUnits());
     endField.setIntValue(clip.getEndFrameNumber());
     double duration = clipControl.getMeanFrameDuration();
     if (duration>0) {
 	    dtField.setValue(duration/1000);
+	    dtField.setToolTipText((duration/1000)+dtField.getUnits());
 	    fpsField.setValue(1000/duration);
+	    fpsField.setToolTipText((1000/duration)+fpsField.getUnits());
     }
     else {
 	    dtField.setText(null);
+	    dtField.setToolTipText(null);
 	    fpsField.setText(null);
+	    fpsField.setToolTipText(null);
     }
     repaint();
   }
