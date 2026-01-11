@@ -925,6 +925,11 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slider.addChangeListener((e) -> { doSliderChanged(); });
 		inLabel = new JLabel(inOutIcon);
 		outLabel = new JLabel(inOutIcon);
+// alternative to using an icon:
+//		inLabel = new JLabel("\u25B2");
+//		inLabel.setFont(new Font(null,Font.PLAIN,10));
+//		outLabel = new JLabel("\u25B2");
+//		outLabel.setFont(new Font(null,Font.PLAIN,10));
 		sliderLabels = new Hashtable<Integer, JLabel>();
 		sliderLabels.put(Integer.valueOf(0), inLabel);
 		sliderLabels.put(Integer.valueOf(9), outLabel);
