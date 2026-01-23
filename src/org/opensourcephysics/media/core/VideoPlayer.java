@@ -87,6 +87,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
@@ -923,18 +924,24 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slider.setSnapToTicks(true);
 		slider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		slider.addChangeListener((e) -> { doSliderChanged(); });
-		inLabel = new JLabel(inOutIcon);
-		outLabel = new JLabel(inOutIcon);
-// alternative to using an icon:
-//		inLabel = new JLabel("\u25B2");
-//		inLabel.setFont(new Font(null,Font.PLAIN,10));
-//		outLabel = new JLabel("\u25B2");
-//		outLabel.setFont(new Font(null,Font.PLAIN,10));
+		
+//		inLabel = new JLabel(inOutIcon);
+//		outLabel = new JLabel(inOutIcon);
+		
+		// alternative to using the inOutIcon: triangle shaped character
+		inLabel = new JLabel("\u25B2"); // triangle
+		inLabel.setFont(new Font(null,Font.PLAIN,14));
+		inLabel.setBorder(new EmptyBorder(-4, -2, 0, -2));
+		outLabel = new JLabel("\u25B2");
+		outLabel.setFont(new Font(null,Font.PLAIN,14));
+		outLabel.setBorder(new EmptyBorder(-4, -2, 0, -2));
+		
 		sliderLabels = new Hashtable<Integer, JLabel>();
 		sliderLabels.put(Integer.valueOf(0), inLabel);
 		sliderLabels.put(Integer.valueOf(9), outLabel);
 		slider.setLabelTable(sliderLabels);
 		slider.setPaintLabels(true);
+		
 		// slip our listeners in ahead of UI
 		// undefined in SwingJS
 		MouseListener defaultUIMouseListener = slider.getMouseListeners()[0];
