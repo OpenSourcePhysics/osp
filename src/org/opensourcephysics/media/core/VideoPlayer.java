@@ -778,8 +778,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		});
 
 		// create rate spinner
-		final double minRate = 0.1, maxRate = 4;
-		final SpinnerNumberModel model = new SpinnerNumberModel(1, minRate, maxRate, 0.1);
+		final double minRate = 0.1, maxRate = 8;
+		final SpinnerNumberModel model = new SpinnerNumberModel(1, minRate, maxRate, 0.2);
 		rateSpinner = new JSpinner(model) {
 			// override size methods so has same height as buttons
 			@Override
@@ -811,8 +811,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				if (ignoreRateSpinner)
 					return;
 				Double rate = (Double) rateSpinner.getValue();
+				rate = rate < 0.2? 0.1: rate > 7? 8: rate;
 				setRate(rate);
-//				model.setStepSize(rate >= 2 ? 0.5 : rate >= 0.2 ? 0.1 : 0.01);
+				model.setStepSize(rate >= 4 ? 1 : rate >= 2 ? 0.5 : rate > 0.9 ? 0.2 : 0.1);
 			}
 		});
 		editor.getTextField().addKeyListener(new java.awt.event.KeyAdapter() {
