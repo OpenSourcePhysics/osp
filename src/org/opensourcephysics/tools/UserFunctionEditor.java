@@ -516,6 +516,6 @@ public class UserFunctionEditor extends FunctionEditor {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2025 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

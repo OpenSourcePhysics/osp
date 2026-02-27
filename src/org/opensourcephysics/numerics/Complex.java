@@ -10,7 +10,7 @@
     Adapted to OSP by Javier E. Hasbun (2009) with added functionality
     from the original JEP - Java Math Expression Parser 2.24 of Nathan Funk.
   <P>
-    @Copyright (c) 2025
+    @Copyright (c) 2026
     This software is to support the Open Source Physics library
     http://www.opensourcephysics.org under the terms of the GNU General Public
     License (GPL) as published by the Free Software Foundation.
@@ -798,6 +798,6 @@ public String toString() {
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston MA 02111-1307 USA
  * or view the license online at http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2025  The Open Source Physics project
+ * Copyright (c) 2026  The Open Source Physics project
  *                     http://www.opensourcephysics.org
  */
