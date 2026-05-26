@@ -267,7 +267,8 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	}
 
 	/**
-	 * Sets the world position of this TPoint on the specified VideoPanel.
+	 * Sets the world position of this TPoint on the specified VideoPanel
+	 * using the coords transform at the current frame number.
 	 *
 	 * @param x        the world x coordinate
 	 * @param y        the world y coordinate
@@ -275,6 +276,19 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	 */
 	public void setWorldPosition(double x, double y, VideoPanel vidPanel) {
 		int n = getFrameNumber(vidPanel);
+		setWorldPosition(x, y, vidPanel, n);
+	}
+
+	/**
+	 * Sets the world position of this TPoint on the specified VideoPanel
+	 * using the coords transform at a specified frame number.
+	 *
+	 * @param x        the world x coordinate
+	 * @param y        the world y coordinate
+	 * @param vidPanel the video panel
+	 * @param n 			 the frame number 
+	 */
+	public void setWorldPosition(double x, double y, VideoPanel vidPanel, int n) {
 		AffineTransform at = vidPanel.getCoords().getToWorldTransform(n);
 		if (worldPt == null) {
 			worldPt = new Point2D.Double();
