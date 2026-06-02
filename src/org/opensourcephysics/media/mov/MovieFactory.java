@@ -20,16 +20,19 @@ public class MovieFactory {
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
 	public static final String ENGINE_JS = "JS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
+	public static final String ENGINE_AVP = "AVP"; //$NON-NLS-1$
 
 	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle."; //$NON-NLS-1$
 	private static String xugglePropertiesPath = "org/opensourcephysics/resources/xuggle/xuggle.properties"; //$NON-NLS-1$
+	private static String avpClassPath = "org.opensourcephysics.media.avp."; //$NON-NLS-1$
 
 	private static String movieEngineName = ENGINE_NONE;
 
 	public static boolean hadXuggleError = false;
 	public static boolean xuggleIsPresent = false;
 	public static boolean xuggleNeeds32bitVM = false;
-	
+	public static boolean avpIsPresent = false;
+		
 	/**
 	 * Initialize video classes to register their video types
 	 * 
@@ -53,10 +56,21 @@ public class MovieFactory {
 				Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
 				code = (Integer)m.invoke(type, (Object[])null);
 
-				// try to load XuggleVideo class--will register xuggle video types
-				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
-				xuggleIsPresent = true;
-				movieEngineName = ENGINE_XUGGLE;
+//				// try to load XuggleVideo class--will register xuggle video types
+//				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
+//				xuggleIsPresent = true;
+//				movieEngineName = ENGINE_XUGGLE;
+
+				// get AVP status code by reflection
+				type = Class.forName(avpClassPath + "AVPDiagnostics"); //$NON-NLS-1$
+				m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
+				code = (Integer)m.invoke(type, (Object[])null);
+
+				// try to load AVPVideo class--will register AVP video types
+				Class.forName(avpClassPath + "AVPVideo"); //$NON-NLS-1$
+				avpIsPresent = true;
+				movieEngineName = ENGINE_AVP;
+
 			}
 		} catch (Throwable e) {			
 			if (!OSPRuntime.isJS) {
@@ -191,6 +205,14 @@ public class MovieFactory {
 			try {
 				Class<?> clas = Class.forName("org.opensourcephysics.media.xuggle.DiagnosticsForXuggle"); //$NON-NLS-1$
 				Method method = clas.getMethod("aboutXuggle", new Class[] {String.class}); //$NON-NLS-1$
+				method.invoke(null, new Object[] {requester});
+			} catch (Exception e1) {}
+		}
+		else if (engineName==ENGINE_AVP) {
+			// call AVPDiagnostics.aboutAVP by reflection
+			try {
+				Class<?> clas = Class.forName("org.opensourcephysics.media.avp.AVPDiagnostics"); //$NON-NLS-1$
+				Method method = clas.getMethod("aboutAVP", new Class[] {String.class}); //$NON-NLS-1$
 				method.invoke(null, new Object[] {requester});
 			} catch (Exception e1) {}
 		}
