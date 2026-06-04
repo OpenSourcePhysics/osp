@@ -42,8 +42,7 @@ public class MovieFactory {
 	 * for Xuggle, we just need to load the class, not actually do anything with it.
 	 */
 	static {
-		int code = -1;
-		try {
+		int xcode = -1, acode = -1;
 			if (OSPRuntime.isJS) {
 				if (JSMovieVideoType.registered) {
 					// mere request does the job
@@ -51,38 +50,38 @@ public class MovieFactory {
 					xuggleIsPresent = false;
 				}
 			} else /** @j2sIgnore */ {
-				// get xuggle status code by reflection
-				Class<?> type = Class.forName(xuggleClassPath + "DiagnosticsForXuggle"); //$NON-NLS-1$
-				Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
-				code = (Integer)m.invoke(type, (Object[])null);
+					try {
+						// get AVP status code by reflection
+						Class<?> type = Class.forName(avpClassPath + "AVPDiagnostics"); //$NON-NLS-1$
+						Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
+						acode = (Integer)m.invoke(type, (Object[])null);
+		
+						// try to load AVPVideo class--will register AVP video types
+						Class.forName(avpClassPath + "AVPVideo"); //$NON-NLS-1$
+						avpIsPresent = true;
+						movieEngineName = ENGINE_AVP;	
+					} catch (Throwable e) {			
+							// failed to load AVP
+							OSPLog.config("AVP-core.jar not found. " + "AVPVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
+					}
 
-//				// try to load XuggleVideo class--will register xuggle video types
-//				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
-//				xuggleIsPresent = true;
-//				movieEngineName = ENGINE_XUGGLE;
-
-				// get AVP status code by reflection
-				type = Class.forName(avpClassPath + "AVPDiagnostics"); //$NON-NLS-1$
-				m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
-				code = (Integer)m.invoke(type, (Object[])null);
-
-				// try to load AVPVideo class--will register AVP video types
-				Class.forName(avpClassPath + "AVPVideo"); //$NON-NLS-1$
-				avpIsPresent = true;
-				movieEngineName = ENGINE_AVP;
-
-			}
-		} catch (Throwable e) {			
-			if (!OSPRuntime.isJS) {
+					try {
+					// get xuggle status code by reflection
+					Class<?> type = Class.forName(xuggleClassPath + "DiagnosticsForXuggle"); //$NON-NLS-1$
+					Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
+					xcode = (Integer)m.invoke(type, (Object[])null);
+	
+					// try to load XuggleVideo class--will register xuggle video types
+					Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
+					xuggleIsPresent = true;
+					if (movieEngineName == ENGINE_NONE)
+						movieEngineName = ENGINE_XUGGLE;
+	
+			} catch (Throwable e) {			
 				// failed to load xuggle
-				if (code == 7) {
-					xuggleNeeds32bitVM = true;
-					OSPLog.config("Xuggle installed but must be run in a 32-bit Java VM on Windows.");					
-				} else {
 					OSPLog.config("Xuggle not installed? " + xuggleClassPath + "XuggleVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-				String jarPath = OSPRuntime.getLaunchJarPath();
-				xuggleIsPresent = (jarPath!=null && ResourceLoader.getResource(jarPath+"!/"+xugglePropertiesPath)!=null); //$NON-NLS-1$
+					String jarPath = OSPRuntime.getLaunchJarPath();
+					xuggleIsPresent = (jarPath!=null && ResourceLoader.getResource(jarPath+"!/"+xugglePropertiesPath)!=null); //$NON-NLS-1$
 			}
 		}
 	}
@@ -137,7 +136,7 @@ public class MovieFactory {
 	 * Gets the name of the current movie engine.
 	 * 
 	 * @param forDialog if true, returns locale version of "none"
-	 * @return "Xuggle" or "JS" or "none" or Locale version of "none"
+	 * @return "Xuggle" or "AVP" or "JS" or "none" or Locale version of "none"
 	 */
 	public static String getMovieEngineName(boolean forDialog) {
 		return forDialog && movieEngineName == ENGINE_NONE ? 
