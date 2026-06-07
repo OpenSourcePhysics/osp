@@ -62,7 +62,7 @@ public class MovieFactory {
 						movieEngineName = ENGINE_AVP;	
 					} catch (Throwable e) {			
 							// failed to load AVP
-							OSPLog.config("AVP-core.jar not found. " + "AVPVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
+							OSPLog.config("AVPKit-core.jar not found. " + "AVPVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 
 					try {
