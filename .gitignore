@@ -12,4 +12,8 @@ src/org/opensourcephysics/controls/OSPLog_template.txt
 *.prefs
 .classpath
 .DS_Store
+<<<<<<< HEAD
 /target/
+=======
+/target/
+>>>>>>> branch 'AVP' of https://github.com/OpenSourcePhysics/osp
