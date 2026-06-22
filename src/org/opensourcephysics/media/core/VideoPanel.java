@@ -327,14 +327,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		unit = unit.trim();
 		if (timeUnit.equals(unit))
 			return false;
-		// prevent numbers being set as units
-		try {
-			Double.parseDouble(unit);
-			return false;
-		} catch (Exception e) {
+		// prevent numbers within units
+		for (char c : unit.toCharArray()) {
+      if (Character.isDigit(c)) {
+          return false;
+      }
 		}
 		timeUnit = unit;
-
 		return true;
 	}
 
