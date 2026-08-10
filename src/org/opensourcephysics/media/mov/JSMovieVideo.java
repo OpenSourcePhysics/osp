@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2026  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -456,7 +456,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 					} else {
 						long t2 = System.currentTimeMillis();
 						byte[] b = bytes;
-						OSPRuntime.jsutil.getMediaInfoAsync(bytes, "Video", "/core/_ES6/mediainfo.js", new Consumer<Map<String, Object>>() {
+						//Underscore removed from ES6 by WC
+						OSPRuntime.jsutil.getMediaInfoAsync(bytes, "Video", "/core/ES6/mediainfo.js", new Consumer<Map<String, Object>>() {
 
 							@Override
 							public void accept(Map<String, Object> info) {
@@ -774,6 +775,6 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

@@ -5,4 +5,4 @@ In addition are version directories -- for example, ver/3.1.1 and ver/3.2.1
 
 The second of these, ver/3.2.1, adds Java 8 functionality.
 
-
+BH -- 2026.01.11 fixed JSComponentUI to not set overflow hidden on imageNodes.

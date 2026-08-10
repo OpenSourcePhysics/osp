@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2026  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
@@ -465,7 +466,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	 * @param looping <code>true</code> to turn looping on
 	 */
 	public void setLooping(boolean looping) {
-		clipControl.setLooping(looping);
+		if (isEnabled())
+			clipControl.setLooping(looping);
 	}
 
 	/**
@@ -712,6 +714,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
+		rateSpinner.setEnabled(enabled);
+		slider.setEnabled(enabled);
 		disabled = !enabled;
 	}
 
@@ -774,8 +778,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		});
 
 		// create rate spinner
-		final double minRate = 0.1, maxRate = 4;
-		final SpinnerNumberModel model = new SpinnerNumberModel(1, minRate, maxRate, 0.1);
+		final double minRate = 0.1, maxRate = 10;
+		final SpinnerNumberModel model = new SpinnerNumberModel(1, minRate, maxRate, 0.2);
 		rateSpinner = new JSpinner(model) {
 			// override size methods so has same height as buttons
 			@Override
@@ -807,8 +811,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 				if (ignoreRateSpinner)
 					return;
 				Double rate = (Double) rateSpinner.getValue();
+				rate = rate < minRate*1.8? minRate: rate > maxRate/1.4? maxRate: rate;
 				setRate(rate);
-//				model.setStepSize(rate >= 2 ? 0.5 : rate >= 0.2 ? 0.1 : 0.01);
+				model.setStepSize(rate >= 4 ? 1 : rate >= 2 ? 0.5 : rate > 0.9 ? 0.2 : 0.1);
 			}
 		});
 		editor.getTextField().addKeyListener(new java.awt.event.KeyAdapter() {
@@ -920,13 +925,24 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slider.setSnapToTicks(true);
 		slider.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 		slider.addChangeListener((e) -> { doSliderChanged(); });
-		inLabel = new JLabel(inOutIcon);
-		outLabel = new JLabel(inOutIcon);
+		
+//		inLabel = new JLabel(inOutIcon);
+//		outLabel = new JLabel(inOutIcon);
+		
+		// alternative to using the inOutIcon: triangle shaped character
+		inLabel = new JLabel("\u25B2"); // triangle
+		inLabel.setFont(new Font(null,Font.PLAIN,14));
+		inLabel.setBorder(new EmptyBorder(-4, -2, 0, -2));
+		outLabel = new JLabel("\u25B2");
+		outLabel.setFont(new Font(null,Font.PLAIN,14));
+		outLabel.setBorder(new EmptyBorder(-4, -2, 0, -2));
+		
 		sliderLabels = new Hashtable<Integer, JLabel>();
 		sliderLabels.put(Integer.valueOf(0), inLabel);
 		sliderLabels.put(Integer.valueOf(9), outLabel);
 		slider.setLabelTable(sliderLabels);
 		slider.setPaintLabels(true);
+		
 		// slip our listeners in ahead of UI
 		// undefined in SwingJS
 		MouseListener defaultUIMouseListener = slider.getMouseListeners()[0];
@@ -1576,6 +1592,7 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
 	protected void updatePlayButtonsPosted(boolean playing) {
 		//updatePosted = false;
+		if (getVideoClip() == null) return;
 		int stepCount = getVideoClip().getStepCount();
 		boolean canPlay = stepCount > 1;
 		playButton.setEnabled(canPlay && (playing || getStepNumber() < stepCount - 1));
@@ -2048,6 +2065,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

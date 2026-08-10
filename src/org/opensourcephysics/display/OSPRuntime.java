@@ -93,8 +93,8 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.2.0"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "24 Jun 2024"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.5"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "22 Jun 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -448,8 +448,14 @@ public class OSPRuntime {
 	// the transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
+	public static boolean cssCursor =
+			/** @j2sNative /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || */
+			/** @j2sNative /Macintosh/.test(navigator.userAgent) && 'ontouchend' in document || */
+			false;
 	
-	// browser Navigator parameters added by WC
+	public static boolean hasKeyboard = !cssCursor;
+
+//  browser Navigator parameters added by WC
 //	private static boolean isOSX=false;
 //	private static boolean isiOS=false;
 //	private static boolean isiPad=false;
@@ -653,7 +659,8 @@ public class OSPRuntime {
 
 	public final static int WEB_CONNECTED_TEST_JAVA_TIMEOUT_MS = 1000;
 	public final static int WEB_CONNECTED_TEST_JS_TIMEOUT_MS = 1000;
-	public final static String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify";
+//	public final static String WEB_CONNECTED_TEST_URL = "https://www.compadre.org/osp/services/REST/osp_tracker.cfm?verb=Identify";
+	public final static String WEB_CONNECTED_TEST_URL = "https://opensourcephysics.github.io/tracker-website/css/library.css";
 
 	// BH test option public final static String WEB_CONNECTED_TEST_URL =
 	// "https://cactus.nci.nih.gov/chemical/structure/caffeine/file?format=sdf&get3d=true";
@@ -1463,7 +1470,7 @@ public class OSPRuntime {
 				// /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre
 				// jdk private: /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home
 				// in Tracker.app:
-				// /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+				// /Applications/Tracker.app/Contents/runtime/Contents/Home/
 				// also in /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
 				// also sometimes in /Library/Java...??
 				// symlink at: /Library/Java/Home/bin/java??
@@ -2414,6 +2421,6 @@ public class OSPRuntime {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2026  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -327,14 +327,13 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
 		unit = unit.trim();
 		if (timeUnit.equals(unit))
 			return false;
-		// prevent numbers being set as units
-		try {
-			Double.parseDouble(unit);
-			return false;
-		} catch (Exception e) {
+		// prevent numbers within units
+		for (char c : unit.toCharArray()) {
+      if (Character.isDigit(c)) {
+          return false;
+      }
 		}
 		timeUnit = unit;
-
 		return true;
 	}
 
@@ -1059,6 +1058,6 @@ public class VideoPanel extends InteractivePanel implements PropertyChangeListen
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

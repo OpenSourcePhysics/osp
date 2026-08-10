@@ -7,8 +7,8 @@
  - creates the site/ directory if it does not exist
  - unzip libjs/*.zip into site/swingjs/j2s
  - unzips swingjs/SwingJS-site.zip into site/
+ - deletes root _* directories in site/swingjs/j2s/ 
  - copies non-java resources from resources/ into site/swingjs/j2s
- 
 -->
 
 <project name="swingjs-project" default="tosite" basedir="."
@@ -69,6 +69,11 @@
 
   	<unzip src="${swingjs.zip}" dest="${site.dir}/" overwrite="true"/>  	
 
+  	<echo> Deleting /_, /_ES6, and /_wasm</echo>
+   	<delete dir="${j2s.dir}/_" />
+   	<delete dir="${j2s.dir}/_ES6" />
+   	<delete dir="${j2s.dir}/_wasm" />
+      		
  	<!-- transfer resources -->
 
   	<echo> Copying ${site-resource.dir} files into ${site.dir} </echo>

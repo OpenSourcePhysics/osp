@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.opensourcephysics.controls.OSPLog;
@@ -142,12 +143,13 @@ public class JREFinder {
 	 * if possible.
 	 * 
 	 * @param vmBitness the bitness desired
-	 * @param path      the first path to search for a JRE--if found, return as
-	 *                  default
+	 * @param path      the first path to search--if found, return as default
 	 * @param searchAll true to search paths other than the specified one
+	 * @param prefix preferred prefix on JRE file name. May be null.
 	 * @return the default JRE directory, or null if none found
 	 */
-	public File getDefaultJRE(int vmBitness, String path, boolean searchAll) {
+	public File getDefaultJRE(int vmBitness, String path, 
+			boolean searchAll, String prefix) {
 		// first look in path
 		if (path != null) {
 			File dir = new File(path);
@@ -155,12 +157,33 @@ public class JREFinder {
 				Set<File> result = new TreeSet<File>();
 				result = findJREsInDirectory(dir, result);
 				if (!result.isEmpty()) {
+					// ordering of Files in TreeSet is apparently NOT always alphabetical!
+					// so alphabetize by JRE folder name
+					TreeMap<String, File> map = new TreeMap<String, File>();
 					for (File f : result) {
-						// return first found that matches desired bitness
+						// collect those that satisfy bitness
 						if (vmBitness == 32 && is32BitVM(f.getPath()))
-							return f;
-						if (vmBitness == 64 && !is32BitVM(f.getPath()))
-							return f;
+							map.put(f.getName(), f);
+						else if (vmBitness == 64 && !is32BitVM(f.getPath()))
+							map.put(f.getName(), f);
+					}
+					if (!map.isEmpty()) {
+						// if preferred != null, return LAST jre that starts with preferred
+						// since it should be the latest version (typical: "OpenJDK-21.0.5-jre")
+						if (prefix != null) {
+							String s = null;
+							Iterator<String> it = map.keySet().iterator();
+							while (it.hasNext()) {
+								String next = it.next();
+								if (next.startsWith(prefix))
+									s = next;
+							}
+							if (s != null)
+								return map.get(s);
+						}
+						// if preferred is null or not found return first JRE in map
+						String s = map.keySet().iterator().next();
+						return map.get(s);
 					}
 				}
 			}
@@ -196,10 +219,10 @@ public class JREFinder {
 	 * or Program Files\Java\jre-X\bin\java.exe typical 32-bit jdk in 64-bit
 	 * Windows: Program Files(x86)\Java\jdkX.X.X_XX\jre\bin\java.exe OSX: typical
 	 * bundled jre:
-	 * {TRACKER_HOME}/../PlugIns/Java.runtime/Contents/Home/jre/bin/java typical:
-	 * /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/jre/bin/java
+	 * {TRACKER_HOME}/../runtime/Contents/Home/jre/bin/java typical:
+	 * /System/Library/Java/JavaVirtualMachines/X.X.X.jdk/Contents/Home/bin/java
 	 * symlink at: /Library/Java/Home/bin/java?? also in bundled jre in Tracker.app:
-	 * /Applications/Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home/jre
+	 * /Applications/Tracker.app/Contents/runtime/Contents/Home/
 	 * also in /Library/Java also in /Library/Internet Plug-Ins
 	 * 
 	 * Linux: typical bundled jre: {TRACKER_HOME}/jre/bin/java typical:
@@ -225,11 +248,14 @@ public class JREFinder {
 			try {
 				// search for bundled jre
 				String trackerhome = System.getenv("TRACKER_HOME"); //$NON-NLS-1$
+				if (trackerhome == null) {
+					trackerhome = (String)OSPRuntime.getPreference("TRACKER_HOME");
+				}
 				if (trackerhome != null) {
 					File file = new File(trackerhome);
 					if (file.exists()) {
 						if (OSPRuntime.isMac()) {
-							String path = file.getParent() + "/PlugIns/Java.runtime"; //$NON-NLS-1$
+							String path = file.getParent() + "/runtime"; //$NON-NLS-1$
 							searchPaths.add(new File(path));
 						} else {
 							searchPaths.add(file);
@@ -337,7 +363,7 @@ public class JREFinder {
 
 			// look in Contents/Home if parent is a plugin or runtime
 			// eg /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home
-			// eg Tracker.app/Contents/PlugIns/Java.runtime/Contents/Home
+			// eg Tracker.app/Contents/runtime/Contents/Home
 			if (dir.getName().contains(".plugin") || dir.getName().contains(".runtime")) { //$NON-NLS-1$ //$NON-NLS-2$
 				File child = new File(dir, "Contents"); //$NON-NLS-1$
 				if (child.exists()) {

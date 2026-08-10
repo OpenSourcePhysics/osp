@@ -2394,36 +2394,38 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			rowsInside.clear();
 			recent.clear();
 		}
-		for (int i = 0; i < screenPoints[0].length; i++) {
-			Integer row = dataTable.workingRowToModelRow.get(i);
-			if (row == null) {
-				readyToFindHits = true;
-				return;
-			}
-			int irow = row.intValue();
-			// if a data point is inside the box, add/remove it
-			if (!Double.isNaN(screenPoints[1][i])
-					&& plot.selectionBox.contains(screenPoints[0][i], screenPoints[1][i])) {
-				if (rowsInside.isEmpty()) {
-					columnSelectionModel.setSelectionInterval(1, 2);
+		if (screenPoints != null && screenPoints.length > 0 && screenPoints[0] != null) {
+			for (int i = 0; i < screenPoints[0].length; i++) {
+				Integer row = dataTable.workingRowToModelRow.get(i);
+				if (row == null) {
+					readyToFindHits = true;
+					return;
 				}
-				if (mouseState == STATE_SELECT_REMOVE) {
-					if (rowsInside.get(irow))
-						recent.set(irow);
-					rowsInside.clear(irow);
-				} else {
-					if (!rowsInside.get(irow))
-						recent.set(irow);
-					rowsInside.set(irow);
+				int irow = row.intValue();
+				// if a data point is inside the box, add/remove it
+				if (!Double.isNaN(screenPoints[1][i])
+						&& plot.selectionBox.contains(screenPoints[0][i], screenPoints[1][i])) {
+					if (rowsInside.isEmpty()) {
+						columnSelectionModel.setSelectionInterval(1, 2);
+					}
+					if (mouseState == STATE_SELECT_REMOVE) {
+						if (rowsInside.get(irow))
+							recent.set(irow);
+						rowsInside.clear(irow);
+					} else {
+						if (!rowsInside.get(irow))
+							recent.set(irow);
+						rowsInside.set(irow);
+					}
+				} else if (recent.get(irow)) {
+					// if a recently added/removed data point is outside the box, remove/add it back
+					if (mouseState == STATE_SELECT_REMOVE) {
+						rowsInside.set(irow);
+					} else {
+						rowsInside.clear(irow);
+					}
+					recent.clear(irow);
 				}
-			} else if (recent.get(irow)) {
-				// if a recently added/removed data point is outside the box, remove/add it back
-				if (mouseState == STATE_SELECT_REMOVE) {
-					rowsInside.set(irow);
-				} else {
-					rowsInside.clear(irow);
-				}
-				recent.clear(irow);
 			}
 		}
 		if (showInTable) {
@@ -5027,6 +5029,6 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

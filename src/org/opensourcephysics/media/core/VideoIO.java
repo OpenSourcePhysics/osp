@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2026  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ public class VideoIO {
 	public static final String[] KNOWN_VIDEO_EXTENSIONS = 
 		{"mov", "flv", "mp4", "wmv", "avi", "mts",
 			"m2ts", "mpg", "mod", "ogg", "dv" };
-	public static final String VIDEO_CONVERSION_HELP_PATH = "https://physlets.org/tracker/converting_videos.html";
+	public static final String VIDEO_CONVERSION_HELP_PATH = "https://opensourcephysics.github.io/tracker-website/converting_videos.html";
 	
 	/**
 	 * delimiters TAB, SPACE, COMMA, SEMICOLON
@@ -1520,6 +1520,6 @@ private static String fixVideoPath(String path) {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

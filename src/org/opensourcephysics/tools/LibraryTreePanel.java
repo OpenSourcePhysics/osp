@@ -185,10 +185,11 @@ public class LibraryTreePanel extends JPanel {
 	protected MouseAdapter treeMouseListener, convertPathMouseListener;
 	protected TreeSelectionListener treeSelectionListener;
 	protected XMLControl pasteControl;
-	protected boolean isEditing, isChanged, isXMLPath, ignoreChanges;
+	protected boolean isEditing, isChanged, isXMLPath, ignoreChanges, launchLater;
 	protected XMLControl revertControl;
 	protected int typeFieldWidth;
 	protected String command;
+	protected TreePath prevTreePath;
 	protected Metadata emptyMetadata = new Metadata();
 	protected MetadataLoader metadataLoader;
 	protected Set<EntryField> entryFields = new HashSet<EntryField>();
@@ -422,7 +423,9 @@ public class LibraryTreePanel extends JPanel {
 		boolean available = node.isRoot();
 		if (path != null && !available) {
 			if (ResourceLoader.isHTTP(path)) {
-				available = browser.isWebConnected(null);
+				String uriPath = ResourceLoader.getURIPath(path);
+				available = ResourceLoader.isURLAvailable(uriPath);
+//				available = browser.isWebConnected(null);
 				if (!available) {
 					available = (isCollection ? ResourceLoader.getSearchCacheFile(path)
 							: ResourceLoader.getOSPCacheFile(path, node.record.getProperty("download_filename"))).exists();
@@ -434,7 +437,10 @@ public class LibraryTreePanel extends JPanel {
 		browser.commandField.setForeground(available ? defaultForeground : darkRed);
 		browser.commandField.setCaretPosition(0);
 		if (node.isRoot())
-			browser.commandButton.setEnabled(false);
+			browser.openButton.setEnabled(false);
+		else if (available) {
+				browser.flashOpen();
+		}
 	}
 
 	private void showEditorData(LibraryTreeNode node, boolean isCollection) {
@@ -466,6 +472,17 @@ public class LibraryTreePanel extends JPanel {
 		boolean isValidTarget = true;
 		if (node.getTarget() != null) {
 			isValidTarget = node.getTargetURL() != null;
+			if (!isValidTarget && LibraryResource.EJS_TYPE.equals(node.record.getType())) {
+				String fullTarget = node.getTarget();
+				int n = fullTarget.indexOf("&name=");
+				if (n > 0) {
+					// strip off EJS name to see if valid
+					node.record.setTarget(fullTarget.substring(0, n));
+					isValidTarget = node.getTargetURL() != null;
+					// restore full target
+					node.record.setTarget(fullTarget);
+				}
+			}
 		}
 		targetField.setForeground(isValidTarget ? defaultForeground : darkRed);
 		targetField.setBackground(Color.white);
@@ -720,7 +737,7 @@ public class LibraryTreePanel extends JPanel {
 		treeSelectionListener = new TreeSelectionListener() {
 			@Override
 			public void valueChanged(TreeSelectionEvent e) {
-				//System.out.println("LibraryTreePanel.selection listener " + e);
+				prevTreePath = e.getOldLeadSelectionPath();
 				emptyMetadata.clearData();
 				metadataModel.dataChanged();
 				LibraryTreeNode node = getSelectedNode();
@@ -746,9 +763,14 @@ public class LibraryTreePanel extends JPanel {
 				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
 				if (OSPRuntime.isPopupTrigger(e)) {
 					getPopup(node).show(tree, e.getX(), e.getY() + 8);
-				} else if (isLoadEvent(e, node)) {
-					// to LibraryBrowser					
-					firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
+				} else if (path.equals(prevTreePath)){
+					
+					checkLoadEvent(e, node,()->{
+						// asynchronously to LibraryBrowser					
+						firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
+					});
+				} else {
+					prevTreePath = path;
 				}
 			}
 
@@ -756,23 +778,56 @@ public class LibraryTreePanel extends JPanel {
 			 * BH allowing for single-click on icon. Double clicks are difficult to handle.
 			 * 
 			 * 
-			 * @param e a MouseEvent
+			 * @param e    a MouseEvent
 			 * @param node a LibraryTreeNode
 			 * @return true if event should load the node
 			 */
-			private boolean isLoadEvent(MouseEvent e, LibraryTreeNode node) {
+			private void checkLoadEvent(MouseEvent e, LibraryTreeNode node, Runnable load) {
+				
 				String target = node.getAbsoluteTarget();
 				if (target == null)
-					return false;
-				if (LibraryComPADRE.isComPADREPath(target))
-					return true;
+					return;
+				if (LibraryComPADRE.isComPADREPath(target)) {
+					load.run();
+					return;
+				}
+
 				// BH 2022.12.02 but #143 was looking at target.id with wrong id
-				// Note that JavaScript has trouble detecting the double-click in this case. 
-				// I don't remember why that is. 
-				return (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS" || */
-					e.getClickCount() == 2);
+				// Note that JavaScript has trouble detecting the double-click in this case.
+				// I don't remember why that is.
+				int n = e.getClickCount();
+				launchLater = n == 1;
+				if (n == 2) {
+					launchLater = false;
+					load.run();
+					return;
+				}
+				
+				Runnable r = new Runnable() {
+					@Override
+					public void run() {
+				    // previously used by BH
+//				  boolean doNotify = (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS"|| */ e.getX() < 75);
+						if (launchLater) {
+							javajs.async.AsyncDialog.showYesNoAsync(LibraryBrowser.frame,
+									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Message")
+									+ " \"" + node.getName() + "\"?", 
+									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Title"), 
+									new ActionListener() {
+										@Override
+										public void actionPerformed(ActionEvent e) {
+											if (e.getID() == JOptionPane.YES_OPTION)
+												load.run();
+										}
+									});
+						}					
+					}
+				};
+				
+				OSPRuntime.setTimeout("loadEvent", 800, true, r);
 			}
 		};
+
 		// create toolbar and buttons
 		addCollectionButton = new JButton(addCollectionAction);
 		addResourceButton = new JButton(addResourceAction);
@@ -1605,10 +1660,23 @@ public class LibraryTreePanel extends JPanel {
 			return false;
 		}
 		if (i == JOptionPane.YES_OPTION) {
-			if (save() == null)
+			if ("temp".equals(getName())) {
+				setName("");
+				String path = browser.saveAs();
+				return path != null;
+			}
+			else if (save() == null)
 				return false;
-		} else
-			revert();
+		} else {// i == JOptionPane.NO_OPTION
+			if ("temp".equals(getName())) {
+				String tempPath = pathToRoot;
+				if (tempPath != null) {
+					File tempFile = new File(tempPath);
+					tempFile.delete();
+				}
+			}
+			else revert();
+		}
 		return true;
 	}
 
@@ -2799,6 +2867,6 @@ public class LibraryTreePanel extends JPanel {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

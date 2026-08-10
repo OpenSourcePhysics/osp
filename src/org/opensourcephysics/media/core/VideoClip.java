@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2026  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 	private int stepSize = 1;
 	private int stepCount = 10; // default stepCount is 10 if video is null
 	private int nullVideoFrameCount = stepCount; // default frameCount same as stepCount
-	private int maxFrameCount = 300000; // approx 2h45m at 30fps
+	private int maxFrameCount = 500001; // approx 4h38m at 30fps
 	private double startTime = 0; // start time in milliseconds
 	protected boolean isDefaultStartTime = true;
 	private int[] stepFrames;
@@ -964,6 +964,6 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

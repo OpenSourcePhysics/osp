@@ -259,8 +259,9 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			return LibraryResource.HTML_TYPE;
 		case "trk":
 		case "trz":
-		case "zip":
 			return LibraryResource.TRACKER_TYPE;
+		case "zip":
+			return LibraryResource.UNKNOWN_TYPE;
 		case "pdf":
 			return LibraryResource.PDF_TYPE;
 		case "ejs":
@@ -1126,6 +1127,6 @@ public class LibraryResource implements Comparable<LibraryResource> {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

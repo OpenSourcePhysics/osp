@@ -9,7 +9,7 @@
  * The org.opensourcephysics.media.core package defines the Open Source Physics
  * media framework for working with video and other media.
  *
- * Copyright (c) 2024  Douglas Brown and Wolfgang Christian.
+ * Copyright (c) 2026  Douglas Brown and Wolfgang Christian.
  *
  * This is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -267,7 +267,8 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	}
 
 	/**
-	 * Sets the world position of this TPoint on the specified VideoPanel.
+	 * Sets the world position of this TPoint on the specified VideoPanel
+	 * using the coords transform at the current frame number.
 	 *
 	 * @param x        the world x coordinate
 	 * @param y        the world y coordinate
@@ -275,6 +276,19 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
 	 */
 	public void setWorldPosition(double x, double y, VideoPanel vidPanel) {
 		int n = getFrameNumber(vidPanel);
+		setWorldPosition(x, y, vidPanel, n);
+	}
+
+	/**
+	 * Sets the world position of this TPoint on the specified VideoPanel
+	 * using the coords transform at a specified frame number.
+	 *
+	 * @param x        the world x coordinate
+	 * @param y        the world y coordinate
+	 * @param vidPanel the video panel
+	 * @param n 			 the frame number 
+	 */
+	public void setWorldPosition(double x, double y, VideoPanel vidPanel, int n) {
 		AffineTransform at = vidPanel.getCoords().getToWorldTransform(n);
 		if (worldPt == null) {
 			worldPt = new Point2D.Double();
@@ -757,6 +771,6 @@ public class TPoint extends Point2D.Double implements Interactive, Trackable {
  * Suite 330, Boston MA 02111-1307 USA or view the license online at
  * http://www.gnu.org/copyleft/gpl.html
  *
- * Copyright (c) 2024 The Open Source Physics project
+ * Copyright (c) 2026 The Open Source Physics project
  * http://www.opensourcephysics.org
  */

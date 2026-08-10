@@ -11,3 +11,4 @@ ospcoreclasses
 src/org/opensourcephysics/controls/OSPLog_template.txt
 *.prefs
 .classpath
+.DS_Store

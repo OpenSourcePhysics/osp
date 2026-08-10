@@ -30,7 +30,7 @@ import org.opensourcephysics.controls.XMLControlElement;
 public class LibraryJSSearchRefresher implements PropertyChangeListener {
 
 	private final int BUFFER_SIZE = 4096;
-	private final String host = "physlets.org/library/Search/";
+	private final String host = "opensourcephysics.github.io/tracker-website/search/";
 	private final String ftpURLFormat = "ftp://%s@%s;type=i";
 	private final String[] libraryPaths = { LibraryBrowser.TRACKER_LIBRARY, LibraryBrowser.SHARED_LIBRARY };
 
