@@ -78,10 +78,10 @@ import org.opensourcephysics.tools.ResourceLoader;
 import org.opensourcephysics.tools.Translator;
 import org.opensourcephysics.tools.TranslatorTool;
 
+import javajs.api.JSUtilI;
 import javajs.async.Assets;
 import javajs.async.AsyncFileChooser;
 import javajs.async.SwingJSUtils.Timeout;
-import swingjs.api.JSUtilI;
 
 /**
  * This class defines static methods related to the runtime environment.
@@ -913,6 +913,9 @@ public class OSPRuntime {
 	public static boolean launcherAllowEJSModel = true;
 
 	public static final Integer OUT_OF_MEMORY_ERROR = 1; // Integer here, because it will be e.newValue()
+	
+	public static final int TYPE_4BYTE_HTML5 = JSUtilI.TYPE_4BYTE_HTML5;
+
 	public static boolean outOfMemory = false;
 
 	/**

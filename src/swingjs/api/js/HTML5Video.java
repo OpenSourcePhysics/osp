@@ -20,7 +20,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import swingjs.api.JSUtilI;
+import javajs.api.JSUtilI;
+import javajs.api.js.HTML5Applet.Promise;
 
 /**
  * A full-service interface for HTML5 video element interaction. Allows setting
@@ -512,7 +513,7 @@ public interface HTML5Video extends DOMNode {
 		return (int) (getDuration(jsvideo) / 0.033334);
 	}
 
-	public static void startVideo(HTML5Video jsevideo) {
+	public static void startVideo(HTML5Video jsvideo) {
 		@SuppressWarnings("unused")
 		HTML5VideoDialog d = /** @j2sNative jsvideo.dialog || */null;
 		try {

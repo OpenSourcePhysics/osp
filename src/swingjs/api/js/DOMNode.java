@@ -1,8 +1,11 @@
 package swingjs.api.js;
 
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Rectangle;
-import java.util.function.Consumer;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D.Float;
+import java.awt.image.BufferedImage;
 
 /**
  * A mix of direct DOM calls on DOM nodes and convenience methods to do that.
@@ -13,24 +16,6 @@ import java.util.function.Consumer;
  *
  */
 public interface DOMNode {
-	
-	
-	/**
-	 * avoiding GCC inability to handle .finally and .catch
-	 * 
-	 * @j2sNative
-	 * 
-	 * 		eval("Promise.prototype.$then = function(resolve,reject){this.then(function(value) {resolve &&resolve.accept$O(value)},function(reason){reject &&reject.apply$O(reason)})};");
-	 *      eval("Promise.prototype.$finally = function(r){this.finally(function(){r.run$()})};");
-	 *      eval("Promise.prototype.$catch = function(err){this.catch(function(){err.accept$S('' + err)})};");
-	 */
-	public interface Promise {
-		public Promise then(JSFunction resolve, JSFunction reject);
-		public Promise $then(Consumer<Object> resolve, Consumer<Object> reject);
-		public Promise $finally(Runnable whenDone);
-		public Promise $catch(Consumer<String> onRejected);
-	}
-
 	public static JQuery jQuery = /** @j2sNative jQuery.$ || (jQuery.$ = jQuery) || */null;
 
 	// "abstract" in the sense that these are the exact calls to JavaScript
@@ -193,9 +178,10 @@ public interface DOMNode {
 		/**
 		 * @j2sNative
 		 * 
-		 *            if (node) for (var i = 0; i < av.length;) {
-		 *             node.style[av[i++]] = av[i++];
-		 *             }
+if (node)for (var i = 0, n = av.length; i < n;) {
+	var k = av[i++], v = av[i++];
+	node.style[k] != v && (node.style[k] = v);
+}
 		 * 
 		 */
 		return node;
@@ -331,5 +317,328 @@ public interface DOMNode {
 			return DOMNode.getAttr(node, type);
 		}
 	}
+
+	public interface HTML5Canvas extends DOMNode {
+
+		Context2D getContext(String str2d);
+
+		/*
+		 * Retrieves the byte[] data buffer from an HTML5 CANVAS element, optionally
+		 * first setting its contents to a source IMG, CANVAS, or VIDEO element.
+		 * 
+		 */
+		static byte[] getDataBufferBytes(HTML5Canvas canvas, DOMNode sourceNode, int w, int h) {
+			if (sourceNode != null) {
+				DOMNode.setAttrInt(canvas, "width", w);
+				DOMNode.setAttrInt(canvas, "height", h);
+			}
+			Context2D ctx = canvas.getContext("2d");
+			if (sourceNode != null) {
+				ctx.drawImage(sourceNode, 0, 0, w, h);
+			}
+			// Coerse int[] to byte[]
+			return (byte[]) (Object) ctx.getImageData(0, 0, w, h).data;
+		}
+
+		/**
+		 * Install a source image (img, video, or canvas) into a matching BufferedImage 
+		 * 
+		 * @param sourceNode
+		 * @param image
+		 */
+		static void setImageNode(DOMNode sourceNode, BufferedImage image) {
+			/**
+			 * @j2sNative
+			 * 
+			 * 			image._setImageNode$O$Z(sourceNode, false);
+			 * 
+			 */		{
+				// can't expose this image._setImageNode(sourceNode, false);
+			 }
+		}
+		
+		
+
+		static HTML5Canvas createCanvas(int width, int height, String id) {
+			HTML5Canvas canvas = (HTML5Canvas) DOMNode.createElement("canvas", (id == null ? "img" + Math.random() : id + ""));
+			DOMNode.setStyles(canvas, "width", width + "px", "height", height + "px");
+			/**
+			 * @j2sNative
+			 * 
+			 * canvas.width = width;
+			 * canvas.height = height;
+			 * 
+			 */
+			return canvas;
+		}
+
+		abstract class Context2D {
+
+			public class ImageData {
+				public int[] data; 
+			}
+
+			public ImageData imageData;
+			
+			public Object[][] _aSaved;
+			
+			public double lineWidth;
+
+			public String font, fillStyle, strokeStyle;
+
+			public float globalAlpha;
+
+			public abstract void drawImage(DOMNode img, double sx,
+					double sy, double swidth, double sheight, double dx, double dy, double width, double height);
+
+			public abstract ImageData getImageData(int x, int y, int width, int height);
+
+			public abstract void beginPath();
+
+			public abstract void moveTo(double x0, double y0);
+
+			public abstract void lineTo(double x1, double y1);
+
+			public abstract void stroke();
+
+			public abstract void save();
+
+			public abstract void scale(double f, double g);
+
+			public abstract void arc(double centerX, double centerY, double radius, double startAngle, double  endAngle, boolean counterclockwise);
+
+			public abstract void closePath();
+
+			public abstract void restore();
+
+			public abstract void translate(double x, double y);
+			
+			public abstract void rotate(double radians);
+
+			public abstract void fill();
+
+
+			public abstract void fill(String winding);
+
+			public abstract void rect(double x, double y, double width, double height);
+
+			public abstract void fillText(String s, double x, double y);
+
+			public abstract void fillRect(double x, double y, double width, double height);
+
+			public abstract void clearRect(double i, double j, double windowWidth, double windowHeight);
+
+			public abstract void setLineDash(int[] dash);
+
+			public abstract void clip();
+
+			public abstract void quadraticCurveTo(double d, double e, double f, double g);
+
+			public abstract void bezierCurveTo(double d, double e, double f, double g, double h, double i);
+
+			public abstract void drawImage(DOMNode img, double x, double y, double width, double height);
+
+			public abstract void putImageData(Object imageData, double x, double y);
+
+			public abstract void transform(double d, double shx, double e, double shy, double f, double g);
+
+
+			/**
+			 * pull one save structure onto the stack array ctx._aSaved
+			 * 
+			 * @param ctx
+			 * @return the length of the stack array after the push
+			 */
+			public static int push(Context2D ctx, Object[] map) {
+				/**
+				 * @j2sNative
+				 * 
+				 * (ctx._aSaved || (ctx._aSaved = [])).push(map); 
+				 * return ctx._aSaved.length;
+				 */
+				{
+					return 0;
+				}
+			}
+
+			/**
+			 * pull one save structure off the stack array ctx._aSaved
+			 * 
+			 * @param ctx
+			 * @return
+			 */
+			public static Object[] pop(Context2D ctx) {
+				/**
+				 * @j2sNative
+				 * 
+				 * return (ctx._aSaved && ctx._aSaved.length > 0 ? ctx._aSaved.pop() : null); 
+				 */
+				{
+					return null;
+				}
+			}
+
+			public static int getSavedLevel(Context2D ctx) {
+				/**
+				 * @j2sNative
+				 * 
+				 * return (ctx._aSaved ? ctx._aSaved.length : 0); 
+				 */
+				{
+					return 0;
+				}
+			}
+			
+			public static Object[][] getSavedStack(Context2D ctx) {
+			   /**
+			    * @j2sNative
+			    * 
+			    * return (ctx._aSaved || []);
+			    */
+				{
+					return null;
+				}
+				
+			}
+
+			@SuppressWarnings("null")
+			public static double[] setMatrix(Context2D ctx, AffineTransform transform) {
+				double[] m = /**  @j2sNative ctx._m || */ null;
+				if (transform == null) {
+					/** @j2sNative ctx._m = null; */
+					return null;			
+				}
+				if (m == null) {
+					/**
+					 * @j2sNative
+					 * ctx._m = m = new Array(6);
+					 */
+					transform.getMatrix(m);
+				}
+				return m;
+			}
+
+			public static void createLinearGradient(Context2D ctx, Float p1, Float p2, String css1, String css2) {
+				/**
+				 * @j2sNative
+				 * 
+				 *   var grd = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+				 *   grd.addColorStop(0,css1);
+				 *   grd.addColorStop(1,css2);
+				 *   ctx.fillStyle = grd;
+				 */
+				}
+
+			abstract public void drawImage(DOMNode domNode, int x, int y);
+
+		}
+
+	}
+
+	public interface JQuery {
+
+		  JQueryObject $(Object selector);
+
+		  DOMNode parseXML(String xmlData);
+		  
+		  boolean contains(Object outer, Object inner);
+
+		  Object parseJSON(String json);
+
+		  Object data(Object node, String attr);
+
+			public interface JQueryObject {
+
+				public interface JQEvent {
+
+				}
+
+				public abstract void appendTo(Object obj);
+
+				public abstract JQueryObject append(Object span);
+
+				public abstract void bind(String actions, Object f);
+
+				public abstract void unbind(String actions);
+
+				public abstract void on(String eventName, Object f);
+
+				public abstract JQueryObject focus();
+
+				public abstract JQueryObject select();
+
+				public abstract int width();
+
+				public abstract int height();
+
+				public abstract Insets offset();
+
+				public abstract void html(String html);
+
+				public abstract DOMNode get(int i);
+
+				public abstract String attr(String key);
+
+				public abstract JQueryObject attr(String key, String value);
+
+				public abstract JQueryObject css(String key, String value);
+
+				public abstract JQueryObject addClass(String name);
+
+				public abstract JQueryObject removeClass(String name);
+
+				public abstract JQueryObject show();
+
+				public abstract JQueryObject hide();
+
+				public abstract JQueryObject resize(Object fHandleResize);
+
+				/**
+				 * closest ancestor
+				 * 
+				 * @param selector
+				 * @return
+				 */
+				public abstract JQueryObject closest(String selector);
+
+				/**
+				 * find all descendants
+				 * 
+				 * @param selector
+				 * @return
+				 */
+				public abstract JQueryObject find(String selector);
+
+				public abstract JQueryObject parent();
+
+				public abstract JQueryObject before(Object obj);
+
+				public abstract JQueryObject after(Object div);
+
+				public abstract JQueryObject scrollTop(int top);
+
+				/**
+				 * remove from tree, but do not clear events
+				 */
+				public abstract JQueryObject detach(); // like remove(), but does not change event settings
+
+				/**
+				 * remove from tree and clear all events -- for disposal only
+				 */
+				public abstract JQueryObject remove();
+
+				/**
+				 * fully remove all children, clearing all events
+				 */
+				public abstract JQueryObject empty();
+
+				public abstract DOMNode getElement();
+
+				public static DOMNode getDOMNode(JQueryObject jnode) {
+					return (jnode == null ? null : ((DOMNode[]) (Object) jnode)[0]);
+				}
+			}		
+
+		}
 
 }

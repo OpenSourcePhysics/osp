@@ -49,9 +49,9 @@ import org.opensourcephysics.tools.ResourceLoader;
 
 import javajs.async.SwingJSUtils.StateHelper;
 import javajs.async.SwingJSUtils.StateMachine;
+import javajs.api.js.HTML5Applet.JSFunction;
 import swingjs.api.js.DOMNode;
 import swingjs.api.js.HTML5Video;
-import swingjs.api.js.JSFunction;
 
 /**
  * This is a video that uses HTML5/JS to read mp4, mov, and other movie video formats.
@@ -195,7 +195,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	 * Disposes of this video.
 	 */
 	@Override
-	public void dispose() {
+	public void dispose() {	
 		super.dispose();
 		DOMNode.dispose(jsvideo);
 		videoDialog.dispose();

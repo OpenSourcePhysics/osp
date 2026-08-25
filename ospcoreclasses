@@ -366,9 +366,8 @@ java/util/zip/ZipConstants.js
 java/util/zip/ZipEntry.js
 java/util/zip/ZipInputStream.js
 javajs/api/GenericLineReader.js
-
-javajs/api/JSFunction.js
 javajs/api/JSONEncodable.js
+javajs/api/JSUtilI.js
 
 javajs/async/Assets.js
 javajs/async/Async.js
@@ -888,13 +887,8 @@ swingjs/a2s/Dialog.js
 swingjs/a2s/Frame.js
 swingjs/a2s/Util.js
 swingjs/api/Interface.js
-swingjs/api/JSUtilI.js
 swingjs/api/js/DOMNode.js
-swingjs/api/js/HTML5Canvas.js
-swingjs/api/js/HTML5CanvasContext2D.js
 swingjs/api/js/HTML5Video.js
-swingjs/api/js/JQueryObject.js
-swingjs/api/js/JSFunction.js
 swingjs/api/js/JSInterface.js
 swingjs/jquery/JQueryUI.js
 swingjs/jzlib/Adler32.js

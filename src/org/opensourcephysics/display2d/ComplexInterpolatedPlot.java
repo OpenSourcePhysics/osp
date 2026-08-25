@@ -20,8 +20,6 @@ import org.opensourcephysics.display.Grid;
 import org.opensourcephysics.display.MeasuredImage;
 import org.opensourcephysics.display.OSPRuntime;
 
-import swingjs.api.JSUtilI;
-
 /**
  * ComplexInterpolatedPlot creates an image of a scalar field by interpolating every
  * image pixel to an untabulated point (x,y) in the 2d data.  This interpolation smooths
@@ -429,7 +427,7 @@ public void setExpandedZ(boolean expanded, double expansionFactor) {
 
     
     imageType = 
-    		(OSPRuntime.isJS ? JSUtilI.TYPE_4BYTE_HTML5
+    		(OSPRuntime.isJS ? OSPRuntime.TYPE_4BYTE_HTML5
     				: BufferedImage.TYPE_4BYTE_ABGR);
     image = new BufferedImage(width, height, imageType);
     pixelData = ((DataBufferByte)image.getRaster().getDataBuffer()).getData();

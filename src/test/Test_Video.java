@@ -42,8 +42,8 @@ import javax.swing.WindowConstants;
 
 import org.opensourcephysics.tools.FileDropHandler;
 
+import javajs.api.JSUtilI;
 import javajs.util.VideoReader;
-import swingjs.api.JSUtilI;
 import swingjs.api.js.HTML5Video;
 
 /**
