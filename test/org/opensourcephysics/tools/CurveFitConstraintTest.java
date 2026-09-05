@@ -99,8 +99,15 @@ public class CurveFitConstraintTest {
         return (JTable)((JScrollPane)fitter.splitPane.getRightComponent()).getViewport().getView();
     }
     static void toggle(JTable table, int row) {
-        check(table.editCellAt(row,1), "fixed checkbox editable");
-        ((JCheckBox)table.getEditorComponent()).doClick();
+        if (org.opensourcephysics.display.OSPRuntime.isJS) {
+            // This numerical fixture has no DOM. Live browser checkbox editing
+            // is exercised separately in the attached Data Tool UI test.
+            check(table.isCellEditable(row,1), "fixed checkbox editable");
+            table.getModel().setValueAt(!(Boolean)table.getValueAt(row,1),row,1);
+        } else {
+            check(table.editCellAt(row,1), "fixed checkbox editable");
+            ((JCheckBox)table.getEditorComponent()).doClick();
+        }
     }
     static String report(DatasetCurveFitter fitter) {
         int count=fitter.fit.getParameterCount(); boolean[] fixed=new boolean[count]; double[] sigma=new double[count];
