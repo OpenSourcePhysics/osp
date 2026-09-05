@@ -1180,7 +1180,21 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		splitPanes[0].setResizeWeight(0.7);
 		splitPanes[0].setOneTouchExpandable(true);
 		// splitPanes[1] is plot on top, fitter on bottom
-		splitPanes[1] = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		splitPanes[1] = new JSplitPane(JSplitPane.VERTICAL_SPLIT) {
+			@Override
+			public void doLayout() {
+				if (getBottomComponent() instanceof DatasetCurveFitter && getHeight() > 0) {
+					DatasetCurveFitter fitter = (DatasetCurveFitter) getBottomComponent();
+					java.awt.Insets insets = getInsets();
+					int width = getWidth() - insets.left - insets.right;
+					int required = fitter.prepareFitLayout(width);
+					setDividerLocation(Math.max(insets.top,
+							getHeight() - insets.bottom - getDividerSize() - required));
+				}
+				super.doLayout();
+			}
+
+		};
 		splitPanes[1].setResizeWeight(1);
 		splitPanes[1].setDividerSize(0);
 		// splitPanes[2] is stats/props tables on top, data table on bottom

@@ -253,17 +253,21 @@ public class DatasetCurveFitter extends JPanel {
 		autofitCheckBox.setSelected(autofit);
 		if (!autofit)
 			drawer.setUncertainties(null);
+		refreshFitStatistics();
 	}
 
 	// GUI
 
-	private JButton colorButton, closeButton;
+	private JButton colorButton, closeButton, copyFitReportButton;
 	private JCheckBox autofitCheckBox;
 	private JLabel fitLabel, eqnLabel, rmsLabel;
 	private JToolBar fitBar, eqnBar, rmsBar;
 	private JComboBox<String> fitDropDown;
 	private JTextField eqnField;
 	private NumberField rmsField;
+	private JPanel statisticsPanel;
+	private JLabel[] statisticLabels;
+	private static final int[] VISIBLE_STATISTICS = {0, 1, 2, 5, 3, 6};
 	private ParamTable paramTable;
 	private ParamCellRenderer cellRenderer;
 	private SpinCellEditor spinCellEditor; // uses number-crawler spinner
@@ -412,6 +416,7 @@ public class DatasetCurveFitter extends JPanel {
 			paramTable.setEnabled(false);
 			rmsField.setText(ToolsRes.getString("DatasetCurveFitter.RMSField.NoData")); //$NON-NLS-1$
 			rmsField.setForeground(Color.RED);
+			refreshFitStatistics();
 			return Double.NaN;
 		}
 		
@@ -560,12 +565,44 @@ public class DatasetCurveFitter extends JPanel {
 			rmsField.setValue(rmsDev);
 			rmsField.setToolTipText(null);
 		}
+		refreshFitStatistics();
+		refreshParameterLayout();
 		refreshStatusBar();
 		firePropertyChange(PROPERTY_DATASETCURVEFITTER_FIT, null, null);
 		if (tab != null && tab.areaVisible && tab.measureFit)
 			tab.plot.refreshArea();
 		
 		return rmsDev;
+	}
+
+	/** Refreshes display-only residual statistics without running the optimizer. */
+	private void refreshFitStatistics() {
+		if (statisticLabels == null) return;
+		double[] values = fit == null ? null : CurveFitReport.statistics(fit, dataset, fixedParams.get(fit), autofit);
+		for (int i = 0; i < statisticLabels.length; i++) {
+			int index = VISIBLE_STATISTICS[i];
+			String key = CurveFitReport.STATISTIC_KEYS[index];
+			double value = values == null ? Double.NaN : values[index];
+			String text = !Double.isFinite(value) ? ToolsRes.getString("DatasetCurveFitter.Report.NA")
+					: index < 3 ? Integer.toString((int) value)
+					: String.format(java.util.Locale.ROOT, "%.5g", value).replace('.', OSPRuntime.getCurrentDecimalSeparator());
+			statisticLabels[i].setText(ToolsRes.getString("DatasetCurveFitter.Statistics." + key) + ": " + text);
+			statisticLabels[i].setToolTipText(ToolsRes.getString("DatasetCurveFitter.Report." + key) + ": "
+					+ (Double.isFinite(value) ? Double.toString(value).replace('.', OSPRuntime.getCurrentDecimalSeparator()) : text));
+		}
+	}
+
+	/** Copies a snapshot of the current fit without fitting or rounding its data. */
+	private void copyFitResults(boolean includeStatistics) {
+		if (paramTable.isEditing() && !paramTable.getCellEditor().stopCellEditing())
+			return;
+		if (fit == null)
+			return;
+		double[] sigma = new double[fit.getParameterCount()];
+		for (int i = 0; i < sigma.length; i++)
+			sigma[i] = getUncertainty(i);
+		OSPRuntime.copy(CurveFitReport.create(fit, dataset, fixedParams.get(fit), sigma,
+				autofit, includeStatistics), null);
 	}
 
 	/**
@@ -613,41 +650,44 @@ public class DatasetCurveFitter extends JPanel {
 	}
 
 	/**
-	 * Returns two strings describing a parameter and its uncertainty.
-	 * One for display, other with more sig figs for tooltip
+	 * Returns a rounded parameter/uncertainty display and an unrounded tooltip.
+	 * Formatting never changes the fitted parameter or uncertainty.
 	 *
 	 * @param value the parameter value
-	 * @param sigma the uncertainty (may be null)
-	 * @return the format values {decimal places, format} or null if uncert unknown or zero
+	 * @param sigma the positive, finite uncertainty
+	 * @param extraPlaces significant digits beyond the first uncertainty digit
+	 * @param format retained for compatibility with existing callers
+	 * @return {display, tooltip}, or null if the uncertainty is unknown or zero
 	 */
 	public String[] formatUncertainParameter(double value, double sigma, int extraPlaces, NumberFormat format) {
-		if (Double.isNaN(sigma) || sigma <= 0) {
+		return formatParameterWithUncertainty(value, sigma, extraPlaces);
+	}
+
+	static String[] formatParameterWithUncertainty(double value, double sigma, int extraPlaces) {
+		if (Double.isNaN(sigma) || Double.isInfinite(sigma) || sigma <= 0) {
 			return null;
 		}
-		
-	  int exp = value == 0? 0: (int) Math.floor(Math.log10(Math.abs(value)));
-	  int expSig = sigma == 0? 0: (int) Math.floor(Math.log10(Math.abs(sigma)));
-	  if (expSig > exp)
-	  	exp = expSig;
-	  int shift = exp - expSig;
-	  double multiplier = Math.pow(10, -exp);
-	  int places = Math.max(0, shift) + extraPlaces;
-	  
-	  String val = String.format("%." + places + "f", value*multiplier);
-	  String sig = String.format("%." + places + "f", sigma*multiplier);
+		// Find the uncertainty exponent AFTER rounding, including carries such as
+		// 0.0996 -> 0.10. Both displayed numbers must end at the same place.
+		String roundedSigma = String.format(java.util.Locale.ROOT, "%." + extraPlaces + "e", sigma);
+		int expSig = Integer.parseInt(roundedSigma.substring(roundedSigma.indexOf('e') + 1));
+		int exp = value == 0 ? 0 : (int) Math.floor(Math.log10(Math.abs(value)));
+		exp = Math.max(exp, expSig);
+		int places = exp - expSig + extraPlaces;
+		double scale = Math.pow(10, exp);
+		String val = String.format(java.util.Locale.ROOT, "%." + places + "f", value / scale);
+		String sig = String.format(java.util.Locale.ROOT, "%." + places + "f", sigma / scale);
 		String formatted = val + " \u00B1 " + sig;
+		if (exp != 0)
+			formatted = "(" + formatted + ") E" + exp;
 		String separator = String.valueOf(OSPRuntime.getCurrentDecimalSeparator());
 		formatted = formatted.replace(".", separator);
-		if (exp != 0)
-			formatted = "(" + formatted +") " + String.format("E%d", exp);
-		
-		val = format.format(value);
-		sig = format.format(sigma);
-		String tooltip = val + " \u00B1 " + sig;
-		
+		// Double.toString preserves the stored double for subsequent calculations
+		// if a student transcribes the tooltip rather than the rounded report.
+		String tooltip = (Double.toString(value) + " \u00B1 " + Double.toString(sigma)).replace(".", separator);
 		return new String[] {formatted, tooltip};
 	}
-	
+
 	/**
 	 * Gets a fit function by name.
 	 * 
@@ -673,10 +713,9 @@ public class DatasetCurveFitter extends JPanel {
 
 	@Override
 	public Dimension getMinimumSize() {
-		Dimension dim = fitBar.getPreferredSize();
-		dim.height += eqnBar.getPreferredSize().height;
-		dim.height += rmsBar.getPreferredSize().height + 1;
-		return dim;
+		if (statisticsPanel == null) return super.getMinimumSize();
+		return new Dimension(fitBar.getPreferredSize().width,
+				splitPane.getPreferredSize().height + statisticsPanel.getPreferredSize().height + 4);
 	}
 
 	// _______________________ protected & private methods
@@ -687,7 +726,13 @@ public class DatasetCurveFitter extends JPanel {
 	 */
 	protected void createGUI() {
 		setLayout(new BorderLayout());
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT) {
+			@Override
+			public void doLayout() {
+				layoutFitPane();
+				super.doLayout();
+			}
+		};
 		splitPane.setResizeWeight(0.7);
 		splitPane.setDividerSize(6);
 		// create autofit checkbox
@@ -891,9 +936,12 @@ public class DatasetCurveFitter extends JPanel {
 		rmsField = new NumberField(6) {
 			@Override
 			public Dimension getPreferredSize() {
-				return fixSize(super.getPreferredSize());
+				Dimension size = fixSize(super.getPreferredSize());
+				size.width = Math.max(size.width, getFontMetrics(getFont()).stringWidth("-0.000E-000") + 12);
+				return size;
 			}
-
+			@Override
+			public Dimension getMinimumSize() { return getPreferredSize(); }
 		};
 		rmsField.setEditable(false);
 		rmsField.setEnabled(true);
@@ -915,10 +963,17 @@ public class DatasetCurveFitter extends JPanel {
 		});
 		JScrollPane scroller = new JScrollPane(paramTable) {
 			@Override
+			public Dimension getPreferredSize() {
+				return new Dimension(getMinimumSize().width,
+						paramTable.getPreferredSize().height + paramTable.getTableHeader().getPreferredSize().height + 6);
+			}
+			@Override
 			public Dimension getMinimumSize() {
-				Dimension dim = spinCellEditor.spinner.getPreferredSize();
-				dim.width += cellRenderer.fieldFont.getSize() * 7;
-				return dim;
+				paramTable.sizeColumnsToContents();
+				Dimension dim = paramTable.getMinimumSize();
+				java.awt.Insets insets = getInsets();
+				dim.width += insets.left + insets.right + getVerticalScrollBar().getPreferredSize().width;
+				return new Dimension(dim.width, spinCellEditor.spinner.getPreferredSize().height);
 			}
 		};
 		scroller.addMouseListener(new MouseAdapter() {
@@ -929,7 +984,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 		});
 		splitPane.setRightComponent(scroller);
-		add(getSplitPane(), BorderLayout.CENTER);
+		add(getSplitPane(), BorderLayout.NORTH);
 		// create fit builder button
 		fitBuilderButton = DataTool.createButton(ToolsRes.getString("DatasetCurveFitter.Button.Define.Text")); //$NON-NLS-1$
 		fitBuilderButton.addActionListener(new ActionListener() {
@@ -1010,7 +1065,21 @@ public class DatasetCurveFitter extends JPanel {
 		rmsBar.addSeparator();
 		rmsBar.add(rmsLabel);
 		rmsBar.add(rmsField);
+		rmsBar.addSeparator();
+		copyFitReportButton = new JButton();
+		copyFitReportButton.addActionListener(e -> copyFitResults(true));
+		rmsBar.add(copyFitReportButton);
 		rmsPanel.add(rmsBar, BorderLayout.NORTH);
+		statisticsPanel = new JPanel(new java.awt.GridLayout(0, 2, 10, 3));
+		statisticsPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		statisticLabels = new JLabel[VISIBLE_STATISTICS.length];
+		for (int i = 0; i < statisticLabels.length; i++) {
+			statisticLabels[i] = new JLabel();
+			statisticsPanel.add(statisticLabels[i]);
+		}
+		JPanel statisticsContainer = new JPanel(new BorderLayout());
+		statisticsContainer.add(statisticsPanel, BorderLayout.NORTH);
+		add(statisticsContainer, BorderLayout.CENTER);
 		refreshGUI();
 //    refreshFitDropDown();
 	}
@@ -1083,6 +1152,8 @@ public class DatasetCurveFitter extends JPanel {
 	 * Refreshes the GUI.
 	 */
 	protected void refreshGUI() {
+		copyFitReportButton.setText(ToolsRes.getString("DatasetCurveFitter.Button.CopyFitReport"));
+		copyFitReportButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.CopyFitReport.Tooltip"));
 		autofitCheckBox.setText(ToolsRes.getString("Checkbox.Autofit.Label")); //$NON-NLS-1$
 		rmsLabel.setText(ToolsRes.getString("DatasetCurveFitter.Label.RMSDeviation")); //$NON-NLS-1$
 		fitBuilderButton.setText(ToolsRes.getString("DatasetCurveFitter.Button.Define.Text")); //$NON-NLS-1$
@@ -1091,12 +1162,14 @@ public class DatasetCurveFitter extends JPanel {
 		eqnLabel.setText(ToolsRes.getString("DatasetCurveFitter.Label.Equation")); //$NON-NLS-1$
 		updateColorButton();
 		refreshFitDropDown();
+		refreshFitStatistics();
 	}
 	
 	/**
 	 * Refreshes the decimal separators.
 	 */
 	protected void refreshDecimalSeparators() {
+		refreshFitStatistics();
 		repaint();
 		spinCellEditor.field.setValue(spinCellEditor.field.getValue());
 	}
@@ -1231,18 +1304,62 @@ public class DatasetCurveFitter extends JPanel {
 			if (fitBuilder.isVisible()) {
 				fitBuilder.setSelectedPanel(fit.getName());
 			}
-			paramTable.getColumnModel().getColumn(1).setMaxWidth(getMinCheckboxColumnWidth() + 10);
+			refreshParameterLayout();
 			
 			revalidate();
 		}
 		setActiveAndFit(true);
 	}
 	
-	private int getMinCheckboxColumnWidth() {
-		String s = ToolsRes.getString("DatasetCurveFitter.Table.Heading.FixedParam");
-		Font font = paramTable.getTableHeader().getFont();
-		FontMetrics fm = paramTable.getTableHeader().getFontMetrics(font);
-		return fm.stringWidth(s);
+	/** Establishes orientation and height before the parent allocates plot space. */
+	int prepareFitLayout(int availableWidth) {
+		if (statisticsPanel == null || paramTable == null) return 0;
+		int width = Math.max(1, availableWidth - 4);
+		// Reserve room before uncertainties become available. Selection changes must
+		// not change the orientation or the height allocated to the plot.
+		int parameterWidth = paramTable.getFontMetrics(paramTable.getFont())
+				.stringWidth("Parameter   Fixed   (-0.00000 ± 0.00000) E-000") + 64;
+		int controlsWidth = Math.max(fitBar.getPreferredSize().width, rmsBar.getPreferredSize().width);
+		boolean stacked = width < controlsWidth + parameterWidth + splitPane.getDividerSize();
+		int orientation = stacked ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT;
+		if (splitPane.getOrientation() != orientation) {
+			splitPane.setOrientation(orientation);
+			splitPane.setResizeWeight(stacked ? 0 : 1);
+		}
+		int labelWidth = 0;
+		for (JLabel label : statisticLabels) {
+			String text = label.getText();
+			int colon = text.indexOf(':');
+			String reserved = (colon < 0 ? text : text.substring(0, colon + 1)) + " -0.00000E-000";
+			labelWidth = Math.max(labelWidth, label.getFontMetrics(label.getFont()).stringWidth(reserved));
+		}
+		java.awt.GridLayout layout = (java.awt.GridLayout) statisticsPanel.getLayout();
+		int columns = width < 2 * labelWidth + 18 ? 1 : 2;
+		if (layout.getColumns() != columns) {
+			layout.setColumns(columns);
+			statisticsPanel.revalidate();
+		}
+		int controlsHeight = splitPane.getLeftComponent().getPreferredSize().height;
+		int parameterHeight = splitPane.getRightComponent().getPreferredSize().height;
+		int infoHeight = (stacked ? controlsHeight + parameterHeight + splitPane.getDividerSize()
+				: Math.max(controlsHeight, parameterHeight)) + 4;
+		splitPane.setPreferredSize(new Dimension(availableWidth, infoHeight));
+		int divider = stacked ? controlsHeight
+				: Math.max(controlsWidth, Math.min(splitPane.getDividerLocation(), width - parameterWidth - splitPane.getDividerSize()));
+		if (splitPane.getDividerLocation() != divider) splitPane.setDividerLocation(divider);
+		return infoHeight + statisticsPanel.getPreferredSize().height + 4;
+	}
+
+	private void layoutFitPane() {
+		if (splitPane.getWidth() > 0) prepareFitLayout(splitPane.getWidth());
+	}
+
+	private void refreshParameterLayout() {
+		if (paramTable == null || cellRenderer == null || spinCellEditor == null) return;
+		paramTable.sizeColumnsToContents();
+		paramTable.revalidate();
+		if (splitPane.getOrientation() == JSplitPane.HORIZONTAL_SPLIT && splitPane.getWidth() > 0 && splitPane.getDividerLocation() > splitPane.getMaximumDividerLocation())
+			splitPane.setDividerLocation(splitPane.getMaximumDividerLocation());
 	}
 
 	protected UserFunction createClone(KnownFunction f, String name) {
@@ -1902,14 +2019,32 @@ public class DatasetCurveFitter extends JPanel {
 			header.addMouseListener(listener);
 		}
 		
+		/** Reserve space for the complete rendered values, including uncertainties. */
+		void sizeColumnsToContents() {
+			if (cellRenderer == null || spinCellEditor == null || getColumnCount() != 3) return;
+			for (int col = 0; col < 3; col++) {
+				int width = getTableHeader().getFontMetrics(getTableHeader().getFont())
+						.stringWidth(getColumnName(col)) + 16;
+				if (col == 2) width = Math.max(width, getFontMetrics(getFont())
+						.stringWidth("(-0.00000 ± 0.00000) E-000") + 16);
+				for (int row = 0; row < getRowCount(); row++) {
+					Component renderer = prepareRenderer(getCellRenderer(row, col), row, col);
+					width = Math.max(width, renderer.getPreferredSize().width + getIntercellSpacing().width + 12);
+				}
+				javax.swing.table.TableColumn column = getColumnModel().getColumn(col);
+				column.setMaxWidth(col < 2 ? width : Integer.MAX_VALUE);
+				column.setMinWidth(width);
+				column.setPreferredWidth(width);
+			}
+		}
+
 		public void showPopup(MouseEvent e) {
 			JPopupMenu popup = new JPopupMenu();
 			JMenuItem item = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Menuitem.CopyParameters")); //$NON-NLS-1$
-			item.addActionListener((ev) -> {
-				selectAll();
-				ActionEvent event = new ActionEvent(paramTable, ActionEvent.ACTION_PERFORMED, null);
-				getActionMap().get("copy").actionPerformed(event);					
-			});
+			item.addActionListener(ev -> copyFitResults(false));
+			popup.add(item);
+			item = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Button.CopyFitReport"));
+			item.addActionListener(ev -> copyFitResults(true));
 			popup.add(item);
 			popup.addSeparator();
 			JCheckBoxMenuItem scientificNotationItem = new JCheckBoxMenuItem("Scientific notation"); //$NON-NLS-1$
@@ -1931,6 +2066,18 @@ public class DatasetCurveFitter extends JPanel {
 				return getDefaultRenderer(getColumnClass(column));
 			}
 			return cellRenderer;
+		}
+
+		@Override
+		public boolean editCellAt(int row, int column, EventObject event) {
+			// Reject context-menu gestures before JTable initializes the editor:
+			// loading the parameter spinner can otherwise disable Autofit.
+			if (event instanceof MouseEvent) {
+				MouseEvent mouse = (MouseEvent) event;
+				if (OSPRuntime.isPopupTrigger(mouse) || !SwingUtilities.isLeftMouseButton(mouse))
+					return false;
+			}
+			return super.editCellAt(row, column, event);
 		}
 
 		@Override
@@ -1965,6 +2112,7 @@ public class DatasetCurveFitter extends JPanel {
 			}
 			getTableHeader().setFont(font);
 			setRowHeight(font.getSize() + 4);
+			refreshParameterLayout();
 			TableModel model = getModel();
 			if (model instanceof DefaultTableModel) {
 				DefaultTableModel tm = (DefaultTableModel) model;
@@ -2093,7 +2241,7 @@ public class DatasetCurveFitter extends JPanel {
 				DecimalFormat format = spinCellEditor.field.format;
 				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 				double uncertainty = getUncertainty(row);
-				String[] uncert = formatUncertainParameter((double)value, uncertainty, 0, format);
+				String[] uncert = formatUncertainParameter((double)value, uncertainty, 1, format);
 				if (Double.isNaN((Double)value)) {
 					tooltip = ToolsRes.getString("DatasetCurveFitter.InsufficientData.ToolTip"); //$NON-NLS-1$//$NON-NLS-2$
 				}
