@@ -26,7 +26,7 @@ public class CurveFitReportTest {
         String[] rows = report.split("\n");
         check(rows[0].startsWith("SUMMARY OUTPUT\tposition vs time\t"), "simple title and data-name fallback");
         check(rows[1].contains("position = ") && rows[1].contains("Automatic fit"), "second header contains model, equation, and mode");
-        for (String row : rows) check(row.split("\t", -1).length == 5, "five aligned spreadsheet columns");
+        for (String row : rows) check(splitTabs(row).length == 5, "five aligned spreadsheet columns");
         check(report.indexOf("Regression Statistics") < report.indexOf("ANOVA")
                 && report.indexOf("ANOVA") < report.indexOf("Parameter\tCoefficients"), "Excel-style section order");
         close(cell(report, "Multiple R", 1), Math.sqrt(stats[5]), "Multiple R");
@@ -72,7 +72,7 @@ public class CurveFitReportTest {
         double value = 1.2345678901234567, sigma = .0567890123456789;
         line.setParameterValue(0, value);
         String params = CurveFitReport.create(line, data, null, new double[] {sigma,.01}, true, false);
-        String[] first = params.split("\n")[1].split("\t", -1);
+        String[] first = splitTabs(params.split("\n")[1]);
         check(Double.doubleToLongBits(Double.parseDouble(first[1])) == Double.doubleToLongBits(value), "coefficient round-trips exactly");
         check(Double.doubleToLongBits(Double.parseDouble(first[2])) == Double.doubleToLongBits(sigma), "uncertainty round-trips exactly");
         check(params.split("\n").length == 3, "parameters-only export has one header and two rows");
@@ -88,11 +88,19 @@ public class CurveFitReportTest {
         System.out.println("Passed: " + passed);
     }
     static double cell(String report, String name, int column) {
-        for (String row : report.split("\n")) if (row.startsWith(name + "\t")) return Double.parseDouble(row.split("\t", -1)[column]);
+        for (String row : report.split("\n")) if (row.startsWith(name + "\t")) return Double.parseDouble(splitTabs(row)[column]);
         throw new AssertionError("Missing row: " + name);
     }
     static void close(double actual, double expected, String message) {
         check(Math.abs(actual - expected) < 1e-10 * Math.max(1,Math.abs(expected)), message + ": " + actual);
+    }
+    // Preserve trailing empty TSV cells even in SwingJS, whose String.split
+    // implementation does not support Java's negative-limit behavior.
+    static String[] splitTabs(String row) {
+        String[] cells = (row + " ").split("\t");
+        int last = cells.length - 1;
+        cells[last] = cells[last].substring(0, cells[last].length() - 1);
+        return cells;
     }
     static void check(boolean ok, String message) {
         if (!ok) throw new AssertionError(message);

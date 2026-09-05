@@ -583,12 +583,12 @@ public class DatasetCurveFitter extends JPanel {
 			int index = VISIBLE_STATISTICS[i];
 			String key = CurveFitReport.STATISTIC_KEYS[index];
 			double value = values == null ? Double.NaN : values[index];
-			String text = !Double.isFinite(value) ? ToolsRes.getString("DatasetCurveFitter.Report.NA")
+			String text = !CurveFitReport.isFinite(value) ? ToolsRes.getString("DatasetCurveFitter.Report.NA")
 					: index < 3 ? Integer.toString((int) value)
-					: String.format(java.util.Locale.ROOT, "%.5g", value).replace('.', OSPRuntime.getCurrentDecimalSeparator());
+					: formatRoot("%.5g", value).replace('.', OSPRuntime.getCurrentDecimalSeparator());
 			statisticLabels[i].setText(ToolsRes.getString("DatasetCurveFitter.Statistics." + key) + ": " + text);
 			statisticLabels[i].setToolTipText(ToolsRes.getString("DatasetCurveFitter.Report." + key) + ": "
-					+ (Double.isFinite(value) ? Double.toString(value).replace('.', OSPRuntime.getCurrentDecimalSeparator()) : text));
+					+ (CurveFitReport.isFinite(value) ? Double.toString(value).replace('.', OSPRuntime.getCurrentDecimalSeparator()) : text));
 		}
 	}
 
@@ -663,20 +663,30 @@ public class DatasetCurveFitter extends JPanel {
 		return formatParameterWithUncertainty(value, sigma, extraPlaces);
 	}
 
+	/** Locale-stable formatting supported by both Java and the SwingJS runtime. */
+	private static String formatRoot(String pattern, double value) {
+		java.util.Formatter formatter = new java.util.Formatter(java.util.Locale.ROOT);
+		try {
+			return formatter.format(pattern, value).toString();
+		} finally {
+			formatter.close();
+		}
+	}
+
 	static String[] formatParameterWithUncertainty(double value, double sigma, int extraPlaces) {
 		if (Double.isNaN(sigma) || Double.isInfinite(sigma) || sigma <= 0) {
 			return null;
 		}
 		// Find the uncertainty exponent AFTER rounding, including carries such as
 		// 0.0996 -> 0.10. Both displayed numbers must end at the same place.
-		String roundedSigma = String.format(java.util.Locale.ROOT, "%." + extraPlaces + "e", sigma);
+		String roundedSigma = formatRoot("%." + extraPlaces + "e", sigma);
 		int expSig = Integer.parseInt(roundedSigma.substring(roundedSigma.indexOf('e') + 1));
 		int exp = value == 0 ? 0 : (int) Math.floor(Math.log10(Math.abs(value)));
 		exp = Math.max(exp, expSig);
 		int places = exp - expSig + extraPlaces;
 		double scale = Math.pow(10, exp);
-		String val = String.format(java.util.Locale.ROOT, "%." + places + "f", value / scale);
-		String sig = String.format(java.util.Locale.ROOT, "%." + places + "f", sigma / scale);
+		String val = formatRoot("%." + places + "f", value / scale);
+		String sig = formatRoot("%." + places + "f", sigma / scale);
 		String formatted = val + " \u00B1 " + sig;
 		if (exp != 0)
 			formatted = "(" + formatted + ") E" + exp;
@@ -2027,7 +2037,9 @@ public class DatasetCurveFitter extends JPanel {
 						.stringWidth(getColumnName(col)) + 16;
 				if (col == 2) width = Math.max(width, getFontMetrics(getFont())
 						.stringWidth("(-0.00000 ± 0.00000) E-000") + 16);
-				for (int row = 0; row < getRowCount(); row++) {
+				// A detached SwingJS checkbox renderer cannot measure its DOM node.
+				// The fixed column already has room from its header and padding.
+				for (int row = 0; col != 1 && row < getRowCount(); row++) {
 					Component renderer = prepareRenderer(getCellRenderer(row, col), row, col);
 					width = Math.max(width, renderer.getPreferredSize().width + getIntercellSpacing().width + 12);
 				}

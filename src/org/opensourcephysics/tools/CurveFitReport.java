@@ -63,15 +63,20 @@ final class CurveFitReport {
     private static boolean hasDistinctAbscissas(Dataset data, int required) {
         java.util.HashSet<Double> distinct = new java.util.HashSet<Double>();
         for (double x : data.getValidXPoints()) {
-            if (!Double.isFinite(x)) return false;
+            if (!isFinite(x)) return false;
             distinct.add(x == 0 ? 0.0 : x);
             if (distinct.size() >= required) return true;
         }
         return false;
     }
 
+    // SwingJS does not expose Java 8's Double.isFinite overload.
+    static boolean isFinite(double value) {
+        return !Double.isNaN(value) && !Double.isInfinite(value);
+    }
+
     private static String integer(double value) {
-        return Double.isFinite(value) ? Integer.toString((int) value) : label("NA");
+        return isFinite(value) ? Integer.toString((int) value) : label("NA");
     }
 
     /** n, p, df, SSE, RMS, R-squared, residual standard error, SST; shared by screen and export. */
@@ -92,17 +97,17 @@ final class CurveFitReport {
             double delta = y[i] - mean;
             mean += delta / (i + 1);
             sst += delta * (y[i] - mean);
-            if (!Double.isFinite(x[i]) || !Double.isFinite(y[i]) || !Double.isFinite(predicted)
+            if (!isFinite(x[i]) || !isFinite(y[i]) || !isFinite(predicted)
                     || (fit instanceof UserFunction && ((UserFunction) fit).evaluatedToNaN()))
                 sse = Double.NaN;
         }
         int df = n - freeParameters;
-        boolean valid = n > 0 && Double.isFinite(sse);
+        boolean valid = n > 0 && isFinite(sse);
         return new double[] {n, freeParameters, autofit && n > 0 ? df : Double.NaN,
                 valid ? sse : Double.NaN, valid ? Math.sqrt(sse / n) : Double.NaN,
-                valid && Double.isFinite(sst) && sst > 0 ? 1 - sse / sst : Double.NaN,
+                valid && isFinite(sst) && sst > 0 ? 1 - sse / sst : Double.NaN,
                 valid && autofit && df > 0 ? Math.sqrt(sse / df) : Double.NaN,
-                n > 0 && Double.isFinite(sst) ? sst : Double.NaN};
+                n > 0 && isFinite(sst) ? sst : Double.NaN};
     }
 
     private static String label(String key) {
@@ -110,7 +115,7 @@ final class CurveFitReport {
     }
 
     private static String number(double value) {
-        return Double.isFinite(value)
+        return isFinite(value)
                 ? Double.toString(value).replace('.', OSPRuntime.getCurrentDecimalSeparator()) : label("NA");
     }
 
