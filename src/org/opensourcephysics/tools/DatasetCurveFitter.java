@@ -464,7 +464,8 @@ public class DatasetCurveFitter extends JPanel {
 		
 		if (nothingToTest) {
 			setUncertainties(null);
-			tab.refreshPlot();
+			if (tab != null)
+				tab.refreshPlot();
 			drawer.functionChanged = true;
 			paramTable.repaint();		
 		}		
@@ -552,7 +553,7 @@ public class DatasetCurveFitter extends JPanel {
 		if (devSq == 0) {
 			devSq = getDevSquared(fit, x, y);
 		}
-		double rmsDev = fit.getParameterCount() > x.length && autofit? 
+		double rmsDev = getFreeParameterCount(fit) > x.length && autofit?
 				Double.NaN: 
 				Math.sqrt(devSq / x.length);
 
@@ -1483,6 +1484,13 @@ public class DatasetCurveFitter extends JPanel {
 			return null;
 		
 		double minChiSquared = calibrateChiSquared(fitted, x, y);
+		// A perfect fit has zero residual variance. Test identifiability using
+		// unscaled residuals so zero variance does not cause division by zero.
+		boolean perfectFit = sigma_y_squared == 0;
+		if (perfectFit) {
+			sigma_y_squared = 1;
+			minChiSquared = 0;
+		}
 				
 		int paramCount = original.getParameterCount();
 		double[] params = new double[paramCount];
@@ -1506,7 +1514,8 @@ public class DatasetCurveFitter extends JPanel {
 		ArrayList<double[]> results = new ArrayList<double[]>();
 		
 		// for each parameter in fitted function, measure curvature of chi squared to get sigma
-		double[] sigmas = new double[paramCount];    
+		double[] sigmas = new double[paramCount];
+		java.util.Arrays.fill(sigmas, Double.NaN);
     for (int i = 0; i < paramCount; i++) {
     	
     	if (fittedParamIndex[i] < 0) {
@@ -1542,9 +1551,10 @@ public class DatasetCurveFitter extends JPanel {
 				twiceDeltaChiSq = chiSq - 2 * minChiSquared;
 				tries ++;
     	}
-    	if (twiceDeltaChiSq > 0) { // success: positive curvature so can determine sigma
+			if (CurveFitReport.isFinite(twiceDeltaChiSq) && twiceDeltaChiSq >= 0.001) {
+				// Only report an uncertainty when the profile has measurable curvature.
 				// use eqn 8.13 in Data Reduction and Error Analysis For the Physical Sciences
-    		sigmas[i] = delta * Math.sqrt(2 / twiceDeltaChiSq);
+				sigmas[i] = perfectFit ? 0 : delta * Math.sqrt(2 / twiceDeltaChiSq);
     		
     		// offset fixed parameter by +/- sigma and save test parameters for drawer
 	    	for (int j = 0; j < 2; j++) {
@@ -1829,6 +1839,16 @@ public class DatasetCurveFitter extends JPanel {
   	testFunction.setParameters(paramNames, paramValues, desc);
     testFunction.setExpression(expression, new String[] {"x"}); //$NON-NLS-1$ //$NON-NLS-2$
     return testFunction;
+	}
+
+	/** Counts the parameters the optimizer can change. */
+	private int getFreeParameterCount(KnownFunction function) {
+		boolean[] fixed = fixedParams.get(function);
+		int count = 0;
+		for (int i = 0; i < function.getParameterCount(); i++) {
+			if (fixed == null || i >= fixed.length || !fixed[i]) count++;
+		}
+		return count;
 	}
 
 	/**
@@ -2168,7 +2188,7 @@ public class DatasetCurveFitter extends JPanel {
 			
 			// if insufficient points to do fit return NaN
 			if (dataset == null || 
-					(autofit && fit.getParameterCount() > dataset.getValidXPoints().length))
+					(autofit && getFreeParameterCount(fit) > dataset.getValidXPoints().length))
 				return Double.NaN;				
 
 			return Double.valueOf(fit.getParameterValue(row));
@@ -2178,8 +2198,12 @@ public class DatasetCurveFitter extends JPanel {
 		public void setValueAt(Object value, int row, int col) {
 			if (col == 1) {
 				boolean[] fixed = fixedParams.get(fit);
-				if (fixed != null && fixed.length > row) {
-					fixed[row] = (Boolean)value;
+				if (fixed != null && fixed.length > row && fixed[row] != (Boolean) value) {
+					fixed[row] = (Boolean) value;
+					// Constraint changes invalidate the previous covariance estimates.
+					setUncertainties(null);
+					fit(fit);
+					fireTableRowsUpdated(0, getRowCount() - 1);
 				}
 			}
 		}
