@@ -38,7 +38,16 @@ public class CurveFitPopupTest {
                     reject(table, column, MouseEvent.BUTTON3, 0, true, "right-click popup");
                     reject(table, column, MouseEvent.BUTTON3, 0, false, "right-click before popup release");
                     reject(table, column, MouseEvent.BUTTON1, InputEvent.CTRL_DOWN_MASK, true, "Control-click popup");
-                    reject(table, column, MouseEvent.BUTTON1, InputEvent.CTRL_DOWN_MASK, false, "macOS Control-click");
+                    if (org.opensourcephysics.display.OSPRuntime.isMac()) {
+                        reject(table, column, MouseEvent.BUTTON1, InputEvent.CTRL_DOWN_MASK, false, "macOS Control-click");
+                    } else {
+                        allowEditor[0] = true;
+                        MouseEvent controlClick = new MouseEvent(table, MouseEvent.MOUSE_PRESSED, 0,
+                                InputEvent.CTRL_DOWN_MASK, 5, 5, 1, false, MouseEvent.BUTTON1);
+                        check(table.editCellAt(0, column, controlClick), "non-popup Control-click permits editing");
+                        table.getCellEditor().cancelCellEditing();
+                        allowEditor[0] = false;
+                    }
                 }
                 check(fitter.isAutoFit(), "Autofit preserved");
                 check(fitter.getUncertainty(0) == .05, "uncertainty preserved");
