@@ -23,3 +23,14 @@ context-menu gestures preserve Autofit while left-click editing remains availabl
 The constraint test checks immediate refitting and report updates after fixed
 checkbox edits, manual-mode preservation, one-point constrained fits, and unknown
 uncertainties for non-identifiable models (including perfect fits).
+
+Statistical conventions: R Square and Adjusted R Square use centered total
+sums of squares, including fits through zero (Excel uses an uncentered total
+for those fits). Residual degrees of freedom use the numerical rank of the
+free-parameter Jacobian; the displayed free count still counts editable parameters.
+Rank uses normalized columns and a tolerance of 1e-7; for nonlinear models this
+is a local linear approximation, not proof of global identifiability.
+Multiple R and classical regression ANOVA are restricted to full-rank,
+unconstrained automatic polynomial fits. Parameter standard errors retain
+Tracker's profile-curvature method, which may differ from Jacobian covariance
+estimates for nonlinear models; they are not 95% confidence intervals.
