@@ -183,6 +183,15 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected DatasetManager dataManager = new DatasetManager(); // datasets in this tab
 	protected JSplitPane[] splitPanes;
 	protected DataToolPlotter plot;
+    private FitMetadataProvider fitMetadataProvider;
+    /** Live metadata only; data values and saved project state are unaffected. */
+    public void setFitMetadataProvider(FitMetadataProvider provider) {
+        fitMetadataProvider=provider;
+        if(curveFitter!=null)curveFitter.refreshUncertaintyModel();
+    }
+    FitMetadataProvider getFitMetadataProvider() { return fitMetadataProvider; }
+    public void setColumnUnits(String name,String units) { dataTable.setUnits(name,units,null); }
+
 	protected DataToolTable dataTable;
 	protected DataToolStatsTable statsTable;
 	protected DataToolPropsTable propsTable;
@@ -784,6 +793,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @param ID the ID number of the desired column
 	 * @return the tab column name, or null if not found
 	 */
+    /** Resolve a source column without confusing linked x and y columns sharing an ID. */
+    public String getColumnName(int ID,int sourceColumn) {
+        for(Dataset column:dataManager.getDatasetsRaw())
+            if(column.getID()==ID && column.getColumnID()==sourceColumn)return column.getYColumnName();
+        return null;
+    }
+
 	public String getColumnName(int ID) {
 		for (Dataset column : dataManager.getDatasetsRaw()) {
 			if (column.getID() == ID)

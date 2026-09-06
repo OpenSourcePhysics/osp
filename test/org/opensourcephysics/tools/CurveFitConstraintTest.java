@@ -34,7 +34,7 @@ public class CurveFitConstraintTest {
         check(labels(fitter).contains("Free parameters: 1"), "free count refreshed immediately");
         check(labels(fitter).contains("Degrees of freedom: 3"), "degrees of freedom refreshed immediately");
         String report = report(fitter);
-        check(report.contains("A\t2.0\tN/A\tYes"), "export identifies fixed slope");
+        check(report.contains("A\t2.0\tN/A\t\tYes"), "export identifies fixed slope");
         close(CurveFitReportTest.cell(report, "B", 2), Math.sqrt(.04/3/4), "export uses new intercept uncertainty");
 
         toggle(table, 1);
@@ -67,7 +67,7 @@ public class CurveFitConstraintTest {
         fitter = line(data(new double[] {0,1,2,3}, new double[] {1,3,5,7}));
         close(fitter.getUncertainty(0), 0, "identifiable perfect-fit slope retains zero uncertainty");
         close(fitter.getUncertainty(1), 0, "identifiable perfect-fit intercept retains zero uncertainty");
-        check(report(fitter).contains("A\t2.0\t0.0\tNo"), "legitimate zero uncertainty exported");
+        check(report(fitter).contains("A\t2.0\t0.0\t\tNo"), "legitimate zero uncertainty exported");
         for (double[] y : new double[][] {{.1,1.9,3.9,6.1}, {0,2,4,6}}) {
             fitter = line(data(new double[] {0,1,2,3}, y));
             UserFunction redundant = new UserFunction("Redundant");

@@ -10,27 +10,45 @@ final class CurveFitReport {
 
     static String create(KnownFunction fit, Dataset data, boolean[] fixed,
             double[] uncertainties, boolean autofit, boolean includeStatistics) {
-        StringBuilder out = new StringBuilder();
-        if (includeStatistics) {
-            String xName = data == null ? "x" : data.getXColumnName();
-            String yName = data == null ? "y" : data.getYColumnName();
-            String dataName = data == null ? "" : data.getName();
-            if (dataName == null || dataName.trim().isEmpty()) dataName = yName + " vs " + xName;
-            row(out, label("Summary"), dataName);
-            row(out, label("Model"), fit.getName(), label("Equation"),
-                    yName + " = " + fit.getExpression(xName), label(autofit ? "Auto" : "Manual"));
-            row(out);
-            double[] stats = statistics(fit, data, fixed, autofit);
-            double n = stats[0], p = stats[1], df = stats[2], sse = stats[3], r2 = stats[5], sst = stats[7];
-            row(out, label("RegressionStatistics"));
-            row(out, label("MultipleR"), number(autofit && fit instanceof KnownPolynomial
-                    && p == fit.getParameterCount() && stats[8] == p && r2 >= 0
-                    ? Math.sqrt(r2) : Double.NaN));
-            row(out, label("RSquare"), number(r2));
-            row(out, label("AdjustedRSquare"), number(autofit && df > 0 && n > 1 && sst > 0
-                    ? 1 - (sse / df) / (sst / (n - 1)) : Double.NaN));
-            row(out, label("StandardError"), number(stats[6]));
-            row(out, label("Observations"), Integer.toString((int) n));
+        return create(fit,data,fixed,uncertainties,autofit,includeStatistics,null,null,FitUncertainty.estimated(),Double.NaN);
+    }
+    static String create(KnownFunction fit, Dataset data, boolean[] fixed,
+            double[] uncertainties, boolean autofit, boolean includeStatistics,
+            String xUnits, String yUnits, FitUncertainty uncertainty, double unitsPerPixel) {
+        StringBuilder out=new StringBuilder();
+        if(includeStatistics) {
+            String xName=data==null?"x":data.getXColumnName(), yName=data==null?"y":data.getYColumnName();
+            row(out,label("Fit"),data==null?"":data.getName());
+            row(out,label("Model"),fit.getName(),label(autofit?"Auto":"Manual"));
+            row(out,label("XVariable"),org.opensourcephysics.display.ExportText.header(xName,xUnits));
+            row(out,label("YVariable"),org.opensourcephysics.display.ExportText.header(yName,yUnits));
+            row(out,label("Equation"),org.opensourcephysics.display.ExportText.ascii(yName+" = "+fit.getExpression(xName)));
+            double[] stats=statistics(fit,data,fixed,autofit);
+            double n=stats[0],p=stats[1],df=stats[2],sse=stats[3],r2=stats[5],sst=stats[7];
+            row(out,label("Observations"),integer(n));
+            row(out,label("Free"),integer(p));
+            row(out,label("Rank"),stats[8]<0?label("NA"):integer(stats[8]));
+            row(out,label("DF"),integer(df));
+            if(autofit && stats[8]>=0 && stats[8]<p)row(out,label("Identifiability"));
+            row(out);row(out,label("Residuals"));
+            row(out,label("SSE"),number(sse));
+            row(out,label("RMSResidual"),number(stats[4]));
+            row(out,label("ResidualStandardError"),number(stats[6]));
+            row(out);row(out,label("Goodness"));
+            row(out,label("RSquare"),number(r2));
+            row(out,label("AdjustedRSquare"),number(autofit && df>0 && n>1 && sst>0?1-(sse/df)/(sst/(n-1)):Double.NaN));
+            row(out,label("MultipleR"),number(autofit && fit instanceof KnownPolynomial && p==fit.getParameterCount()
+                && stats[8]==p && r2>=0?Math.sqrt(r2):Double.NaN));
+            double[] chi=uncertainty.statistics(stats,autofit,unitsPerPixel);
+            row(out,label("ChiSquare"),number(chi[1]));
+            row(out,label("ReducedChiSquare"),number(chi[2]),uncertainty.mode==FitUncertainty.ESTIMATED && isFinite(chi[2])?label("ByConstruction"):"");
+            row(out,label("ChiProbability"),number(chi[3]));
+            row(out,label("R2Description"));
+            row(out);row(out,label("UncertaintyModel"),label(uncertainty.mode==FitUncertainty.ESTIMATED?"Estimated":"Specified"));
+            row(out,label(uncertainty.mode==FitUncertainty.ESTIMATED?"EstimatedSigma":"SpecifiedSigma"),number(chi[0]),org.opensourcephysics.display.ExportText.ascii(yUnits));
+            if(uncertainty.mode==FitUncertainty.PIXELS)row(out,label("SigmaPixels"),number(uncertainty.value),"pixels");
+            if(uncertainty.mode==FitUncertainty.ESTIMATED)row(out,label("EstimatedCaution"));
+            else row(out,label("QCaution"));
             row(out);
             row(out, label("ANOVA"));
             row(out, "", "df", "SS", "MS", "F");
@@ -49,17 +67,27 @@ final class CurveFitReport {
             row(out, label("Total"), n > 0 ? Integer.toString((int) n - 1) : label("NA"), number(sst));
             row(out);
         }
-        // Exactly one numeric coefficient and uncertainty per parameter. No
-        // duplicate rounded column: rounding belongs to the on-screen display.
-        row(out, label("Parameter"), label("Coefficients"), label("StandardError"), label("Fixed"));
-        for (int i = 0; i < fit.getParameterCount(); i++) {
-            boolean isFixed = fixed != null && i < fixed.length && fixed[i];
-            double sigma = autofit && !isFixed && uncertainties != null && i < uncertainties.length
-                    ? uncertainties[i] : Double.NaN;
-            if (sigma < 0) sigma = Double.NaN;
-            row(out, fit.getParameterName(i), number(fit.getParameterValue(i)), number(sigma), label(isFixed ? "Yes" : "No"));
+        if(includeStatistics)row(out,label("Parameters"));
+        row(out,label("Parameter"),label("Coefficients"),label("StandardError"),label("Units"),label("Fixed"));
+        for(int i=0;i<fit.getParameterCount();i++) {
+            boolean isFixed=fixed!=null && i<fixed.length && fixed[i];
+            double sigma=autofit && !isFixed && uncertainties!=null && i<uncertainties.length?uncertainties[i]:Double.NaN;
+            if(sigma<0)sigma=Double.NaN;
+            row(out,fit.getParameterName(i),number(fit.getParameterValue(i)),number(sigma),
+                coefficientUnits(fit,i,xUnits,yUnits),label(isFixed?"Yes":"No"));
         }
         return out.toString();
+    }
+    static String coefficientUnits(KnownFunction fit,int parameter,String xUnits,String yUnits) {
+        if(!(fit instanceof KnownPolynomial))return "";
+        String x=org.opensourcephysics.display.ExportText.ascii(xUnits).trim();
+        String y=org.opensourcephysics.display.ExportText.ascii(yUnits).trim();
+        int power=fit.getParameterCount()-1-parameter;
+        if(y.length()==0)return "";
+        if(power==0)return y;
+        if(x.length()==0)return "";
+        String denominator=x.matches("[A-Za-z0-9_]+")?x:"("+x+")";
+        return y+"/"+denominator+(power==1?"":"^"+power);
     }
 
     private static boolean hasDistinctAbscissas(Dataset data, int required) {
@@ -117,7 +145,7 @@ final class CurveFitReport {
      * Column normalization makes the tolerance independent of parameter units.
      * For nonlinear models this is a local, linearized degrees-of-freedom estimate.
      */
-    private static int parameterRank(KnownFunction fit, boolean[] fixed, double[] x) {
+    static int parameterRank(KnownFunction fit, boolean[] fixed, double[] x) {
         KnownFunction probe = fit.clone();
         double[][] columns = new double[fit.getParameterCount()][x.length];
         int count = 0;

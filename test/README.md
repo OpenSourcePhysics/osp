@@ -8,7 +8,7 @@ with the built JAR:
 ```sh
 mkdir -p /tmp/osp-fit-tests
 javac -cp /path/to/osp.jar -d /tmp/osp-fit-tests test/org/opensourcephysics/tools/*.java
-for test in CurveFitPrecisionTest CurveFitReportTest CurveFitPopupTest CurveFitDataToolLayoutTest CurveFitConstraintTest; do
+for test in CurveFitPrecisionTest CurveFitReportTest CurveFitPopupTest CurveFitDataToolLayoutTest CurveFitConstraintTest CurveFitPhysicsTest; do
   java -cp /tmp/osp-fit-tests:/path/to/osp.jar org.opensourcephysics.tools.$test || exit 1
 done
 ```
@@ -34,3 +34,14 @@ Multiple R and classical regression ANOVA are restricted to full-rank,
 unconstrained automatic polynomial fits. Parameter standard errors retain
 Tracker's profile-curvature method, which may differ from Jacobian covariance
 estimates for nonlinear models; they are not 95% confidence intervals.
+
+
+The physics test covers raw/formatted exports with tab/comma delimiters, absent,
+complete and mixed unit metadata, paste round trips, polynomial parameter units,
+and the absence of guessed UserFunction units. It also checks residual-estimated
+and supplied common uncertainties, chi-square probabilities, unchanged
+coefficients, profile-error scaling, numerical rank, fixed parameters, perfect
+fits, fractional pixel inputs, and a live host metadata provider.
+
+See [fit-report-physics.md](fit-report-physics.md) for statistical definitions,
+metadata integration, and the limits of pixel conversion.

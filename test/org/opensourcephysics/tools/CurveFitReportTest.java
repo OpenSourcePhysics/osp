@@ -24,11 +24,11 @@ public class CurveFitReportTest {
         close(stats[7], 20.04, "total sum of squares");
         String report = CurveFitReport.create(line, data, null, new double[] {.0632455532033676, .1183215956619923}, true, true);
         String[] rows = report.split("\n");
-        check(rows[0].startsWith("SUMMARY OUTPUT\tposition vs time\t"), "simple title and data-name fallback");
-        check(rows[1].contains("position = ") && rows[1].contains("Automatic fit"), "second header contains model, equation, and mode");
+        check(rows[0].startsWith("FIT\t"), "simple title and data-name fallback");
+        check(report.contains("Equation\tposition = ") && rows[1].contains("Automatic fit"), "second header contains model, equation, and mode");
         for (String row : rows) check(splitTabs(row).length == 5, "five aligned spreadsheet columns");
-        check(report.indexOf("Regression Statistics") < report.indexOf("ANOVA")
-                && report.indexOf("ANOVA") < report.indexOf("Parameter\tCoefficients"), "Excel-style section order");
+        check(report.indexOf("GOODNESS OF FIT") < report.indexOf("ANOVA")
+                && report.indexOf("ANOVA") < report.indexOf("Parameter\tCoefficients"), "physics sections before supplementary ANOVA");
         close(cell(report, "Multiple R", 1), Math.sqrt(stats[5]), "Multiple R");
         close(cell(report, "Adjusted R Square (centered)", 1), 1 - (.04/2)/(20.04/3), "Adjusted R Square");
         close(cell(report, "Regression", 1), 1, "regression df");
@@ -45,11 +45,11 @@ public class CurveFitReportTest {
         check(rows[rows.length - 1].startsWith("B\t"), "report ends with coefficients, without a prose footer");
         report = CurveFitReport.create(line, data, new boolean[] {true, false}, new double[] {.05, .01}, true, true);
         close(cell(report, "Residual", 1), 3, "fixed parameter excluded from p");
-        check(report.contains("A\t2.0\tN/A\tYes"), "fixed coefficient has no uncertainty");
+        check(report.contains("A\t2.0\tN/A\t\tYes"), "fixed coefficient has no uncertainty");
         check(report.contains("Regression\tN/A\tN/A\tN/A\tN/A"), "no classical regression ANOVA for constrained fits");
         report = CurveFitReport.create(line, data, null, new double[] {.05, .01}, false, true);
-        check(report.contains("Manual parameters") && report.contains("A\t2.0\tN/A\tNo"), "manual mode does not reuse uncertainties");
-        check(report.contains("Standard Error\tN/A"), "manual mode has no fitted residual standard error");
+        check(report.contains("Manual parameters") && report.contains("A\t2.0\tN/A\t\tNo"), "manual mode does not reuse uncertainties");
+        check(report.contains("Residual standard error\tN/A"), "manual mode has no fitted residual standard error");
         KnownPolynomial parabola = new KnownPolynomial(new double[] {0, 0, 1});
         Dataset curved = new Dataset();
         curved.append(new double[] {-2, -1, 0, 1, 2}, new double[] {4, 1, 0, 1, 4});
@@ -106,7 +106,7 @@ public class CurveFitReportTest {
         check(Double.doubleToLongBits(Double.parseDouble(first[1])) == Double.doubleToLongBits(value), "coefficient round-trips exactly");
         check(Double.doubleToLongBits(Double.parseDouble(first[2])) == Double.doubleToLongBits(sigma), "uncertainty round-trips exactly");
         check(params.split("\n").length == 3, "parameters-only export has one header and two rows");
-        check(first[3].equals("No") && first[4].isEmpty(), "coefficient and uncertainty each exported once");
+        check(first[4].equals("No") && first[3].isEmpty(), "coefficient and uncertainty each exported once");
         check(line.getParameterValue(0) == value, "copying leaves model unchanged");
         OSPRuntime.setPreferredDecimalSeparator(",");
         params = CurveFitReport.create(line, data, null, new double[] {sigma,.01}, true, false);
