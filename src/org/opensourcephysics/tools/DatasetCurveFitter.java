@@ -306,7 +306,7 @@ public class DatasetCurveFitter extends JPanel {
 
 	// GUI
 
-	private JButton colorButton, closeButton, copyFitReportButton;
+	private JButton colorButton, closeButton, copyFitReportButton, copyFitOptionsButton;
 	private JCheckBox autofitCheckBox;
 	private JLabel fitLabel, eqnLabel, rmsLabel;
 	private JToolBar fitBar, eqnBar, rmsBar;
@@ -645,6 +645,10 @@ public class DatasetCurveFitter extends JPanel {
 
     /** Copies a snapshot of the current fit without fitting or rounding its data. */
 	private void copyFitResults(boolean includeStatistics) {
+        copyFitResults(includeStatistics, false);
+    }
+
+    private void copyFitResults(boolean includeStatistics, boolean fullReport) {
 		if (paramTable.isEditing() && !paramTable.getCellEditor().stopCellEditing())
 			return;
 		if (fit == null)
@@ -655,7 +659,10 @@ public class DatasetCurveFitter extends JPanel {
 		double[] sigma = new double[fit.getParameterCount()];
 		for (int i = 0; i < sigma.length; i++)
 			sigma[i] = getUncertainty(i);
-		OSPRuntime.copy(CurveFitReport.create(fit, dataset, fixedParams.get(fit), sigma,
+		OSPRuntime.copy(includeStatistics && !fullReport
+                ? CurveFitReport.createSummary(fit, dataset, fixedParams.get(fit), sigma,
+                    autofit, variableUnits(true), variableUnits(false), uncertaintyModel, getYUnitsPerPixel())
+                : CurveFitReport.create(fit, dataset, fixedParams.get(fit), sigma,
 				autofit, includeStatistics, variableUnits(true), variableUnits(false), uncertaintyModel, getYUnitsPerPixel()), null);
 	}
 
@@ -1132,7 +1139,20 @@ public class DatasetCurveFitter extends JPanel {
 		rmsBar.addSeparator();
 		copyFitReportButton = new JButton();
 		copyFitReportButton.addActionListener(e -> copyFitResults(true));
-		rmsBar.add(copyFitReportButton);
+		JPanel copyButtons = new JPanel(new BorderLayout());
+        copyButtons.add(copyFitReportButton, BorderLayout.CENTER);
+        copyFitOptionsButton = new JButton("...");
+        copyFitOptionsButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
+        copyFitOptionsButton.addActionListener(e -> {
+            JPopupMenu menu = new JPopupMenu();
+            JMenuItem full = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Menuitem.CopyFullReport"));
+            full.addActionListener(ev -> copyFitResults(true, true));
+            menu.add(full);
+            FontSizer.setFonts(menu);
+            menu.show(copyFitOptionsButton, 0, copyFitOptionsButton.getHeight());
+        });
+        copyButtons.add(copyFitOptionsButton, BorderLayout.EAST);
+        rmsBar.add(copyButtons);
 		rmsPanel.add(rmsBar, BorderLayout.NORTH);
 		statisticsPanel = new JPanel(new java.awt.GridLayout(0, 2, 10, 3));
 		statisticsPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
@@ -1234,7 +1254,9 @@ public class DatasetCurveFitter extends JPanel {
 	 * Refreshes the GUI.
 	 */
 	protected void refreshGUI() {
-		copyFitReportButton.setText(ToolsRes.getString("DatasetCurveFitter.Button.CopyFitReport"));
+		copyFitOptionsButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.CopyOptions.Tooltip"));
+        if (!OSPRuntime.isJS) copyFitOptionsButton.getAccessibleContext().setAccessibleName(ToolsRes.getString("DatasetCurveFitter.Button.CopyOptions.Tooltip"));
+        copyFitReportButton.setText(ToolsRes.getString("DatasetCurveFitter.Button.CopyFitReport"));
 		copyFitReportButton.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Button.CopyFitReport.Tooltip"));
 		autofitCheckBox.setText(ToolsRes.getString("Checkbox.Autofit.Label")); //$NON-NLS-1$
 		rmsLabel.setText(ToolsRes.getString("DatasetCurveFitter.Label.RMSDeviation")); //$NON-NLS-1$
@@ -2153,7 +2175,10 @@ public class DatasetCurveFitter extends JPanel {
 			item = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Button.CopyFitReport"));
 			item.addActionListener(ev -> copyFitResults(true));
 			popup.add(item);
-			popup.addSeparator();
+			item = new JMenuItem(ToolsRes.getString("DatasetCurveFitter.Menuitem.CopyFullReport"));
+            item.addActionListener(ev -> copyFitResults(true, true));
+            popup.add(item);
+            popup.addSeparator();
 			JCheckBoxMenuItem scientificNotationItem = new JCheckBoxMenuItem("Scientific notation"); //$NON-NLS-1$
 			scientificNotationItem.setSelected(!isFixedDecimalFormat);
 			spinCellEditor.field.applyDefaultPattern(!isFixedDecimalFormat); //$NON-NLS-1$			

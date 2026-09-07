@@ -86,3 +86,7 @@ Firefox and WebKit (290 checks per browser). Browser interaction checks exercise
 selection, resizing, fixed parameters, supplied sigma, and copying the report.
 These local runs cover macOS and browser engines; they do not constitute new
 native Windows/Linux runtime testing.
+
+### Compact and full copied reports
+
+Copy Fit Report exports the parameter table and the statistics shown on screen, with model, equation, variable units, and full-precision numeric cells. It omits ANOVA and advanced goodness-of-fit analysis. The adjacent `...` menu offers **Copy Full Fit Report**, also available in the parameter context menu. Both formats preserve manual/fixed parameter semantics and uncertainty units. Specified measurement uncertainty and identifiability warnings remain visible in the compact report when applicable.

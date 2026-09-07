@@ -78,6 +78,41 @@ final class CurveFitReport {
         }
         return out.toString();
     }
+    /** Compact classroom report; numeric cells retain the full stored precision. */
+    static String createSummary(KnownFunction fit, Dataset data, boolean[] fixed,
+            double[] uncertainties, boolean autofit, String xUnits, String yUnits,
+            FitUncertainty uncertainty, double unitsPerPixel) {
+        StringBuilder out = new StringBuilder();
+        String x = data == null ? "x" : data.getXColumnName();
+        String y = data == null ? "y" : data.getYColumnName();
+        row(out, label("Title"), data == null ? "" : data.getName());
+        row(out, label("Model"), fit.getName(), label(autofit ? "Auto" : "Manual"));
+        row(out, label("Equation"), org.opensourcephysics.display.ExportText.ascii(y + " = " + fit.getExpression(x)));
+        row(out, label("XVariable"), org.opensourcephysics.display.ExportText.header(x, xUnits));
+        row(out, label("YVariable"), org.opensourcephysics.display.ExportText.header(y, yUnits));
+        row(out);
+        // Reuse the coefficient-only export to preserve units, fixed/manual behavior,
+        // and uncertainty values in both report formats.
+        out.append(create(fit, data, fixed, uncertainties, autofit, false,
+                xUnits, yUnits, uncertainty, unitsPerPixel));
+        row(out);
+        double[] stats = statistics(fit, data, fixed, autofit);
+        for (int i = 0; i < STATISTIC_KEYS.length; i++) {
+            String key = STATISTIC_KEYS[i];
+            String title = i == 4 ? label("RMSResidual")
+                    : ToolsRes.getString("DatasetCurveFitter.Statistics." + key);
+            row(out, title, i < 3 ? integer(stats[i]) : number(stats[i]));
+        }
+        if (autofit && stats[8] >= 0 && stats[8] < stats[1]) row(out, label("Identifiability"));
+        if (uncertainty.mode != FitUncertainty.ESTIMATED) {
+            row(out, label("SpecifiedSigma"), number(uncertainty.statistics(stats, autofit, unitsPerPixel)[0]),
+                    org.opensourcephysics.display.ExportText.ascii(yUnits));
+            if (uncertainty.mode == FitUncertainty.PIXELS)
+                row(out, label("SigmaPixels"), number(uncertainty.value), "pixels");
+        }
+        return out.toString();
+    }
+
     static String coefficientUnits(KnownFunction fit,int parameter,String xUnits,String yUnits) {
         if(!(fit instanceof KnownPolynomial))return "";
         String x=org.opensourcephysics.display.ExportText.ascii(xUnits).trim();

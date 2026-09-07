@@ -128,6 +128,8 @@ public class CurveFitPhysicsTest {
         check(Double.isNaN(fitter.getYUnitsPerPixel()),"derived variable does not inherit position calibration");
         fitter.setUncertaintyModel(FitUncertainty.PIXELS,1);
         check(Double.isNaN(fitter.getUncertainty(0)),"ineligible pixel sigma not applied");
+        // This fixture is disposable; do not open a modal save prompt during cleanup.
+        tab.tabChanged(false);
         tool.dispose();
         fitter=CurveFitConstraintTest.line(exact);
         String report=CurveFitReport.create(fitter.fit,exact,null,new double[]{.1,.1},true,true,"s","m",estimated,Double.NaN);

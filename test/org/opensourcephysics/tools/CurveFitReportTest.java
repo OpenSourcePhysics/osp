@@ -23,6 +23,18 @@ public class CurveFitReportTest {
         close(stats[6], Math.sqrt(.02), "standard error uses n-p");
         close(stats[7], 20.04, "total sum of squares");
         String report = CurveFitReport.create(line, data, null, new double[] {.0632455532033676, .1183215956619923}, true, true);
+        String summary = CurveFitReport.createSummary(line, data, null, new double[] {.05, .01}, true,
+                "s", "m", FitUncertainty.estimated(), Double.NaN);
+        check(summary.contains("X variable\ttime (s)") && summary.contains("Y variable\tposition (m)"), "summary variable units");
+        check(summary.contains("A\t2.0\t0.05\tm/s\tNo"), "summary full precision coefficients and units");
+        check(!summary.contains("ANOVA") && !summary.contains("Chi square") && !summary.contains("Adjusted R"), "summary omits advanced analysis");
+        check(summary.contains("Points\t4") && summary.contains("Degrees of freedom\t2"), "summary screen counts");
+        close(cell(summary, "SSE", 1), stats[3], "summary SSE unchanged");
+        close(cell(summary, "R-squared", 1), stats[5], "summary centered R squared unchanged");
+        for (String row : summary.split("\n")) check(splitTabs(row).length == 5, "summary aligned spreadsheet columns");
+        String manualSummary = CurveFitReport.createSummary(line, data, null, new double[] {.05, .01}, false,
+                null, null, FitUncertainty.estimated(), Double.NaN);
+        check(manualSummary.contains("A\t2.0\tN/A") && manualSummary.contains("Degrees of freedom\tN/A"), "summary manual behavior");
         String[] rows = report.split("\n");
         check(rows[0].startsWith("FIT\t"), "simple title and data-name fallback");
         check(report.contains("Equation\tposition = ") && rows[1].contains("Automatic fit"), "second header contains model, equation, and mode");
