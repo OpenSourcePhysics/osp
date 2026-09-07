@@ -1,9 +1,15 @@
 # Bevington-style fit uncertainties: implementation note
 
-This note documents the profile/refit curvature calculation in
+Tracker first fits the coefficients of a function to the measured data. It then
+estimates an error for each free coefficient by changing that coefficient,
+refitting the others, and measuring the increase in chi-square. This second
+calculation is the subject of this note.
+
+The implementation is in
 [DatasetCurveFitter.java](../src/org/opensourcephysics/tools/DatasetCurveFitter.java)
-as used in OSP PR #9. Start with the
-[short guide and examples](fit-uncertainty-guide.md) for an introduction.
+as used in OSP PR #9. The [short guide](fit-uncertainty-guide.md) introduces the
+ideas through a position-versus-time example. This note gives the equations,
+code path, and numerical limitations.
 
 The source identifies its uncertainty formula as Eq. 8.13 of *Data Reduction
 and Error Analysis for the Physical Sciences*, associated with Philip R.
@@ -13,8 +19,11 @@ comment; an edition-specific match has not been verified here. This note derives
 the formula implemented in the code rather than reproducing the book or claiming
 that every numerical choice below is prescribed by it.
 
-## 1. Objective and uncertainty scale
+## 1. The quantity minimized and the measurement uncertainty
 
+An **objective function** is the quantity the fitting algorithm minimizes.
+Here it is the sum of squared residuals, SSE. A residual is the difference
+between a measured y value and the function's prediction at the same x.
 For the selected valid observations, define
 
 ```text
@@ -23,15 +32,28 @@ SSE = sum(residual_i^2)
 chi^2 = SSE / sigma_y^2
 ```
 
-The current modes all use one common y uncertainty. Multiplying SSE by a
-positive constant does not change its minimizing coefficients. The optimizer
-therefore continues minimizing SSE, including when sigma_y is supplied. This
-is mathematically constant-weight least squares; it does not imply support for
-unequal per-observation weights.
+Two kinds of uncertainty occur below. `sigma_y` is the common standard
+uncertainty assigned to the measured y values. `sigma_j` is the standard error
+calculated for fitted coefficient j. The measurement uncertainty sigma_y is
+an input to the coefficient-error calculation; sigma_j is one of its results.
 
-Let n be the number of selected valid observations, p the number of editable
-free parameters, r their effective independent numerical rank, and df=n-r.
-The uncertainty scale is:
+All current uncertainty modes assign the same sigma_y to every selected point.
+Dividing SSE by this positive constant squared changes the size of the objective,
+but not the coefficient values at its minimum. The optimizer therefore continues
+minimizing SSE when sigma_y is supplied. This implements constant-weight least
+squares; it does not provide unequal weights for different observations.
+
+The following notation separates the data count from the parameter count:
+
+| Symbol | Meaning |
+|---|---|
+| n | Number of selected valid observations |
+| p | Number of coefficients the optimizer may change |
+| r | Number of independent parameter directions, estimated numerically; see section 6 |
+| df | Residual degrees of freedom, n-r |
+| SSE_min | SSE evaluated at the fitted coefficients |
+
+The measurement uncertainty is obtained as follows:
 
 | Mode | Scale used | Interpretation of fit minimum |
 |---|---|---|
@@ -45,30 +67,40 @@ variance estimate with n-p in the denominator; see
 The rank substitution and the supplied-scale modes are implementation details
 of this PR. Invalid supplied values are not replaced by a residual estimate.
 
-`calibrateChiSquared` establishes the scale once at the fitted minimum.
-`getChiSquared` uses that same scale while parameters are perturbed. Re-estimating
-sigma_y after every perturbation would erase the increase being measured.
+`calibrateChiSquared` calculates sigma_y once at the fitted coefficients.
+`getChiSquared` keeps it fixed while testing nearby coefficient values.
+If sigma_y were recalculated from the new residuals at each test value, the
+normalization would hide the worsening fit that the calculation needs to measure.
 The field `sigma_y_squared` holds a variance despite its older comment referring
 to a standard deviation.
 
 ## 2. Profile curvature and the factor of two
 
-For parameter a_j, define its profile objective conceptually as
+Hold one coefficient at a trial value and refit the others. Repeat at other
+trial values. The resulting minimum chi-square as a function of that one
+coefficient is called its **profile**. Its **curvature** measures how quickly
+chi-square rises as the tested coefficient moves away from its fitted value.
+
+For coefficient a_j, write the profile as
 
 ```text
 P_j(a) = minimum chi^2 with a_j held at a,
          refitting all other free parameters
 ```
 
-Original user-fixed parameters remain fixed throughout. Near an identifiable
-minimum a_hat, use a local quadratic approximation:
+Coefficients the user has fixed remain fixed throughout. Let a_hat be the
+fitted value of the coefficient being tested, and h a small change in that
+value. If the data determine that coefficient and the profile is approximately
+quadratic near its minimum, then:
 
 ```text
 P_j(a_hat + h) ≈ chi^2_min + (1/2)*P_j''(a_hat)*h^2
               ≈ chi^2_min + h^2/sigma_j^2
 ```
 
-It follows that `sigma_j^2 ≈ 2/P_j''`. A symmetric finite difference gives
+Here `P_j''` is the second derivative of the profile. Comparing the two
+expressions gives `sigma_j^2 ≈ 2/P_j''`. The code estimates that second
+derivative from two trial values, equally spaced by delta on either side:
 
 ```text
 D = P_j(a_hat-delta) + P_j(a_hat+delta) - 2*chi^2_min
@@ -91,13 +123,22 @@ That review is background, not evidence for this implementation's step sizes.
 ## 3. Why the other parameters must be refitted
 
 Consider `y=A*x+B`. Changing A generally requires changing B to keep the line
-near the same observations. Holding B at its old fitted value measures a
-conditional slice through the objective. Letting B adjust measures a profile.
-These are different questions unless the parameters are uncoupled.
+near the same observations. Holding B at its original fitted value asks how
+precisely A is determined
+*if B is already known*. Letting B adjust asks how precisely A is determined
+*when B must also be estimated from these data*. The first calculation is called
+a conditional slice; the second is a profile. They generally give different
+errors because changes in A and B can partly compensate for each other.
 
-For an exact quadratic objective, write its increment as `d^T H d`, where H is
-half the Hessian of chi-square. Partition d into the tested displacement h and
-other displacements z. Minimizing over z gives
+The matrix calculation below shows how profiling relates to covariance.
+The worked example in section 4 illustrates the same distinction without matrices.
+
+For an exact quadratic objective, write the increase in chi-square as `d^T H d`.
+Here d contains all coefficient changes, and H is half the Hessian—the matrix
+of second derivatives of chi-square. Separate d into the tested coefficient's
+change h and the other coefficients' changes z. Subscripts j and o below refer
+to the tested coefficient and the other coefficients, respectively. Minimizing
+over z gives
 
 ```text
 z_best = -H_oo^(-1)*H_oj*h
@@ -112,8 +153,10 @@ The PR preserves numerical profiling; it does not replace it with a Jacobian
 covariance calculation. For nonlinear models, finite steps, nonquadratic
 profiles, and imperfect minimization can produce differences.
 
-The rank calculation does evaluate a Jacobian. That is for counting independent
-free directions, not for replacing the parameter-error method.
+The separate rank calculation evaluates a Jacobian: a matrix describing how
+the predicted data change when each coefficient changes. It uses that matrix
+to count independent parameter directions. It does not use it to calculate
+parameter errors.
 
 ## 4. A reproducible analytic example
 
@@ -180,15 +223,15 @@ Relevant methods in `DatasetCurveFitter` are `fit`, `getTestFunction`,
    These are not a stored covariance matrix or a simultaneous confidence band.
 
 Each tested parameter can therefore request up to 20 shifted refits plus two
-additional drawer refits. A model with one free parameter leaves no nuisance
-parameter to optimize in its shifted functions. Runtime otherwise depends on
+additional drawer refits. For a model with only one free coefficient, holding that coefficient at a
+trial value leaves no other coefficient to refit. Runtime otherwise depends on
 model evaluation, data size, and convergence of the numerical refits.
 
 Changing only the uncertainty choice calls `refreshUncertaintyModel`, which
 clones the displayed function before recalculating its profile errors. The
-original best-fit coefficients are preserved. The implementation reuses cached
-temporary functions and the normal fit infrastructure; it is not an isolated,
-side-effect-free statistical library. Tests cover the user-visible coefficient,
+original best-fit coefficients are preserved. The implementation reuses cached temporary functions and the normal fitting
+code, which also refreshes parts of the display. It is not a separate numerical
+routine that only returns an array of errors. Tests cover the user-visible coefficient,
 Autofit, fixed-parameter, and selection behavior.
 
 ## 6. Rank, fixed parameters, and perfect fits
@@ -200,16 +243,19 @@ functions use central differences with step `1e-5*max(1,abs(parameter))`.
 This is separate from the adaptive profile step above. For nonlinear models,
 the rank is local and does not establish global identifiability.
 
-For `y=(A+B)*x`, the two derivative columns are identical. Four observations
+A concrete example is `y=(A+B)*x`: the data can determine A+B, but cannot
+separately determine A and B. Increasing either coefficient by the same amount
+has the same effect on every predicted value, so their derivative columns are
+identical. Four observations
 have p=2, r=1, and df=3. Refitting B can compensate for a perturbation in A:
-individual A and B errors should be unavailable. Rank drives df and the report's
-warning; each coefficient error still depends on its own profile-curvature
-check. The method does not replace a redundant fit with a uniquely identified
-parameterization.
+individual A and B errors should be unavailable. The rank determines df and whether the report warns about dependent parameters.
+Each coefficient error still depends on its own curvature check. The software
+does not rewrite this function as a one-parameter fit to A+B.
 
 A fixed coefficient reports N/A, not an estimated error of zero: its value is
 an input constraint, and uncertainty in that input has not been propagated.
-Manual mode likewise does not reuse automatic-fit inference. The current
+In manual mode, the software likewise does not report errors left over from
+an earlier automatic fit. The current
 implementation withholds parameter-error estimates when df<=0 even if a
 supplied noise model could support inference in a different implementation.
 
@@ -233,15 +279,17 @@ Q is deliberately unavailable because the scale was learned from those residuals
 
 For small samples, estimated standard errors are not automatically normal-based
 confidence intervals; a regular linear model with unknown variance ordinarily
-uses Student-t factors for coefficient intervals. For nonlinear, bounded,
-weakly identified, or multimodal problems, a symmetric local curvature can be
-misleading. Neither symmetric/asymmetric confidence intervals nor parameter
+uses Student-t factors for coefficient intervals. A symmetric local error can also be misleading when the function depends
+nonlinearly on its coefficients, a coefficient is near a physical boundary,
+the data barely determine it, or several different coefficient sets fit well. Neither symmetric/asymmetric confidence intervals nor parameter
 p-values are added by this PR.
 
-Numerical limitations include finite-difference cancellation, parameter scaling
-(the additive 1 in the step rule is unit dependent), local minima, incomplete
-refits, and strongly nonquadratic profiles. The accepted-D guard is not a
-certificate of optimizer convergence. Very small/large uncertainty scales can
+The numerical calculation has several limitations. Subtracting nearly equal
+chi-square values can lose precision. Changing coefficient units affects the
+step rule because it adds the number 1 to the coefficient magnitude. A refit
+can stop short of its minimum or settle in a different local minimum. A profile
+can depart substantially from a parabola. Passing the D threshold does not
+establish that these problems were avoided. Very small/large uncertainty scales can
 also underflow/overflow when squared. Existing tests exercise selected cases,
 not all possible UserFunctions or parameterizations.
 
