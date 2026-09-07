@@ -1,5 +1,8 @@
 # Curve-fit regression tests
 
+For interpretation, see the [short uncertainty guide with examples](fit-uncertainty-guide.md).
+For the numerical method, see the [Bevington-style implementation note](bevington-fit-uncertainties.md).
+
 These standalone Java tests require a built OSP or Tracker JAR and a JDK.
 They use main methods and exit unsuccessfully on assertion failures; no test
 framework is required. Run from the repository root, replacing `/path/to/osp.jar`

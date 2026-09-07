@@ -32,7 +32,9 @@ rescaled to force reduced chi-square to one.
 
 Parameter errors retain the Bevington Eq. 8.13 profile/refit curvature method.
 Only its uncertainty scale changes. This is not a replacement by Jacobian
-covariance. Unidentifiable or fixed parameters retain unavailable errors.
+covariance. Unidentifiable or fixed parameters retain unavailable errors. See the
+[short explanation with examples](fit-uncertainty-guide.md) and the
+[detailed implementation note](bevington-fit-uncertainties.md).
 
 Centered R Square = 1-SSE/SST, where SST uses deviations from the observed mean.
 Adjusted R Square = 1-(SSE/df)/(SST/(n-1)), where defined. R Square is descriptive
@@ -78,11 +80,11 @@ a future column model must explicitly map uncertainties to the selected rows.
 
 ## Verification
 
-The desktop suite contains 481 assertions across precision (19), report (94),
-popup (17), Data Tool layout (174), constraints (40), and physics (137).
-The companion Tracker calibration fixture adds 13 checks. The computational
+The desktop suite contains 592 assertions across precision (19), report (118),
+popup (17), Data Tool layout (234), constraints (40), and physics (164).
+The companion Tracker calibration fixture adds 17 checks. The computational
 precision/report/constraint/physics tests also run through SwingJS in Chrome,
-Firefox and WebKit (290 checks per browser). Browser interaction checks exercise
+Firefox and WebKit (341 checks per browser). Browser interaction checks exercise
 selection, resizing, fixed parameters, supplied sigma, and copying the report.
 These local runs cover macOS and browser engines; they do not constitute new
 native Windows/Linux runtime testing.
