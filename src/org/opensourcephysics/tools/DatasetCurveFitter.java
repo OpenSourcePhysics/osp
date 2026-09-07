@@ -206,6 +206,25 @@ public class DatasetCurveFitter extends JPanel {
         uncertaintyModel=new FitUncertainty(mode,value);
         refreshUncertaintyModel();
     }
+    /** Choose a starting scale without interpreting a physical-unit number as pixels. */
+    void selectUncertaintyMode(int mode) {
+        double value = uncertaintyModel.value;
+        double calibration = getYUnitsPerPixel();
+        if (mode != uncertaintyModel.mode) {
+            if (mode == FitUncertainty.PIXELS) {
+                value = uncertaintyModel.mode == FitUncertainty.CONSTANT && FitUncertainty.positive(calibration)
+                        ? value / calibration : 1.0;
+            } else if (mode == FitUncertainty.CONSTANT) {
+                if (uncertaintyModel.mode == FitUncertainty.PIXELS) value *= calibration;
+                else if (FitUncertainty.positive(calibration)) value = calibration;
+                else value = fit == null ? Double.NaN
+                        : CurveFitReport.statistics(fit, dataset, fixedParams.get(fit), autofit)[6];
+                if (!FitUncertainty.positive(value)) value = Double.NaN;
+            }
+        }
+        setUncertaintyModel(mode, value);
+    }
+
     private String variableUnits(boolean x) {
         return tab==null || dataset==null ? null : tab.dataTable.getUnits(x?dataset.getXColumnName():dataset.getYColumnName());
     }
@@ -237,10 +256,16 @@ public class DatasetCurveFitter extends JPanel {
             uncertaintyChoice.removeItemAt(2);
         uncertaintyChoice.setSelectedIndex(uncertaintyModel.mode);
         uncertaintyValue.setEnabled(uncertaintyModel.mode!=FitUncertainty.ESTIMATED);
-        if(uncertaintyModel.mode!=FitUncertainty.ESTIMATED)uncertaintyValue.setSelectedItem(Double.toString(uncertaintyModel.value));
+        uncertaintyValue.removeAllItems();
+        if (uncertaintyModel.mode == FitUncertainty.PIXELS)
+            for (String preset : new String[]{"0.5", "1.0", "1.5", "2.0", "2.5", "3.0"}) uncertaintyValue.addItem(preset);
+        if(uncertaintyModel.mode!=FitUncertainty.ESTIMATED)uncertaintyValue.setSelectedItem(FitUncertainty.positive(uncertaintyModel.value)
+                ? Double.toString(uncertaintyModel.value).replace('.', OSPRuntime.getCurrentDecimalSeparator()) : "");
+        else uncertaintyValue.setSelectedItem("");
         double sigma=uncertaintyModel.sigma(Double.NaN,getYUnitsPerPixel());
         uncertaintyStatus.setText(uncertaintyModel.mode==FitUncertainty.ESTIMATED?"":
-            FitUncertainty.positive(sigma)?org.opensourcephysics.display.ExportText.ascii(variableUnits(false)):
+            FitUncertainty.positive(sigma)?(uncertaintyModel.mode == FitUncertainty.PIXELS ? "pixels"
+                : org.opensourcephysics.display.ExportText.ascii(variableUnits(false))):
             ToolsRes.getString("DatasetCurveFitter.Uncertainty.Invalid"));
         updatingUncertaintyControls=false;
     }
@@ -1163,11 +1188,16 @@ public class DatasetCurveFitter extends JPanel {
 		}
 		JPanel statisticsContainer = new JPanel(new BorderLayout());
 		statisticsContainer.add(statisticsPanel, BorderLayout.NORTH);
-        uncertaintyPanel=new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT,4,2));
-        uncertaintyPanel.add(new JLabel(ToolsRes.getString("DatasetCurveFitter.Uncertainty.Label")));
+        uncertaintyPanel=new JPanel(new java.awt.GridLayout(0,1,0,2));
+        JPanel uncertaintyModeRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT,4,2));
+        JPanel uncertaintyValueRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT,4,2));
+        uncertaintyModeRow.add(new JLabel(ToolsRes.getString("DatasetCurveFitter.Uncertainty.Label")));
         uncertaintyChoice=new JComboBox<String>(new String[]{ToolsRes.getString("DatasetCurveFitter.Uncertainty.Estimated"),ToolsRes.getString("DatasetCurveFitter.Uncertainty.Constant")});
-        uncertaintyValue=new JComboBox<String>(new String[]{"0.5","1.0","1.5","2.0","2.5","3.0"});
-        uncertaintyValue.setEditable(true);uncertaintyValue.setSelectedItem("1.0");
+        uncertaintyValue=new JComboBox<String>();
+        uncertaintyValue.setPrototypeDisplayValue("0.0000000000");
+        uncertaintyValue.setEditable(true);
+        if (uncertaintyValue.getEditor().getEditorComponent() instanceof JTextField)
+            ((JTextField) uncertaintyValue.getEditor().getEditorComponent()).setColumns(12);
         uncertaintyValue.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Uncertainty.Custom"));
         uncertaintyStatus=new JLabel();
         java.awt.event.ActionListener changed=e->{
@@ -1177,8 +1207,14 @@ public class DatasetCurveFitter extends JPanel {
             catch(Exception ex) { /* Keep invalid supplied input unavailable, never estimate it. */ }
             setUncertaintyModel(uncertaintyChoice.getSelectedIndex(),value);
         };
-        uncertaintyChoice.addActionListener(changed);uncertaintyValue.addActionListener(changed);
-        uncertaintyPanel.add(uncertaintyChoice);uncertaintyPanel.add(uncertaintyValue);uncertaintyPanel.add(uncertaintyStatus);
+        uncertaintyChoice.addActionListener(e -> {
+            if (!updatingUncertaintyControls) selectUncertaintyMode(uncertaintyChoice.getSelectedIndex());
+        });
+        uncertaintyValue.addActionListener(changed);
+        uncertaintyModeRow.add(uncertaintyChoice);
+        uncertaintyValueRow.add(new JLabel(ToolsRes.getString("DatasetCurveFitter.Uncertainty.Value")));
+        uncertaintyValueRow.add(uncertaintyValue);uncertaintyValueRow.add(uncertaintyStatus);
+        uncertaintyPanel.add(uncertaintyModeRow);uncertaintyPanel.add(uncertaintyValueRow);
         statisticsContainer.add(uncertaintyPanel,BorderLayout.SOUTH);
         refreshUncertaintyControls();
 		add(statisticsContainer, BorderLayout.CENTER);

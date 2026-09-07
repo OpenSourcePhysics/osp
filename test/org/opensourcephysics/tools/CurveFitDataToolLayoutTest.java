@@ -52,6 +52,13 @@ public class CurveFitDataToolLayoutTest {
      java.lang.reflect.Field uf=DatasetCurveFitter.class.getDeclaredField("uncertaintyPanel");uf.setAccessible(true);JPanel uncertainty=(JPanel)uf.get(fitter);
      Rectangle uncertaintyBounds=SwingUtilities.convertRectangle(uncertainty,new Rectangle(0,0,uncertainty.getWidth(),uncertainty.getHeight()),fitter);
      check(fitter.getVisibleRect().contains(uncertaintyBounds),"uncertainty controls visible in fit area");
+     for (String fieldName : new String[]{"uncertaintyChoice", "uncertaintyValue"}) {
+      java.lang.reflect.Field field=DatasetCurveFitter.class.getDeclaredField(fieldName);field.setAccessible(true);
+      JComboBox<?> control=(JComboBox<?>)field.get(fitter);
+      Rectangle bounds=SwingUtilities.convertRectangle(control,new Rectangle(0,0,control.getWidth(),control.getHeight()),fitter);
+      check(fitter.getVisibleRect().contains(bounds),"uncertainty input fully visible: "+fieldName);
+      if(fieldName.equals("uncertaintyValue"))check(control.getWidth()>=control.getFontMetrics(control.getFont()).stringWidth("0.0000000000"),"room to enter fractional physical units");
+     }
      check(tab.splitPanes[1].getTopComponent().getHeight()>100,"plot retains usable height");
      check(Math.abs(fitter.getHeight()-fitter.prepareFitLayout(fitter.getWidth()))<=4,"fit area stays at required height");
      if(args.length>0){BufferedImage image=new BufferedImage(tool.getContentPane().getWidth(),tool.getContentPane().getHeight(),BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();tool.getContentPane().printAll(g);g.dispose();javax.imageio.ImageIO.write(image,"png",new java.io.File(args[0]+"/data-tool-"+size[0]+"-font"+level+".png"));}

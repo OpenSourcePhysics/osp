@@ -117,6 +117,17 @@ public class CurveFitPhysicsTest {
         tab.setWorkingColumns("t","x");
         fitter=tab.getCurveFitter();fitter.selectFit(fitter.getPolyFitNameOfDegree(1));fitter.setActiveAndFit(true);
         double measuredSlope=fitter.fit.getParameterValue(0);
+        fitter.selectUncertaintyMode(FitUncertainty.CONSTANT);
+        near(fitter.getUncertaintyModel().value,.01,"physical default is one calibrated pixel");
+        fitter.setUncertaintyModel(FitUncertainty.CONSTANT,.001);
+        fitter.selectUncertaintyMode(FitUncertainty.PIXELS);
+        near(fitter.getUncertaintyModel().value,.1,"physical to pixel switch preserves scale");
+        fitter.selectUncertaintyMode(FitUncertainty.CONSTANT);
+        near(fitter.getUncertaintyModel().value,.001,"pixel to physical switch preserves scale");
+        fitter.selectUncertaintyMode(FitUncertainty.ESTIMATED);
+        fitter.selectUncertaintyMode(FitUncertainty.PIXELS);
+        near(fitter.getUncertaintyModel().value,1,"pixel default is one pixel");
+        check(fitter.fit.getParameterValue(0)==measuredSlope,"mode switches preserve coefficient");
         near(fitter.getYUnitsPerPixel(),.01,"host position calibration reaches fitter: "+fitter.getData().getYColumnName());
         for(double pixels:new double[]{.5,1,1.5,2,2.5,3,.73}) {
             fitter.setUncertaintyModel(FitUncertainty.PIXELS,pixels);
