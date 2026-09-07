@@ -94,3 +94,13 @@ Copy Fit Report exports the parameter table and the statistics shown on screen, 
 The uncertainty controls label the default **Unweighted - estimate from residuals**. Known uncertainty entry uses a wider field on a separate row. From the default mode, pixels start at 1; physical units start at one calibrated pixel, or the residual standard error if calibration is unavailable. A zero/undefined starting scatter leaves the entry blank. Switching between supplied physical and pixel modes converts the current value. Pixel presets are offered only in pixel mode. These starting values remain editable measurement-model choices, not claims about instrument accuracy.
 
 The data-uncertainty entry displays two significant digits (for example, `0.0025 m`). Its full stored precision remains in the tooltip and exported reports. Formatting and accepting unchanged display text do not round the uncertainty used in calculations.
+
+### Motion results from position fits
+
+An optional `FitMetadataProvider.getPositionComponent(xColumn, yColumn)` callback identifies position against time using host column identities. Its default is null, preserving existing hosts. For known line fits, velocity is A and its standard error is sigma_A. For known quadratics, velocity at t=0 is B with sigma_B, and constant acceleration is 2A with standard error 2*sigma_A. These are exact coefficient transformations; no new optimizer or covariance method is used. The units come from the corresponding polynomial coefficient units. Manual and fixed-parameter errors remain N/A. Arbitrary UserFunctions, other polynomial degrees, and unidentified column pairs do not receive motion labels.
+
+Derived motion results appear at the end of both copied report formats with full-precision numeric export. The window shows the original parameter table without duplicate velocity and acceleration rows. The reference time is the data's t=0, not necessarily the first selected observation. This feature does not compute velocity uncertainty at other times or propagate pixel errors into numerical derivative columns.
+
+At small window sizes the fit panel scrolls vertically, preserving a usable drawable graph above it. The reserved scrollbar width avoids changing the parameter layout when scrolling becomes necessary. Layout tests now measure the drawable area after axis gutters and verify that scrolling reaches the uncertainty controls.
+
+The on-screen residual summary uses one row: R-squared, SSE, and Residual SE. Points, free parameters, and degrees of freedom remain in copied reports but no longer consume display space. RMS remains beside Autofit.

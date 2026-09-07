@@ -113,6 +113,38 @@ final class CurveFitReport {
         return out.toString();
     }
 
+    /** Exact transformations of polynomial coefficients; no new fit or covariance approximation. */
+    static String[][] motionResults(KnownFunction fit, boolean[] fixed, double[] uncertainties,
+            boolean autofit, String xUnits, String yUnits, String component) {
+        if (component == null || !(fit instanceof KnownPolynomial)
+                || fit.getParameterCount() < 2 || fit.getParameterCount() > 3) return new String[0][];
+        int degree = fit.getParameterCount() - 1;
+        String[][] results = new String[degree][];
+        for (int i = 0; i < degree; i++) {
+            int parameter = degree == 1 ? 0 : 1 - i;
+            double factor = i == 0 ? 1 : 2;
+            boolean isFixed = fixed != null && parameter < fixed.length && fixed[parameter];
+            double sigma = autofit && !isFixed && uncertainties != null && parameter < uncertainties.length
+                    ? factor * uncertainties[parameter] : Double.NaN;
+            if (sigma < 0) sigma = Double.NaN;
+            results[i] = new String[]{component + " " + label(i == 1 ? "Acceleration"
+                    : degree == 1 ? "Velocity" : "VelocityAtZero"),
+                    number(factor * fit.getParameterValue(parameter)), number(sigma),
+                    coefficientUnits(fit, parameter, xUnits, yUnits), label(isFixed ? "Yes" : "No")};
+        }
+        return results;
+    }
+
+    static String appendMotionResults(String report, String[][] results) {
+        if (results.length == 0) return report;
+        StringBuilder out = new StringBuilder(report);
+        row(out);
+        row(out, label("MotionResults"));
+        row(out, label("Quantity"), label("Value"), label("StandardError"), label("Units"), label("Fixed"));
+        for (String[] result : results) row(out, result);
+        return out.toString();
+    }
+
     static String coefficientUnits(KnownFunction fit,int parameter,String xUnits,String yUnits) {
         if(!(fit instanceof KnownPolynomial))return "";
         String x=org.opensourcephysics.display.ExportText.ascii(xUnits).trim();

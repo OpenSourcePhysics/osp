@@ -359,7 +359,7 @@ public class DatasetCurveFitter extends JPanel {
 	private NumberField rmsField;
 	private JPanel statisticsPanel, uncertaintyPanel;
 	private JLabel[] statisticLabels;
-	private static final int[] VISIBLE_STATISTICS = {0, 1, 2, 5, 3, 6};
+	private static final int[] VISIBLE_STATISTICS = {5, 3, 6};
 	private ParamTable paramTable;
 	private ParamCellRenderer cellRenderer;
 	private SpinCellEditor spinCellEditor; // uses number-crawler spinner
@@ -687,6 +687,16 @@ public class DatasetCurveFitter extends JPanel {
         }
     }
 
+    private String[][] motionResults() {
+        FitMetadataProvider provider = tab == null ? null : tab.getFitMetadataProvider();
+        String component = provider == null || dataset == null ? null
+                : provider.getPositionComponent(dataset.getXColumnName(), dataset.getYColumnName());
+        double[] errors = fit == null ? new double[0] : new double[fit.getParameterCount()];
+        for (int i = 0; i < errors.length; i++) errors[i] = getUncertainty(i);
+        return CurveFitReport.motionResults(fit, fixedParams.get(fit), errors, autofit,
+                variableUnits(true), variableUnits(false), component);
+    }
+
     /** Copies a snapshot of the current fit without fitting or rounding its data. */
 	private void copyFitResults(boolean includeStatistics) {
         copyFitResults(includeStatistics, false);
@@ -703,11 +713,12 @@ public class DatasetCurveFitter extends JPanel {
 		double[] sigma = new double[fit.getParameterCount()];
 		for (int i = 0; i < sigma.length; i++)
 			sigma[i] = getUncertainty(i);
-		OSPRuntime.copy(includeStatistics && !fullReport
+		String report = includeStatistics && !fullReport
                 ? CurveFitReport.createSummary(fit, dataset, fixedParams.get(fit), sigma,
                     autofit, variableUnits(true), variableUnits(false), uncertaintyModel, getYUnitsPerPixel())
                 : CurveFitReport.create(fit, dataset, fixedParams.get(fit), sigma,
-				autofit, includeStatistics, variableUnits(true), variableUnits(false), uncertaintyModel, getYUnitsPerPixel()), null);
+				autofit, includeStatistics, variableUnits(true), variableUnits(false), uncertaintyModel, getYUnitsPerPixel());
+        OSPRuntime.copy(includeStatistics ? CurveFitReport.appendMotionResults(report, motionResults()) : report, null);
 	}
 
 	/**
@@ -1198,7 +1209,7 @@ public class DatasetCurveFitter extends JPanel {
         copyButtons.add(copyFitOptionsButton, BorderLayout.EAST);
         rmsBar.add(copyButtons);
 		rmsPanel.add(rmsBar, BorderLayout.NORTH);
-		statisticsPanel = new JPanel(new java.awt.GridLayout(0, 2, 10, 3));
+		statisticsPanel = new JPanel(new java.awt.GridLayout(1, 3, 10, 0));
 		statisticsPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		statisticLabels = new JLabel[VISIBLE_STATISTICS.length];
 		for (int i = 0; i < statisticLabels.length; i++) {
@@ -1487,19 +1498,6 @@ public class DatasetCurveFitter extends JPanel {
 		if (splitPane.getOrientation() != orientation) {
 			splitPane.setOrientation(orientation);
 			splitPane.setResizeWeight(stacked ? 0 : 1);
-		}
-		int labelWidth = 0;
-		for (JLabel label : statisticLabels) {
-			String text = label.getText();
-			int colon = text.indexOf(':');
-			String reserved = (colon < 0 ? text : text.substring(0, colon + 1)) + " -0.00000E-000";
-			labelWidth = Math.max(labelWidth, label.getFontMetrics(label.getFont()).stringWidth(reserved));
-		}
-		java.awt.GridLayout layout = (java.awt.GridLayout) statisticsPanel.getLayout();
-		int columns = width < 2 * labelWidth + 18 ? 1 : 2;
-		if (layout.getColumns() != columns) {
-			layout.setColumns(columns);
-			statisticsPanel.revalidate();
 		}
 		int controlsHeight = splitPane.getLeftComponent().getPreferredSize().height;
 		int parameterHeight = splitPane.getRightComponent().getPreferredSize().height;

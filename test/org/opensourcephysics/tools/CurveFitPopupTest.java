@@ -20,8 +20,8 @@ public class CurveFitPopupTest {
                 fitter.setAutoFit(true);
                 fitter.uncertainties = new double[] {.05, .01};
                 String labels = labels(fitter);
-                check(labels.contains("Points: 4"), "point count visible");
-                check(labels.contains("Degrees of freedom: 2"), "degrees of freedom visible");
+                check(!labels.contains("Points:"), "point count omitted from display");
+                check(!labels.contains("Degrees of freedom:") && !labels.contains("Free parameters:"), "parameter counts omitted from display");
                 check(labels.contains("R-squared: 1.0000"), "R-squared visible");
                 check(labels.contains("SSE: 0.0000"), "SSE visible");
                 check(labels.contains("Residual SE: 0.0000"), "residual standard error visible");
