@@ -161,29 +161,165 @@ parameter errors.
 ## 4. A reproducible analytic example
 
 Take `x=[0,1,2,3]`, `y=[1.1,2.9,4.9,7.1]` and fit `y=A*x+B`.
-The exact least-squares coefficients are A=2 and B=1, SSE=0.04, n=4, r=2,
-df=2, and estimated sigma_y=sqrt(0.02).
+The following steps show where the numerical constants come from.
 
-Here `x_mean=1.5` and `Sxx=sum((x-x_mean)^2)=5`. At a perturbed slope `2+h`,
-the refitted intercept is `1-1.5*h`. Consequently,
+### Start with the fitted line and residual variance
+
+The fitted coefficients are A=2 and B=1. Check the residuals directly:
+
+| x | Measured y | Predicted y=2*x+1 | Residual e=measured-predicted |
+|---|---|---|---|
+| 0 | 1.1 | 1.0 | +0.1 |
+| 1 | 2.9 | 3.0 | -0.1 |
+| 2 | 4.9 | 5.0 | -0.1 |
+| 3 | 7.1 | 7.0 | +0.1 |
 
 ```text
-SSE_profile(A) = 0.04 + 5*h^2
-chi^2_profile(A) = 2 + 250*h^2
-D = 500*delta^2
-sigma_A = sqrt(0.02/5) = 0.0632455532033676
-sigma_B = sqrt(0.02*(1/4 + 1.5^2/5)) = 0.1183215956619923
+SSE_min = 0.1^2 + (-0.1)^2 + (-0.1)^2 + 0.1^2 = 0.04
+n = 4 observations
+r = 2 independent fitted coefficients
+df = n-r = 4-2 = 2
+sigma_y^2 = SSE_min/df = 0.04/2 = 0.02
 ```
 
-Holding B fixed instead would use sum(x^2)=14 and give the smaller conditional
-slope error `sqrt(0.02/14)=0.0377964473`. That is why the refit matters.
+**0.02 is the estimated variance**, not the standard deviation. The standard
+deviation is `sigma_y=sqrt(0.02)=0.141421...`. Chi-square divides SSE by the
+variance, so the minimum chi-square is `0.04/0.02=2`.
 
-If the independently supplied sigma_y is 0.20 instead, A and B are unchanged,
-but `sigma_A=0.0894427191`, `sigma_B=0.1673320053`, chi-square=1,
-reduced chi-square=0.5, and Q=exp(-1/2)=0.6065306597 for df=2.
-With the residual-estimated scale, chi-square=2, reduced chi-square=1,
-and Q is N/A. More generally, scaling a supplied sigma_y by c scales regular
-profile errors by |c| and divides chi-square by c^2, up to numerical error.
+### Change the slope and refit the intercept
+
+Let h be a change in slope, so the trial slope is `A=2+h`. The intercept must
+be refitted at each trial slope. A least-squares line with a free intercept
+passes through the mean point `(x_mean,y_mean)`:
+
+```text
+x_mean = (0+1+2+3)/4 = 1.5
+y_mean = (1.1+2.9+4.9+7.1)/4 = 4
+B = y_mean - A*x_mean
+  = 4 - (2+h)*1.5
+  = 1 - 1.5*h
+```
+
+The trial line's prediction therefore differs from the original line by
+`h*(x-1.5)`. Each new residual is `e-h*(x-1.5)`, where e is the original
+residual in the table. Square those new residuals and add them:
+
+```text
+SSE_profile(A) = sum([e-h*(x-1.5)]^2)
+               = sum(e^2) - 2*h*sum(e*(x-1.5)) + h^2*sum((x-1.5)^2)
+```
+
+The middle sum is zero:
+
+```text
+sum(e*(x-1.5)) = 0.1*(-1.5) + (-0.1)*(-0.5)
+                + (-0.1)*0.5 + 0.1*1.5
+              = -0.15 + 0.05 - 0.05 + 0.15 = 0
+```
+
+The last sum, called Sxx, gives the **5**:
+
+```text
+Sxx = sum((x-x_mean)^2)
+    = (-1.5)^2 + (-0.5)^2 + 0.5^2 + 1.5^2
+    = 2.25 + 0.25 + 0.25 + 2.25 = 5
+
+SSE_profile(A) = 0.04 + 5*h^2
+```
+
+### Divide by the variance: where 250 comes from
+
+Keep the estimated variance at 0.02 while testing the trial slopes:
+
+```text
+chi^2_profile(A) = SSE_profile(A)/sigma_y^2
+                 = (0.04 + 5*h^2)/0.02
+                 = 0.04/0.02 + (5/0.02)*h^2
+                 = 2 + 250*h^2
+```
+
+Thus **250 is 5 divided by 0.02**. It describes how quickly chi-square increases
+as the slope moves away from 2, after the intercept has been refitted.
+
+### Add the increases on both sides: where 500 comes from
+
+The code tests two slope changes: `h=-delta` and `h=+delta`. Squaring removes
+the sign, so both trials have the same increase in this example:
+
+```text
+chi^2_minus = 2 + 250*delta^2
+chi^2_plus  = 2 + 250*delta^2
+chi^2_min   = 2
+
+D = chi^2_minus + chi^2_plus - 2*chi^2_min
+  = (2 + 250*delta^2) + (2 + 250*delta^2) - 2*2
+  = 500*delta^2
+```
+
+**500 is 250+250**, because D includes both increases. As a numerical check,
+choose `delta=0.01`: each trial has chi-square 2.025, and
+`D=2.025+2.025-4=0.05`. This is also `500*(0.01)^2`.
+
+### Convert that increase into the slope uncertainty
+
+Substitute D into the curvature formula from section 2. Since delta is a
+positive step size, it cancels:
+
+```text
+sigma_A = delta*sqrt(2/D)
+        = delta*sqrt(2/(500*delta^2))
+        = sqrt(2/500)
+        = sqrt(0.004)
+        = sqrt(0.02/5)
+        = 0.0632455532033676
+```
+
+Using the numerical trial above gives the same answer:
+`0.01*sqrt(2/0.05)=0.0632455532033676`. This cancellation is exact for this
+quadratic profile; a numerical nonlinear fit need not behave so simply.
+
+### Calculate the intercept uncertainty
+
+For a straight line, profiling the intercept while refitting the slope gives
+the familiar expression below. Its inputs have all been calculated above:
+the variance is 0.02, n is 4, x_mean is 1.5, and Sxx is 5.
+
+```text
+sigma_B^2 = sigma_y^2*(1/n + x_mean^2/Sxx)
+          = 0.02*(1/4 + 1.5^2/5)
+          = 0.02*(0.25 + 2.25/5)
+          = 0.02*(0.25 + 0.45)
+          = 0.014
+
+sigma_B = sqrt(0.014) = 0.1183215956619923
+```
+
+The `1/n` term describes uncertainty in the fitted line's height at x_mean.
+The `x_mean^2/Sxx` term adds the effect of uncertainty in the slope when finding
+the intercept at x=0. They combine to give the intercept variance.
+
+### Compare with holding the intercept fixed
+
+If B were held at 1 rather than refitted, changing A would change the prediction
+by `h*x` instead of `h*(x-x_mean)`. The squared-residual increase would then
+use `sum(x^2)=0+1+4+9=14` instead of Sxx=5. The resulting slope error would be
+`sqrt(0.02/14)=0.0377964473`. It is smaller because B is being treated as known
+exactly. That is a different assumption from estimating both A and B.
+
+### Change the supplied measurement uncertainty
+
+If the independently supplied sigma_y is 0.20 instead, its variance is 0.04.
+A and B stay unchanged. Substituting this variance gives
+`sigma_A=sqrt(0.04/5)=0.0894427191` and
+`sigma_B=sqrt(0.04*0.70)=0.1673320053`.
+
+Chi-square is now `SSE_min/sigma_y^2=0.04/0.04=1`, and reduced chi-square is
+`1/df=1/2=0.5`. For df=2, the survival probability is
+`Q=exp(-chi^2/2)=exp(-1/2)=0.6065306597`.
+With the residual-estimated variance of 0.02, chi-square is 2, reduced
+chi-square is 1, and Q is N/A. More generally, multiplying a supplied sigma_y
+by a positive factor c multiplies regular profile errors by c and divides
+chi-square by c^2, up to numerical error.
 
 ## 5. Code path and numerical procedure
 
