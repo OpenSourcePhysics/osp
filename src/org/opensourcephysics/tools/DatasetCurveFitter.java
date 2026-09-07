@@ -246,6 +246,22 @@ public class DatasetCurveFitter extends JPanel {
         refreshFitStatistics();
         refreshUncertaintyControls();
     }
+    /** Two significant digits for display only; the model retains the original value. */
+    static String formatDataUncertainty(double value) {
+        if (!FitUncertainty.positive(value)) return "";
+        DecimalFormat format = new DecimalFormat("0.0E0", OSPRuntime.getDecimalFormatSymbols());
+        String scientific = format.format(value);
+        int exponent = Integer.parseInt(scientific.substring(scientific.indexOf('E') + 1));
+        if (exponent < -3 || exponent > 1) return scientific;
+        String pattern = "0";
+        if (exponent < 1) {
+            pattern += ".";
+            for (int i = 0; i < 1 - exponent; i++) pattern += "0";
+        }
+        format.applyPattern(pattern);
+        return format.format(value);
+    }
+
     private void refreshUncertaintyControls() {
         if(uncertaintyChoice==null)return;
         updatingUncertaintyControls=true;
@@ -260,8 +276,11 @@ public class DatasetCurveFitter extends JPanel {
         if (uncertaintyModel.mode == FitUncertainty.PIXELS)
             for (String preset : new String[]{"0.5", "1.0", "1.5", "2.0", "2.5", "3.0"}) uncertaintyValue.addItem(preset);
         if(uncertaintyModel.mode!=FitUncertainty.ESTIMATED)uncertaintyValue.setSelectedItem(FitUncertainty.positive(uncertaintyModel.value)
-                ? Double.toString(uncertaintyModel.value).replace('.', OSPRuntime.getCurrentDecimalSeparator()) : "");
+                ? formatDataUncertainty(uncertaintyModel.value) : "");
         else uncertaintyValue.setSelectedItem("");
+        uncertaintyValue.setToolTipText(ToolsRes.getString("DatasetCurveFitter.Uncertainty.Custom")
+                + (uncertaintyModel.mode != FitUncertainty.ESTIMATED && FitUncertainty.positive(uncertaintyModel.value)
+                    ? " " + Double.toString(uncertaintyModel.value).replace('.', OSPRuntime.getCurrentDecimalSeparator()) : ""));
         double sigma=uncertaintyModel.sigma(Double.NaN,getYUnitsPerPixel());
         uncertaintyStatus.setText(uncertaintyModel.mode==FitUncertainty.ESTIMATED?"":
             FitUncertainty.positive(sigma)?(uncertaintyModel.mode == FitUncertainty.PIXELS ? "pixels"
@@ -1202,8 +1221,11 @@ public class DatasetCurveFitter extends JPanel {
         uncertaintyStatus=new JLabel();
         java.awt.event.ActionListener changed=e->{
             if(updatingUncertaintyControls)return;
+            String entered = uncertaintyValue.getEditor().getItem().toString().trim();
+            // Enter/focus events on unchanged display text must not round the stored scale.
+            if (entered.equals(formatDataUncertainty(uncertaintyModel.value))) return;
             double value=Double.NaN;
-            try { value=Double.parseDouble(uncertaintyValue.getEditor().getItem().toString().trim().replace(OSPRuntime.getCurrentDecimalSeparator(),'.')); }
+            try { value=Double.parseDouble(entered.replace(OSPRuntime.getCurrentDecimalSeparator(),'.')); }
             catch(Exception ex) { /* Keep invalid supplied input unavailable, never estimate it. */ }
             setUncertaintyModel(uncertaintyChoice.getSelectedIndex(),value);
         };

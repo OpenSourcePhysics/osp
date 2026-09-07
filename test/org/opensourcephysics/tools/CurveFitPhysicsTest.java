@@ -17,6 +17,13 @@ public class CurveFitPhysicsTest {
     }
     static void run() {
         OSPRuntime.setPreferredDecimalSeparator(".");
+        check(DatasetCurveFitter.formatDataUncertainty(.002518020744556).equals("0.0025"),"data uncertainty two significant digits");
+        check(DatasetCurveFitter.formatDataUncertainty(1).equals("1.0"),"pixel trailing zero");
+        check(DatasetCurveFitter.formatDataUncertainty(.000001234).equals("1.2E-6"),"small uncertainty compact scientific notation");
+        check(DatasetCurveFitter.formatDataUncertainty(.00999).equals("0.010"),"uncertainty rounding carry");
+        OSPRuntime.setPreferredDecimalSeparator(",");
+        check(DatasetCurveFitter.formatDataUncertainty(.002518).equals("0,0025"),"localized uncertainty display");
+        OSPRuntime.setPreferredDecimalSeparator(".");
         DatasetManager manager=new DatasetManager();manager.setXPointsLinked(true);
         manager.setXYColumnNames(0,"t","x");manager.append(0,new double[]{0,1,2,3},new double[]{1.1,2.9,4.9,7.1});
         manager.setXYColumnNames(1,"t","v_{x}");manager.append(1,new double[]{0,1,2,3},new double[]{2,2,2,2});
