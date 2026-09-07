@@ -303,8 +303,22 @@ the intercept at x=0. They combine to give the intercept variance.
 If B were held at 1 rather than refitted, changing A would change the prediction
 by `h*x` instead of `h*(x-x_mean)`. The squared-residual increase would then
 use `sum(x^2)=0+1+4+9=14` instead of Sxx=5. The resulting slope error would be
-`sqrt(0.02/14)=0.0377964473`. It is smaller because B is being treated as known
-exactly. That is a different assumption from estimating both A and B.
+`sqrt(0.02/14)=0.0377964473`. This comparison keeps the original variance,
+0.02, unchanged to isolate the effect of treating B as known exactly.
+
+Actually fixing B=1 in Tracker's default residual-estimated mode also changes
+the variance estimate. The fitted line and SSE remain unchanged in this
+example, but the free parameter rank drops from two to one:
+
+```text
+df = 4 - 1 = 3
+sigma_y^2 = 0.04/3
+sigma_A = sqrt((0.04/3)/14) = 0.0308606699924184
+```
+
+This second calculation includes both the fixed-intercept assumption and the
+re-estimated residual variance. Neither is the original problem of estimating
+both A and B.
 
 ### Change the supplied measurement uncertainty
 

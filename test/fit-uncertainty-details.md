@@ -212,6 +212,13 @@ chi^2_profile(A)
     = 2 + 5*h^2/0.02.
 ```
 
+Compare this with the profile expression from section 2:
+
+```text
+h^2/sigma_A^2 = 5*h^2/0.02
+therefore sigma_A^2 = 0.02/5.
+```
+
 The slope standard error is therefore
 
 ```text
@@ -248,7 +255,22 @@ sigma_A_fixed_B = sqrt(0.02/14)
                 = 0.0377964...
 ```
 
-That smaller number is not a better estimate of the same problem. It answers a different problem in which the intercept is assumed known exactly.
+This comparison keeps the original variance, `0.02`, unchanged so that it
+isolates the effect of treating the intercept as known exactly.
+
+If you actually fix `B=1` in Tracker's default residual-estimated mode, Tracker
+also recalculates the variance. The line and SSE remain unchanged in this
+example, but only one coefficient is now fitted:
+
+```text
+df = 4 - 1 = 3
+sigma_y^2 = 0.04/3
+sigma_A = sqrt((0.04/3)/14) = 0.0308607...
+```
+
+The two calculations use different uncertainty scales. Neither smaller number
+is a better estimate of the original problem, in which both coefficients had
+to be determined from the data.
 
 ## 5. Supplying a different measurement uncertainty
 
@@ -278,9 +300,11 @@ chi^2 = SSE_min/sigma_y^2 = 1
 reduced chi^2 = 1/2 = 0.5.
 ```
 
-For `df=2`, the chi-square survival probability is about `Q=0.607`. `Q` is the probability, assuming the model and uncertainty assumptions, of obtaining a chi-square at least this large from repeated data. It is **not** the probability that the model is true.
+The usual chi-square probability interpretation assumes independent Gaussian
+measurement errors with the stated standard uncertainties and an adequate
+model. For `df=2`, the chi-square survival probability is about `Q=0.607`. `Q` is the probability, assuming the model and uncertainty assumptions, of obtaining a chi-square at least this large from repeated data. It is **not** the probability that the model is true.
 
-## 6. When two adjustable coefficients are not two measurements
+## 6. When two coefficients cannot be determined separately
 
 Consider
 
