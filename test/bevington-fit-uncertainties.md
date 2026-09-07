@@ -161,7 +161,7 @@ parameter errors.
 ## 4. A reproducible analytic example
 
 Take `x=[0,1,2,3]`, `y=[1.1,2.9,4.9,7.1]` and fit `y=A*x+B`.
-The following steps show where the numerical constants come from.
+The following steps trace the residuals through to the coefficient uncertainties.
 
 ### Start with the fitted line and residual variance
 
@@ -227,53 +227,53 @@ Sxx = sum((x-x_mean)^2)
 SSE_profile(A) = 0.04 + 5*h^2
 ```
 
-### Divide by the variance: where 250 comes from
+### Divide by the residual variance
 
-Keep the estimated variance at 0.02 while testing the trial slopes:
+Keep the estimated variance at 0.02 while testing the trial slopes. To convert
+SSE to chi-square, divide by that variance:
 
 ```text
 chi^2_profile(A) = SSE_profile(A)/sigma_y^2
                  = (0.04 + 5*h^2)/0.02
-                 = 0.04/0.02 + (5/0.02)*h^2
-                 = 2 + 250*h^2
+                 = 2 + (5*h^2)/0.02
 ```
 
-Thus **250 is 5 divided by 0.02**. It describes how quickly chi-square increases
-as the slope moves away from 2, after the intercept has been refitted.
+The increase above the minimum is therefore `(5*h^2)/0.02`: the increase in
+SSE divided by the residual variance.
 
-### Add the increases on both sides: where 500 comes from
+### Add the increases on both sides
 
 The code tests two slope changes: `h=-delta` and `h=+delta`. Squaring removes
 the sign, so both trials have the same increase in this example:
 
 ```text
-chi^2_minus = 2 + 250*delta^2
-chi^2_plus  = 2 + 250*delta^2
+chi^2_minus = 2 + (5*delta^2)/0.02
+chi^2_plus  = 2 + (5*delta^2)/0.02
 chi^2_min   = 2
 
 D = chi^2_minus + chi^2_plus - 2*chi^2_min
-  = (2 + 250*delta^2) + (2 + 250*delta^2) - 2*2
-  = 500*delta^2
+  = [2 + (5*delta^2)/0.02] + [2 + (5*delta^2)/0.02] - 2*2
+  = (2*5*delta^2)/0.02
 ```
 
-**500 is 250+250**, because D includes both increases. As a numerical check,
-choose `delta=0.01`: each trial has chi-square 2.025, and
-`D=2.025+2.025-4=0.05`. This is also `500*(0.01)^2`.
+The factor of 2 counts the two equal increases. As a numerical check, choose
+`delta=0.01`. Each increase is `5*(0.01)^2/0.02=0.025`, so each trial has
+chi-square 2.025 and `D=2.025+2.025-4=0.05`.
 
 ### Convert that increase into the slope uncertainty
 
-Substitute D into the curvature formula from section 2. Since delta is a
-positive step size, it cancels:
+Substitute D into the curvature formula from section 2. The factor of 2
+cancels, and since delta is a positive step size, delta cancels too:
 
 ```text
 sigma_A = delta*sqrt(2/D)
-        = delta*sqrt(2/(500*delta^2))
-        = sqrt(2/500)
-        = sqrt(0.004)
+        = delta*sqrt(2/[(2*5*delta^2)/0.02])
+        = delta*sqrt(0.02/(5*delta^2))
         = sqrt(0.02/5)
         = 0.0632455532033676
 ```
 
+The result is the square root of the residual variance divided by Sxx.
 Using the numerical trial above gives the same answer:
 `0.01*sqrt(2/0.05)=0.0632455532033676`. This cancellation is exact for this
 quadratic profile; a numerical nonlinear fit need not behave so simply.
