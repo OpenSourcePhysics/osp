@@ -244,6 +244,12 @@ sigma_B^2 = sigma_y^2 * (1/n + x_mean^2/Sxx)
 sigma_B = 0.1183216...
 ```
 
+so the fitted intercept may be reported approximately as
+
+```text
+B = 1.00 +/- 0.12.
+```
+
 The two coefficient uncertainties differ because slope and intercept affect the fitted line in different ways.
 
 ### What if the intercept were known exactly?
