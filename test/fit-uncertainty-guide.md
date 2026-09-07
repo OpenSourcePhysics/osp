@@ -1,5 +1,15 @@
 # Understanding fit uncertainties
 
+## Documentation index
+
+| Document | Contents |
+|---|---|
+| [Using fit results](fit-uncertainty-guide.md) **(this page)** | Short lab guide to fitted values, uncertainties, and reporting. |
+| [Understanding the statistics](fit-uncertainty-details.md) | Statistical reasoning and a worked example. |
+| [Bevington implementation](bevington-fit-uncertainties.md) | Profile-curvature method, code, and numerical limitations. |
+| [Report definitions and integration](fit-report-physics.md) | Units, uncertainty models, and Tracker integration. |
+| [Tests and documentation](README.md) | Regression test instructions and coverage. |
+
 > **A number from a fit is not the answer; it is a measurement with assumptions attached.**
 
 Suppose Tracker reports a velocity of **2.000 +/- 0.063 m/s**.

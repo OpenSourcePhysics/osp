@@ -1,5 +1,15 @@
 # Understanding fit uncertainties: the statistics behind the result
 
+## Documentation index
+
+| Document | Contents |
+|---|---|
+| [Using fit results](fit-uncertainty-guide.md) | Short lab guide to fitted values, uncertainties, and reporting. |
+| [Understanding the statistics](fit-uncertainty-details.md) **(this page)** | Statistical reasoning and a worked example. |
+| [Bevington implementation](bevington-fit-uncertainties.md) | Profile-curvature method, code, and numerical limitations. |
+| [Report definitions and integration](fit-report-physics.md) | Units, uncertainty models, and Tracker integration. |
+| [Tests and documentation](README.md) | Regression test instructions and coverage. |
+
 > **A number from a fit is not the answer; it is a measurement with assumptions attached.**
 
 This is the middle layer of the Tracker fit-uncertainty documentation.

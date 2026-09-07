@@ -1,14 +1,16 @@
 # Curve-fit regression tests
 
-## Fit uncertainty documentation
+## Documentation index
 
-The fit-uncertainty documentation is arranged in three levels so readers can stop when they have the detail they need:
+| Document | Contents |
+|---|---|
+| [Using fit results](fit-uncertainty-guide.md) | Short lab guide to fitted values, uncertainties, and reporting. |
+| [Understanding the statistics](fit-uncertainty-details.md) | Statistical reasoning and a worked example. |
+| [Bevington implementation](bevington-fit-uncertainties.md) | Profile-curvature method, code, and numerical limitations. |
+| [Report definitions and integration](fit-report-physics.md) | Units, uncertainty models, and Tracker integration. |
+| [Tests and documentation](README.md) **(this page)** | Regression test instructions and coverage. |
 
-1. **Using the result in a lab:** [Understanding fit uncertainties](fit-uncertainty-guide.md) explains what the fitted value and `+/-` uncertainty mean, how to choose the uncertainty model, and how to interpret R-squared and reduced chi-square.
-2. **Understanding the statistics:** [The statistics behind the result](fit-uncertainty-details.md) develops residual variance, degrees of freedom, profile curvature, refitting correlated coefficients, rank, and the worked `2.000 +/- 0.063 m/s` example.
-3. **Reviewing the implementation:** [Bevington-style fit uncertainties: implementation note](bevington-fit-uncertainties.md) documents the equations as implemented, numerical step rules, code path, edge cases, rank calculation, and regression tests.
-
-The short guide begins from the principle: **A number from a fit is not the answer; it is a measurement with assumptions attached.**
+## Running the regression tests
 
 These standalone Java tests require a built OSP or Tracker JAR and a JDK.
 They use main methods and exit unsuccessfully on assertion failures; no test

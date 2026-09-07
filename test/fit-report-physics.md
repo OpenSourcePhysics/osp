@@ -1,5 +1,15 @@
 # Fit report units and uncertainty models
 
+## Documentation index
+
+| Document | Contents |
+|---|---|
+| [Using fit results](fit-uncertainty-guide.md) | Short lab guide to fitted values, uncertainties, and reporting. |
+| [Understanding the statistics](fit-uncertainty-details.md) | Statistical reasoning and a worked example. |
+| [Bevington implementation](bevington-fit-uncertainties.md) | Profile-curvature method, code, and numerical limitations. |
+| [Report definitions and integration](fit-report-physics.md) **(this page)** | Units, uncertainty models, and Tracker integration. |
+| [Tests and documentation](README.md) | Regression test instructions and coverage. |
+
 The coefficient optimizer is unchanged. A positive constant weight multiplies
 the least-squares objective by a constant and therefore has the same minimizer;
 changing the uncertainty controls recomputes profile errors on a cloned function
