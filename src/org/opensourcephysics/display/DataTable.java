@@ -357,6 +357,15 @@ public class DataTable extends JTable {
 	 * @param units      the units string (may be null)
 	 * @param tootip     the tooltip (may be null)
 	 */
+    /** Returns existing renderer metadata; never interprets the column name. */
+    public String getUnits(String columnName) {
+        if (columnName == null) return null;
+        int suffix=columnName.indexOf("_{ ");
+        String key=suffix>0?columnName.substring(0,suffix):columnName;
+        UnitRenderer renderer=unitRenderersByColumnName.get(key);
+        return renderer==null?null:renderer.units;
+    }
+
 	public void setUnits(String columnName, String units, String tooltip) {
 		if (units == null) {
 			unitRenderersByColumnName.remove(columnName);
@@ -2643,7 +2652,10 @@ public class DataTable extends JTable {
 				if (isRowNumberVisible() && selectedColumns[j] == 0)
 					continue;
 				String name = getColumnName(selectedColumns[j]);
-				name = TeXParser.removeSubscripting(name);
+				String units = getUnits(name);
+                name = units == null || units.trim().length() == 0
+                        ? ExportText.ascii(TeXParser.removeSubscripting(name))
+                        : ExportText.header(name, units);
 	//			if (name.startsWith(FunctionEditor.THETA)) {
 	//				for (int i = 0; i < selectedRows.length; i++) {
 	//					Object val = getFormattedValueAt(selectedRows[i], selectedColumns[j]);

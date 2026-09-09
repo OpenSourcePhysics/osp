@@ -183,10 +183,20 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected DatasetManager dataManager = new DatasetManager(); // datasets in this tab
 	protected JSplitPane[] splitPanes;
 	protected DataToolPlotter plot;
+    private FitMetadataProvider fitMetadataProvider;
+    /** Live metadata only; data values and saved project state are unaffected. */
+    public void setFitMetadataProvider(FitMetadataProvider provider) {
+        fitMetadataProvider=provider;
+        if(curveFitter!=null)curveFitter.refreshUncertaintyModel();
+    }
+    FitMetadataProvider getFitMetadataProvider() { return fitMetadataProvider; }
+    public void setColumnUnits(String name,String units) { dataTable.setUnits(name,units,null); }
+
 	protected DataToolTable dataTable;
 	protected DataToolStatsTable statsTable;
 	protected DataToolPropsTable propsTable;
 	protected JScrollPane dataScroller, statsScroller, propsScroller, tableScroller;
+    protected JScrollPane fitScroller;
 	protected JToolBar toolbar;
 	protected JCheckBoxMenuItem statsCheckbox, propsCheckbox, fourierCheckbox;
 	protected FourierPanel fourierPanel;
@@ -784,6 +794,13 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	 * @param ID the ID number of the desired column
 	 * @return the tab column name, or null if not found
 	 */
+    /** Resolve a source column without confusing linked x and y columns sharing an ID. */
+    public String getColumnName(int ID,int sourceColumn) {
+        for(Dataset column:dataManager.getDatasetsRaw())
+            if(column.getID()==ID && column.getColumnID()==sourceColumn)return column.getYColumnName();
+        return null;
+    }
+
 	public String getColumnName(int ID) {
 		for (Dataset column : dataManager.getDatasetsRaw()) {
 			if (column.getID() == ID)
@@ -1180,7 +1197,29 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		splitPanes[0].setResizeWeight(0.7);
 		splitPanes[0].setOneTouchExpandable(true);
 		// splitPanes[1] is plot on top, fitter on bottom
-		splitPanes[1] = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		splitPanes[1] = new JSplitPane(JSplitPane.VERTICAL_SPLIT) {
+			@Override
+			public void doLayout() {
+                if (fitScroller != null && getBottomComponent() == fitScroller && getHeight() > 0) {
+                    java.awt.Insets insets = getInsets();
+                    // Reserve scrollbar width consistently so entering scroll mode does
+                    // not toggle the responsive layout back and forth.
+                    int width = Math.max(1, getWidth() - insets.left - insets.right
+                            - fitScroller.getVerticalScrollBar().getPreferredSize().width);
+                    int required = curveFitter.prepareFitLayout(width);
+                    curveFitter.setPreferredSize(new Dimension(width, required));
+                    int available = getHeight() - insets.top - insets.bottom - getDividerSize();
+                    // Protect the drawable graph, not merely its panel and axis labels.
+                    int graphHeight = Math.max(140, plot.getFontMetrics(plot.getFont()).getHeight() * 8);
+                    int plotHeight = graphHeight + plot.getTopGutter() + plot.getBottomGutter();
+                    plotHeight = Math.min(plotHeight, Math.max(0, available / 2));
+                    int fitHeight = Math.min(required, Math.max(0, available - plotHeight));
+                    setDividerLocation(insets.top + available - fitHeight);
+                }
+				super.doLayout();
+			}
+
+		};
 		splitPanes[1].setResizeWeight(1);
 		splitPanes[1].setDividerSize(0);
 		// splitPanes[2] is stats/props tables on top, data table on bottom
@@ -1281,7 +1320,14 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			public void actionPerformed(ActionEvent e) {
 				splitPanes[1].setEnabled(true);
 				getCurveFitter().setFontLevel(FontSizer.getLevel());
-				splitPanes[1].setBottomComponent(curveFitter);
+                if (fitScroller == null) {
+                    fitScroller = new JScrollPane(curveFitter,
+                            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                    fitScroller.setBorder(BorderFactory.createEmptyBorder());
+                    fitScroller.setMinimumSize(new Dimension(0, 0));
+                    fitScroller.getVerticalScrollBar().setUnitIncrement(16);
+                }
+                splitPanes[1].setBottomComponent(fitScroller);
 				splitPanes[1].setDividerSize(splitPanes[0].getDividerSize());
 				splitPanes[1].setDividerLocation(-1);
 				if (curveFitter.getDrawer() != null)
@@ -1304,7 +1350,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// remove curveFitter
-				splitPanes[1].remove(curveFitter);
+				if (fitScroller != null) splitPanes[1].remove(fitScroller);
 				splitPanes[1].setDividerSize(splitPanes[2].getDividerSize());
 				splitPanes[1].setDividerLocation(1.0);
 				plot.removeDrawables(FunctionDrawer.class);
@@ -2367,7 +2413,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	
 	private boolean isFitterVisible() {
 //		return splitPanes[1].getDividerLocation() <= splitPanes[1].getMaximumDividerLocation();
-		return curveFitter != null && splitPanes[1].getBottomComponent() == curveFitter;
+		return curveFitter != null && fitScroller != null && splitPanes[1].getBottomComponent() == fitScroller;
 	}
 
 	private void findHits(boolean showInTable) {
