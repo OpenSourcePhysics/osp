@@ -75,7 +75,44 @@ public class CurveFitDataToolLayoutTest {
      check(fitter.getVisibleRect().contains(uncertaintyBounds),"scrolling reaches uncertainty controls");
      tab.fitScroller.getVerticalScrollBar().setValue(0);
      check(Math.abs(fitter.getHeight()-fitter.prepareFitLayout(fitter.getWidth()))<=4,"fit area stays at required height");
+     // Changes in units and availability can make a FlowLayout row wrap.
+     for (int mode : new int[]{FitUncertainty.CONSTANT, FitUncertainty.PIXELS, FitUncertainty.ESTIMATED}) {
+      fitter.setUncertaintyModel(mode, mode==FitUncertainty.CONSTANT ? Double.NaN : .001);
+      for(int pass=0;pass<5;pass++){tool.validate();layout(tool.getContentPane());}
+      for(Component row:uncertainty.getComponents()) {
+       Container container=(Container)row;
+       for(Component control:container.getComponents())
+        if(control.getWidth()>0 && control.getHeight()>0) check(new Rectangle(0,0,row.getWidth(),row.getHeight()).contains(control.getBounds()),
+          "uncertainty row contains controls after mode change, font="+level+", mode="+mode);
+      }
+      Rectangle sb=SwingUtilities.convertRectangle(stats,new Rectangle(0,0,stats.getWidth(),stats.getHeight()),fitter);
+      Rectangle ub=SwingUtilities.convertRectangle(uncertainty,new Rectangle(0,0,uncertainty.getWidth(),uncertainty.getHeight()),fitter);
+      check(sb.y+sb.height<=ub.y,"summary and uncertainty never overlap");
+     }
      if(args.length>0){BufferedImage image=new BufferedImage(tool.getContentPane().getWidth(),tool.getContentPane().getHeight(),BufferedImage.TYPE_INT_RGB);Graphics2D g=image.createGraphics();tool.getContentPane().printAll(g);g.dispose();javax.imageio.ImageIO.write(image,"png",new java.io.File(args[0]+"/data-tool-"+size[0]+"-font"+level+".png"));}
+    }
+   }
+   // Append a derived column, delete the fitted position, then change both axes.
+   Dataset velocity=new Dataset();velocity.setXYColumnNames("t","v_{y}");
+   for(int i=0;i<16;i++)velocity.append(i/30.0,1067-3960*i/30.0);
+   tab.loadData(velocity,false);tab.refreshGUI();
+   tab.setWorkingColumns("t","y");
+   fitter.setUncertaintyModel(FitUncertainty.PIXELS,1);
+   tab.dataTable.deleteColumn("y");
+   for(String[] axes:new String[][]{{"t","v_{y}"},{"v_{y}","t"},{"t","v_{y}"}}){
+    tab.setWorkingColumns(axes[0],axes[1]);
+    for(int mode:new int[]{FitUncertainty.ESTIMATED,FitUncertainty.CONSTANT,FitUncertainty.PIXELS}){
+     fitter.setUncertaintyModel(mode,mode==FitUncertainty.CONSTANT ? Double.NaN : .001);
+     for(int pass=0;pass<5;pass++){tool.validate();layout(tool.getContentPane());}
+     java.lang.reflect.Field uf=DatasetCurveFitter.class.getDeclaredField("uncertaintyPanel");uf.setAccessible(true);
+     JPanel uncertainty=(JPanel)uf.get(fitter);
+     for(Component row:uncertainty.getComponents())for(Component control:((Container)row).getComponents())
+      if(control.getWidth()>0 && control.getHeight()>0)
+       check(new Rectangle(0,0,row.getWidth(),row.getHeight()).contains(control.getBounds()),
+        "controls contained after deletion and axis switch "+axes[0]+"/"+axes[1]);
+     Rectangle sb=SwingUtilities.convertRectangle(stats,new Rectangle(0,0,stats.getWidth(),stats.getHeight()),fitter);
+     Rectangle ub=SwingUtilities.convertRectangle(uncertainty,new Rectangle(0,0,uncertainty.getWidth(),uncertainty.getHeight()),fitter);
+     check(sb.y+sb.height<=ub.y,"summary stays above uncertainty after deletion and axis switch");
     }
    }
    System.out.println("Passed: "+passed); success=true;

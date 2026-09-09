@@ -169,6 +169,14 @@ public class CurveFitPhysicsTest {
         scale[0]=.02;fitter.refreshUncertaintyModel();near(fitter.getYUnitsPerPixel(),.02,"live calibration refresh");
         tab.setWorkingColumns("t","v_{x}");
         check(Double.isNaN(fitter.getYUnitsPerPixel()),"derived variable does not inherit position calibration");
+        check(fitter.getUncertaintyModel().mode==FitUncertainty.ESTIMATED,"new velocity column starts unweighted");
+        fitter.setUncertaintyModel(FitUncertainty.CONSTANT,.25);
+        tab.setWorkingColumns("t","x");
+        check(fitter.getUncertaintyModel().mode==FitUncertainty.PIXELS,"position pixel mode restored");
+        near(fitter.getUncertaintyModel().value,.73,"position pixel value restored");
+        tab.setWorkingColumns("t","v_{x}");
+        check(fitter.getUncertaintyModel().mode==FitUncertainty.CONSTANT,"velocity mode restored independently");
+        near(fitter.getUncertaintyModel().value,.25,"velocity uncertainty restored independently");
         fitter.setUncertaintyModel(FitUncertainty.PIXELS,1);
         check(Double.isNaN(fitter.getUncertainty(0)),"ineligible pixel sigma not applied");
         // This fixture is disposable; do not open a modal save prompt during cleanup.

@@ -31,15 +31,15 @@ public class CurveFitConstraintTest {
         check(fitter.isAutoFit(), "fixing slope preserves Autofit");
         check(Double.isNaN(fitter.getUncertainty(0)), "fixed slope has no uncertainty");
         close(fitter.getUncertainty(1), Math.sqrt(.04/3/4), "free intercept uncertainty recomputed immediately");
-        check(labels(fitter).contains("Free parameters: 1"), "free count refreshed immediately");
-        check(labels(fitter).contains("Degrees of freedom: 3"), "degrees of freedom refreshed immediately");
+        check(report(fitter).contains("Free parameters\t1"), "free count refreshed immediately");
+        check(report(fitter).contains("Degrees of freedom (n - rank)\t3"), "degrees of freedom refreshed immediately");
         String report = report(fitter);
         check(report.contains("A\t2.0\tN/A\t\tYes"), "export identifies fixed slope");
         close(CurveFitReportTest.cell(report, "B", 2), Math.sqrt(.04/3/4), "export uses new intercept uncertainty");
 
         toggle(table, 1);
-        check(labels(fitter).contains("Free parameters: 0"), "all fixed updates free count");
-        check(labels(fitter).contains("Degrees of freedom: 4"), "all fixed updates degrees of freedom");
+        check(report(fitter).contains("Free parameters\t0"), "all fixed updates free count");
+        check(report(fitter).contains("Degrees of freedom (n - rank)\t4"), "all fixed updates degrees of freedom");
         check(Double.isNaN(fitter.getUncertainty(0)) && Double.isNaN(fitter.getUncertainty(1)), "all fixed clears uncertainties");
         toggle(table, 1);
         close(fitter.getUncertainty(1), Math.sqrt(.04/3/4), "unfixing intercept recomputes uncertainty");

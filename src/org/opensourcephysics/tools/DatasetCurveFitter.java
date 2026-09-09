@@ -199,10 +199,26 @@ public class DatasetCurveFitter extends JPanel {
 	KnownFunction fit; // the function to fit to the data
     private FitUncertainty uncertaintyModel=FitUncertainty.estimated();
     private JComboBox<String> uncertaintyChoice, uncertaintyValue;
-    private JLabel uncertaintyStatus;
+    private JLabel uncertaintyStatus, uncertaintyLabel;
+    private final java.util.Map<String, FitUncertainty> columnUncertainties = new java.util.HashMap<String, FitUncertainty>();
+    private String uncertaintyColumn;
+
+    /** Selected data objects can be reused: retain a separate column key snapshot. */
+    private void selectColumnUncertainty() {
+        if (dataset == null) return;
+        String key = dataset.getYColumnName();
+        String units = variableUnits(false);
+        key += "\t" + (units == null ? "" : units);
+        if (key.equals(uncertaintyColumn)) return;
+        if (uncertaintyColumn != null) columnUncertainties.put(uncertaintyColumn, uncertaintyModel);
+        uncertaintyColumn = key;
+        FitUncertainty saved = columnUncertainties.get(key);
+        uncertaintyModel = saved == null ? FitUncertainty.estimated() : saved;
+    }
     private boolean updatingUncertaintyControls;
     public FitUncertainty getUncertaintyModel() { return uncertaintyModel; }
     public void setUncertaintyModel(int mode,double value) {
+        selectColumnUncertainty();
         uncertaintyModel=new FitUncertainty(mode,value);
         refreshUncertaintyModel();
     }
@@ -266,6 +282,9 @@ public class DatasetCurveFitter extends JPanel {
         if(uncertaintyChoice==null)return;
         updatingUncertaintyControls=true;
         boolean pixels=FitUncertainty.positive(getYUnitsPerPixel());
+        uncertaintyLabel.setText(dataset == null ? ToolsRes.getString("DatasetCurveFitter.Uncertainty.Label")
+                : ToolsRes.getString("DatasetCurveFitter.Uncertainty.For") + " "
+                + org.opensourcephysics.display.ExportText.ascii(dataset.getYColumnName()) + ":");
         if((pixels || uncertaintyModel.mode==FitUncertainty.PIXELS) && uncertaintyChoice.getItemCount()==2)
             uncertaintyChoice.addItem(ToolsRes.getString("DatasetCurveFitter.Uncertainty.Pixels"));
         if(!pixels && uncertaintyModel.mode!=FitUncertainty.PIXELS && uncertaintyChoice.getItemCount()==3)
@@ -285,8 +304,15 @@ public class DatasetCurveFitter extends JPanel {
         uncertaintyStatus.setText(uncertaintyModel.mode==FitUncertainty.ESTIMATED?"":
             FitUncertainty.positive(sigma)?(uncertaintyModel.mode == FitUncertainty.PIXELS ? "pixels"
                 : org.opensourcephysics.display.ExportText.ascii(variableUnits(false))):
-            ToolsRes.getString("DatasetCurveFitter.Uncertainty.Invalid"));
+            (uncertaintyModel.mode == FitUncertainty.PIXELS && !pixels
+                ? ToolsRes.getString("DatasetCurveFitter.Uncertainty.NoCalibration")
+                : ToolsRes.getString("DatasetCurveFitter.Uncertainty.Invalid")));
         updatingUncertaintyControls=false;
+        uncertaintyPanel.revalidate();
+        revalidate();
+        if (tab != null && tab.splitPanes != null && tab.splitPanes[1] != null)
+            tab.splitPanes[1].revalidate();
+        repaint();
     }
 
 	double sigma_y_squared = 1; // an estimate of the SD in the y deviations from the fit
@@ -358,6 +384,35 @@ public class DatasetCurveFitter extends JPanel {
 	private JTextField eqnField;
 	private NumberField rmsField;
 	private JPanel statisticsPanel, uncertaintyPanel;
+    private int uncertaintyLayoutWidth;
+
+    /** FlowLayout wraps controls but normally reports only a single-line height. */
+    private class UncertaintyRowLayout extends java.awt.FlowLayout {
+        UncertaintyRowLayout() { super(java.awt.FlowLayout.LEFT, 4, 2); }
+        @Override public Dimension preferredLayoutSize(Container target) {
+            Dimension preferred = super.preferredLayoutSize(target);
+            if (uncertaintyLayoutWidth <= 0) return preferred;
+            java.awt.Insets insets = target.getInsets();
+            int available = Math.max(1, uncertaintyLayoutWidth - insets.left - insets.right - 2*getHgap());
+            int width = 0, height = 0, total = insets.top + insets.bottom + 2*getVgap();
+            boolean occupied = false;
+            for (Component component : target.getComponents()) {
+                if (!component.isVisible()) continue;
+                Dimension size = component.getPreferredSize();
+                int gap = occupied ? getHgap() : 0;
+                if (occupied && width + gap + size.width > available) {
+                    total += height + getVgap();
+                    width = height = 0;
+                    gap = 0;
+                }
+                width += gap + size.width;
+                height = Math.max(height, size.height);
+                occupied = true;
+            }
+            preferred.height = total + height;
+            return preferred;
+        }
+    }
 	private JLabel[] statisticLabels;
 	private static final int[] VISIBLE_STATISTICS = {5, 3, 6};
 	private ParamTable paramTable;
@@ -414,6 +469,8 @@ public class DatasetCurveFitter extends JPanel {
 	 */
 	public void setData(Dataset data, boolean doFit) {
 		dataset = data;
+        selectColumnUncertainty();
+        refreshUncertaintyControls();
 		if (!isActive)
 			return;
 		if (doFit) {
@@ -1219,9 +1276,10 @@ public class DatasetCurveFitter extends JPanel {
 		JPanel statisticsContainer = new JPanel(new BorderLayout());
 		statisticsContainer.add(statisticsPanel, BorderLayout.NORTH);
         uncertaintyPanel=new JPanel(new java.awt.GridLayout(0,1,0,2));
-        JPanel uncertaintyModeRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT,4,2));
-        JPanel uncertaintyValueRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT,4,2));
-        uncertaintyModeRow.add(new JLabel(ToolsRes.getString("DatasetCurveFitter.Uncertainty.Label")));
+        JPanel uncertaintyModeRow = new JPanel(new UncertaintyRowLayout());
+        JPanel uncertaintyValueRow = new JPanel(new UncertaintyRowLayout());
+        uncertaintyLabel = new JLabel();
+        uncertaintyModeRow.add(uncertaintyLabel);
         uncertaintyChoice=new JComboBox<String>(new String[]{ToolsRes.getString("DatasetCurveFitter.Uncertainty.Estimated"),ToolsRes.getString("DatasetCurveFitter.Uncertainty.Constant")});
         uncertaintyValue=new JComboBox<String>();
         uncertaintyValue.setPrototypeDisplayValue("0.0000000000");
@@ -1488,6 +1546,7 @@ public class DatasetCurveFitter extends JPanel {
 	int prepareFitLayout(int availableWidth) {
 		if (statisticsPanel == null || paramTable == null) return 0;
 		int width = Math.max(1, availableWidth - 4);
+        uncertaintyLayoutWidth = width;
 		// Reserve room before uncertainties become available. Selection changes must
 		// not change the orientation or the height allocated to the plot.
 		int parameterWidth = paramTable.getFontMetrics(paramTable.getFont())
