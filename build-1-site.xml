@@ -67,6 +67,7 @@
   	
   	-->
 
+    <echo> unzipping ${swingjs.zip} into ${site.dir}</echo>
   	<unzip src="${swingjs.zip}" dest="${site.dir}/" overwrite="true"/>  	
 
   	<echo> Deleting /_, /_ES6, and /_wasm</echo>

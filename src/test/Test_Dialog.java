@@ -29,8 +29,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.plaf.UIResource;
 
+import org.opensourcephysics.display.OSPFrame;
+import org.opensourcephysics.media.core.NumberField;
+import org.opensourcephysics.tools.DatasetCurveFitter;
+import org.opensourcephysics.tools.DatasetCurveFitter.DCFNumberField;
+
 @SuppressWarnings("deprecation")
-public class Test_Dialog extends JFrame implements PropertyChangeListener {
+public class Test_Dialog extends OSPFrame implements PropertyChangeListener {
 
 	public static int ii;
 
@@ -121,7 +126,8 @@ public class Test_Dialog extends JFrame implements PropertyChangeListener {
 		JPanel p = new JPanel();
 		p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
 		add(p, BorderLayout.CENTER);
-		this.setLocation(300, 300);
+		this.setPreferredSize(new Dimension(1000, 100));
+		this.setLocation(200, 200);
 		JButton b;
 
 		b = new JButton("ConfirmDialog");
@@ -251,9 +257,14 @@ public class Test_Dialog extends JFrame implements PropertyChangeListener {
 		});
 		p.add(b);
 
+		NumberField f = new NumberField(4);
+		p.add(f);
+		
+		DCFNumberField df = new DatasetCurveFitter.DCFNumberField(4);
+		p.add(df);
+		
 		pack();
 		setVisible(true);
-
 	}
 
 	public static void main(String[] args) {

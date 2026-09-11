@@ -72,6 +72,7 @@ import org.opensourcephysics.controls.OSPLog;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
+import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.tools.FontSizer;
 import org.opensourcephysics.tools.LaunchNode;
 import org.opensourcephysics.tools.ResourceLoader;
@@ -80,6 +81,7 @@ import org.opensourcephysics.tools.TranslatorTool;
 
 import javajs.api.JSUtilI;
 import javajs.async.Assets;
+import javajs.async.AsyncDialog;
 import javajs.async.AsyncFileChooser;
 import javajs.async.SwingJSUtils.Timeout;
 
@@ -456,39 +458,97 @@ public class OSPRuntime {
 	public static boolean hasKeyboard = !cssCursor;
 
 //  browser Navigator parameters added by WC
-//	private static boolean isOSX=false;
-//	private static boolean isiOS=false;
-//	private static boolean isiPad=false;
-//	private static boolean isAndroid=false;	
-//  private static boolean isMobile=false;
-  private static String userAgent="";	//navigator user agent
-  //skip loading for testing mobile devices
-	private static boolean skipDisplayOfPDF = false;// isMobile;// true;// isJS; // for TrackerIO, for now.
+	private static boolean isOSX;
+	private static boolean isiOS;
+	private static boolean isiPad;
+	private static boolean isAndroid;	
+    private static boolean isMobile;
+    private static String userAgent;	//navigator user agent
+    //skip loading for testing mobile devices
+	private static boolean skipDisplayOfPDF;// isMobile;// true;// isJS; // for TrackerIO, for now.
+	private static boolean askIfMobileKeyboard = true; // for now since Tracker is not connected to this; future might be false?
+	public static boolean useVirtualNumberPad;
 
 	
-	private static void readMobileParam(){
-		/** @j2sNative
-		 * this.userAgent=navigator.userAgent;
-		 * this.isOSX=this.userAgent.match('OS X')!=null;
-		 * this.isiOS= this.userAgent.match('iOS')!=null;
-		 * this.isiPad= this.userAgent.match('iPad')!=null;
-		 * var touchpoints= navigator.maxTouchPoints;
-		 * var isiPadPro= (touchpoints>2 && this.isOSX);
-		 * this.isiPad =  this.isiPad || isiPadPro;
-		 * this.isAndroid= this.userAgent.match('Android')!=null;
-		 * this.isMobile=this.isiOS||this.isiPad||this.isAndroid;
-		 * this.skipDisplayOfPDF=this.isMobile;
-		 */
-	 }
+	private static void readMobileParam() {
+		if (userAgent != null)
+			return;
+		userAgent =
+				/** @j2sNative navigator.userAgent || */
+				null;
+		if (userAgent == null) {
+			userAgent = "<unknown>";
+		} else {
+			isOSX = (userAgent.indexOf("OS X") >= 0);
+			isiOS = (userAgent.indexOf("iOS") >= 0);
+			isiPad = (userAgent.indexOf("iPad") >= 0);
+			isAndroid = (userAgent.indexOf("Android") >= 0);
+			if (isOSX) {
+				// check for iPadPro
+				int n = (/** @j2sNative navigator.maxTouchPoints || */
+						0);
+				isiPad |= (n > 2);
+			}
+			isMobile = isiOS || isiPad || isAndroid;
+			skipDisplayOfPDF = isMobile;
+		}
+	}
+
 	
 	public static boolean getSkipDisplayOfPDF() {
-		if(isJS)readMobileParam();
+		if (isJS)
+			readMobileParam();
 		return skipDisplayOfPDF;
 	}
 	
 	public static String getUserAgent() {
-		if(isJS)readMobileParam();	
-		return userAgent;  // user agent should already be set.
+		if (isJS)
+			readMobileParam();
+		return userAgent; // user agent should already be set.
+	}
+
+	public static void setDoCheckMobileKeyboard(boolean b) {
+		askIfMobileKeyboard = b;
+	}
+	
+	/**
+	 * But see https://share.google/FRijRVJCMEU3yftK7
+	 * 
+	 * Do this only after the frame is made visible.
+	 * 
+	 * @param component.
+	 */
+	public static void checkMobileKeyboard(NumberField nf) {		
+		if (!isJS || !nf.isVisible())
+			return;
+		if (useVirtualNumberPad) {
+			nf.addVirtualNumberPad();
+			return; 
+		}
+		
+		readMobileParam();
+		// testing with a keyboard
+		//hasKeyboard = false;isMobile = true;
+		
+		if (isMobile && !hasKeyboard && askIfMobileKeyboard) { // running on iPad
+			askIfMobileKeyboard = false;
+			new AsyncDialog().showConfirmDialog(nf.getTopLevelAncestor(), DisplayRes.getString("Dialog.MobileKeyboard.Message"),
+					DisplayRes.getString("Dialog.MobileKeyboard.Title"), JOptionPane.YES_NO_OPTION,
+					new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							switch (e.getID()) {
+							case JOptionPane.YES_OPTION:
+								hasKeyboard = true;
+								break;
+							case JOptionPane.NO_OPTION:
+								useVirtualNumberPad = true;
+								nf.addVirtualNumberPad();
+								break;
+							}
+						}
+					});
+		}
 	}
 
 	static {
@@ -643,10 +703,11 @@ public class OSPRuntime {
 		addAssets("osp", "osp-assets.zip", "org/opensourcephysics/resources");
 		if (!isJS && !unzipFiles)
 			OSPLog.warning("OSPRuntime.unzipFiles setting is false for BH testing");
-		if (OSPRuntime.skipDisplayOfPDF) {
+		if (skipDisplayOfPDF) {
 			OSPLog.warning("OSPRuntime.skipDisplayOfPDF true for BH testing");
 		}
 	}
+	
 	public static final String tempDir = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$ // BH centralized
 
 	/**
@@ -1323,7 +1384,7 @@ public class OSPRuntime {
 	 * @return path to the directory containing the launch jar. May be null.
 	 */
 	public static String getLaunchJarDirectory() {
-		if (OSPRuntime.isApplet) {
+		if (isApplet) {
 			return null;
 		}
 		return (launchJarPath == null) ? null : XML.getDirectoryPath(launchJarPath);
@@ -1375,7 +1436,7 @@ public class OSPRuntime {
 	 */
 	public static String getManifestAttribute(JarFile jarFile, String attribute) {
 		//System.out.println("reading attribute="+attribute);
-		if(OSPRuntime.isJS) {
+		if(isJS) {
 			System.err.println("getManifestAttribute from jar not allowed in JavaScript");
 			return "";
 		}
@@ -1393,7 +1454,7 @@ public class OSPRuntime {
 	 * @return the build date, or "" if not launched from a jar or date not known
 	 */
 	public static String getLaunchJarBuildDate() {
-		if(OSPRuntime.isJS) {
+		if(isJS) {
 			try {
         BufferedReader inFile = new BufferedReader(new FileReader("MANIFEST.MF"));
         String nextLine = inFile.readLine();
@@ -1583,7 +1644,7 @@ public class OSPRuntime {
 	 */
 	public static Locale[] getInstalledLocales() {
 		ArrayList<Locale> list = new ArrayList<Locale>();
-		if (OSPRuntime.isJS)
+		if (isJS)
 			return list.toArray(new Locale[0]);
 		java.util.TreeMap<String, Locale> languages = new java.util.TreeMap<String, Locale>();
 		list.add(Locale.ENGLISH); // english is first in list
@@ -1874,7 +1935,7 @@ public class OSPRuntime {
 		try {
 			chooser = (chooserDir == null) ? new AsyncFileChooser() : new AsyncFileChooser(new File(chooserDir));
 		} catch (Exception e) {
-			System.err.println("Exception in OSPFrame getChooser=" + e); //$NON-NLS-1$
+			System.err.println("Exception in OSPRuntime getChooser=" + e); //$NON-NLS-1$
 			return null;
 		}
 		javax.swing.filechooser.FileFilter defaultFilter = chooser.getFileFilter();
@@ -2402,6 +2463,7 @@ public class OSPRuntime {
 		FontSizer.setFonts(dialog, FontSizer.getLevel());
 		dialog.setVisible(true);
 	}
+
 
 }
 /*

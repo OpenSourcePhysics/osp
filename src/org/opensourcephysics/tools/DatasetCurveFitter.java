@@ -2388,7 +2388,7 @@ public class DatasetCurveFitter extends JPanel {
 	/**
 	 * A JTextField that accepts only numbers.
 	 */
-	static class DCFNumberField extends  NumberField {
+	public static class DCFNumberField extends  NumberField {
 		// instance fields
 //		protected DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
 		protected int preferredWidth;

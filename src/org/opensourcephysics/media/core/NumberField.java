@@ -32,13 +32,17 @@
 package org.opensourcephysics.media.core;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -227,8 +231,6 @@ public class NumberField extends JTextField {
 		}
 
 		public void applyPattern(String p) {
-			// System.out.println ("NumberField ApplyPattern " + p + " " + ++test + " " +
-			// test1);
 			if (p != currentPattern) {
 				if (decimalSeparator != OSPRuntime.getCurrentDecimalSeparator()) {
 					decimalSeparator = OSPRuntime.getCurrentDecimalSeparator();
@@ -333,6 +335,7 @@ public class NumberField extends JTextField {
 	protected String units;
 	protected double conversionFactor = 1;
 	protected NumberFormatter nf;
+	private boolean haveVirtualNumberPad;
 
 	/**
 	 * Constructs a NumberField with default sigfigs (4)
@@ -381,7 +384,15 @@ public class NumberField extends JTextField {
 			}
 
 		});
-		addFocusListener(new FocusAdapter() {
+		addFocusListener(new FocusListener() {
+			@Override
+			public void focusGained(FocusEvent e) {
+				if (!isEditable() || ! OSPRuntime.isJS)
+					return;
+				// might lose focus
+				OSPRuntime.checkMobileKeyboard(NumberField.this); 
+			}
+
 			@Override
 			public void focusLost(FocusEvent e) {
 				if (!isEditable())
@@ -641,6 +652,25 @@ public class NumberField extends JTextField {
 			setValue(getValue());
 	}
 
+	public void addVirtualNumberPad() {
+		if (!haveVirtualNumberPad) {
+			haveVirtualNumberPad = true;
+			/**
+			 * @j2sNative
+			 * 
+			 * J2S.Mobile.addNumberPad(this);
+			 */
+		}
+		/**
+		 * @j2sNative
+		 * 
+		 * J2S.Mobile.showNumberPad(this);
+		 */
+	}
+
+	public char getDecimalSeparator() {
+		return nf.decimalSeparator;
+	}
 }
 
 /*
