@@ -28,7 +28,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EventObject;
@@ -88,6 +87,7 @@ import org.opensourcephysics.display.MessageDrawable;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.TeXParser;
 import org.opensourcephysics.display.UncertainFunctionDrawer;
+import org.opensourcephysics.media.core.NumberField;
 import org.opensourcephysics.numerics.Function;
 import org.opensourcephysics.numerics.HessianMinimize;
 import org.opensourcephysics.numerics.LUPDecomposition;
@@ -263,7 +263,7 @@ public class DatasetCurveFitter extends JPanel {
 	private JToolBar fitBar, eqnBar, rmsBar;
 	private JComboBox<String> fitDropDown;
 	private JTextField eqnField;
-	private NumberField rmsField;
+	private DCFNumberField rmsField;
 	private ParamTable paramTable;
 	private ParamCellRenderer cellRenderer;
 	private SpinCellEditor spinCellEditor; // uses number-crawler spinner
@@ -888,7 +888,7 @@ public class DatasetCurveFitter extends JPanel {
 		});
 		colorButton.setBorder(new EmptyBorder(7,1,5,3));
 		// create rms field
-		rmsField = new NumberField(6) {
+		rmsField = new DCFNumberField(6) {
 			@Override
 			public Dimension getPreferredSize() {
 				return fixSize(super.getPreferredSize());
@@ -2090,7 +2090,7 @@ public class DatasetCurveFitter extends JPanel {
 				setFont(fieldFont);
 				setBackground(!isApplicable() ? Color.YELLOW : isSelected ? lightBlue : Color.white);
 				setForeground(isSelected ? Color.red : table.isEnabled() ? Color.black : Color.gray);
-				DecimalFormat format = spinCellEditor.field.format;
+				DecimalFormat format = spinCellEditor.field.getFormat();
 				format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
 				double uncertainty = getUncertainty(row);
 				String[] uncert = formatUncertainParameter((double)value, uncertainty, 0, format);
@@ -2129,7 +2129,7 @@ public class DatasetCurveFitter extends JPanel {
 		JPanel panel = new JPanel(new BorderLayout());
 		SpinnerNumberCrawlerModel crawlerModel = new SpinnerNumberCrawlerModel(1);
 		JSpinner spinner;
-		NumberField field;
+		DCFNumberField field;
 		int rowNumber;
 		JLabel stepSizeLabel = new JLabel("10%"); //$NON-NLS-1$
 
@@ -2178,7 +2178,7 @@ public class DatasetCurveFitter extends JPanel {
 				}
 
 			});
-			field = new NumberField(10);
+			field = new DCFNumberField(10);
 			field.applyDefaultPattern(!isFixedDecimalFormat); //$NON-NLS-1$					
 			field.setBorder(BorderFactory.createEmptyBorder(1, 1, 0, 0));
 			spinner.setBorder(BorderFactory.createEmptyBorder(0, 1, 1, 0));
@@ -2388,11 +2388,9 @@ public class DatasetCurveFitter extends JPanel {
 	/**
 	 * A JTextField that accepts only numbers.
 	 */
-	static class NumberField extends JTextField {
+	static class DCFNumberField extends  NumberField {
 		// instance fields
-		protected DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
-		protected double prevValue;
-		protected String pattern = "0"; //$NON-NLS-1$
+//		protected DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
 		protected int preferredWidth;
 
 		/**
@@ -2400,44 +2398,47 @@ public class DatasetCurveFitter extends JPanel {
 		 * 
 		 * @param columns
 		 */
-		public NumberField(int columns) {
+		public DCFNumberField(int columns) {
 			super(columns);
+			applyPattern("0");
 			setForeground(Color.black);
 		}
 
+		@Override
 		public double getValue() {
-			if (getText().equals(format.format(prevValue))) {
-				return prevValue;
-			}
-			double retValue;
-			try {
-				retValue = format.parse(getText()).doubleValue();
-			} catch (ParseException e) {
-				Toolkit.getDefaultToolkit().beep();
-				setValue(prevValue);
-				return prevValue;
-			}
-			return retValue;
+			return super.getValue();
+//			if (getText().equals(format.format(prevValue))) {
+//				return prevValue;
+//			}
+//			try {
+//				return format.parse(getText()).doubleValue();
+//			} catch (ParseException e) {
+//				Toolkit.getDefaultToolkit().beep();
+//				setValue(prevValue);
+//				return prevValue;
+//			}
 		}
 
+		@Override
 		public void setValue(double value) {
-			if (!isVisible()) {
-				return;
-			}
-			format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
-			setText(format.format(value));
-			prevValue = value;
+			super.setValue(value);
+//			if (!isVisible()) {
+//				return;
+//			}
+//			format.setDecimalFormatSymbols(OSPRuntime.getDecimalFormatSymbols());
+//			setText(format.format(value));
+//			prevValue = value;
 		}
 
+		@Override
 		public void applyPattern(String pattern) {
-			if (format instanceof DecimalFormat) {
-				try {
-					// catch occasional exceptions thrown when opening a trk file...
-					format.applyPattern(pattern);
-					this.pattern = pattern;
-				} catch (Exception e) {
-				}
-			}
+			super.applyPattern(pattern);
+//			try {
+//				// catch occasional exceptions thrown when opening a trk file...
+//				format.applyPattern(pattern);
+//				this.pattern = pattern;
+//			} catch (Exception e) {
+//			}
 		}
 
 		public void applyDefaultPattern(boolean sciNotation) {
@@ -2445,14 +2446,6 @@ public class DatasetCurveFitter extends JPanel {
 				applyPattern("0.000E0"); //$NON-NLS-1$
 			else
 				applyPattern("0.###"); //$NON-NLS-1$					
-		}
-
-		public String getPattern() {
-			return pattern;
-		}
-
-		public NumberFormat getFormat() {
-			return format;
 		}
 
 		protected void refreshPreferredWidth() {

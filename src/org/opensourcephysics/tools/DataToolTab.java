@@ -123,7 +123,7 @@ import org.opensourcephysics.media.core.TPoint;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.DataToolTable.TableEdit;
 import org.opensourcephysics.tools.DataToolTable.WorkingDataset;
-import org.opensourcephysics.tools.DatasetCurveFitter.NumberField;
+import org.opensourcephysics.tools.DatasetCurveFitter.DCFNumberField;
 
 /**
  * This tab displays and analyzes a single Data object in a DataTool.
@@ -221,7 +221,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 	protected boolean replaceColumnsWithMatchingNames = false;
 	protected JCheckBoxMenuItem measureFitCheckbox, originShiftCheckbox;
 	protected double prevShiftX, prevShiftY;
-	protected NumberField shiftXField, shiftYField, selectedXField, selectedYField;
+	protected DCFNumberField shiftXField, shiftYField, selectedXField, selectedYField;
 	protected JSpinner shiftXSpinner, shiftYSpinner;
 	protected ShiftEditListener shiftEditListener;
 	protected JLabel shiftXLabel, shiftYLabel, selectedXLabel, selectedYLabel;
@@ -1872,7 +1872,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		FocusAdapter numberFieldFocusListener = new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				NumberField field = (NumberField) e.getSource();
+				DCFNumberField field = (DCFNumberField) e.getSource();
 				if (field.getBackground() != Color.white) {
 					field.setBackground(Color.white);
 					field.postActionEvent();
@@ -1881,12 +1881,12 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 
 			@Override
 			public void focusGained(FocusEvent e) {
-				NumberField field = (NumberField) e.getSource();
+				DCFNumberField field = (DCFNumberField) e.getSource();
 				field.selectAll();
 			}
 		};
 
-		shiftXField = new NumberField(4) {
+		shiftXField = new DCFNumberField(4) {
 			@Override
 			public Dimension getMaximumSize() {
 				Dimension dim = getPreferredSize();
@@ -1979,7 +1979,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		shiftXSpinner.addChangeListener(xChangeListener);
 		shiftXSpinner.addChangeListener(shiftEditListener);
 
-		shiftYField = new NumberField(4) {
+		shiftYField = new DCFNumberField(4) {
 			@Override
 			public Dimension getMaximumSize() {
 				Dimension dim = getPreferredSize();
@@ -2051,7 +2051,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		shiftYSpinner.addChangeListener(yChangeListener);
 		shiftYSpinner.addChangeListener(shiftEditListener);
 
-		selectedXField = new NumberField(4) {
+		selectedXField = new DCFNumberField(4) {
 			@Override
 			public Dimension getMaximumSize() {
 				Dimension dim = getPreferredSize();
@@ -2092,7 +2092,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		selectedXField.addKeyListener(numberFieldKeyListener);
 		selectedXField.addFocusListener(numberFieldFocusListener);
 
-		selectedYField = new NumberField(4) {
+		selectedYField = new DCFNumberField(4) {
 			@Override
 			public Dimension getMaximumSize() {
 				Dimension dim = getPreferredSize();

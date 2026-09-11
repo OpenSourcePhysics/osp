@@ -331,7 +331,7 @@ public class NumberField extends JTextField {
 	protected Double maxValue;
 	protected Double minValue;
 	protected String units;
-	protected double conversionFactor = 1.0;
+	protected double conversionFactor = 1;
 	protected NumberFormatter nf;
 
 	/**
@@ -418,7 +418,7 @@ public class NumberField extends JTextField {
 	 *
 	 * @return the value
 	 */
-	public double getValue() {
+	public double getValue() {		
 		String s = getText().trim().toUpperCase();
 		if (s.length() == 0)
 			return prevValue;
@@ -427,7 +427,7 @@ public class NumberField extends JTextField {
 		if ((units != null) && !units.equals("")) { //$NON-NLS-1$
 			int n = s.indexOf(units.toUpperCase());
 			if (n > 0)
-				s = s.substring(0, n);
+				s = s.substring(0, n).trim();
 		}
 		if (s.equals(nf.format(prevValue * conversionFactor))) {
 			return prevValue;
@@ -464,7 +464,6 @@ public class NumberField extends JTextField {
 		if (!isVisible()) {
 			return;
 		}
-
 		if (minValue != null) {
 			value = Math.max(value, minValue.doubleValue());
 		}
@@ -564,11 +563,24 @@ public class NumberField extends JTextField {
 	/**
 	 * Apply the specified pattern, retrieving the appropriate formatter
 	 * 
-	 * @param p
+	 * @param pattern
 	 */
-	public void applyPattern(String p) {
-		nf.applyPattern(p);
+	public void applyPattern(String pattern) {
+		try {
+			// catch occasional exceptions thrown when opening a trk file...
+			nf.applyPattern(pattern);
+		} catch (Exception e) {
+		}
 	}
+	
+	public String getPattern() {
+		return nf.currentPattern;
+	}
+	
+	public DecimalFormat getFormat() {
+		return nf.format;
+	}
+
 
 	/**
 	 * Sets the patterns for this field. The patterns are applied as follows:
