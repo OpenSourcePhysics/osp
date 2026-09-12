@@ -93,8 +93,8 @@ import swingjs.api.JSUtilI;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.3.5"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "22 Jun 2026"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.5.260912"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "12 Sep 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -585,6 +585,8 @@ public class OSPRuntime {
 //	public static boolean useSearchMap = isJS; // does not cache 
 
 	public static boolean isBHTest = isJS;
+
+	public static boolean alwaysMobile = true;
 
 	public static boolean dontLog = isJS; // for OSPLog
 
@@ -1118,6 +1120,16 @@ public class OSPRuntime {
 		}
 		return false;
 	}
+	
+	/**
+	 * Determines if running on a mobile device
+	 *
+	 * @return true if running on a mobile device
+	 */
+	static public boolean isMobile() {
+		return alwaysMobile || isJS || cssCursor;
+	}
+	
 
 	static public boolean hasJava3D() {
 		return false;
