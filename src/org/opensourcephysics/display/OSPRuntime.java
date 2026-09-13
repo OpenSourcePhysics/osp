@@ -463,12 +463,21 @@ public class OSPRuntime {
 	private static boolean isiPad;
 	private static boolean isAndroid;	
     private static boolean isMobile;
+    public static boolean alwaysMobile = true;  // for testing WC
     private static String userAgent;	//navigator user agent
     //skip loading for testing mobile devices
 	private static boolean skipDisplayOfPDF;// isMobile;// true;// isJS; // for TrackerIO, for now.
 	private static boolean askIfMobileKeyboard = true; // for now since Tracker is not connected to this; future might be false?
 	public static boolean useVirtualNumberPad;
 
+	/**
+	 * Determines if running on a mobile device
+	 *
+	 * @return true if running on a mobile device
+	 */
+	static public boolean isMobile() {
+		return alwaysMobile || isJS || cssCursor;
+	}
 	
 	private static void readMobileParam() {
 		if (userAgent != null)
