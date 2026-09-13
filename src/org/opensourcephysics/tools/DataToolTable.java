@@ -85,6 +85,12 @@ import org.opensourcephysics.media.core.VideoIO;
  */
 @SuppressWarnings("serial")
 public class DataToolTable extends DataTable {
+    @Override public String getUnits(String name) {
+        FitMetadataProvider provider=dataToolTab.getFitMetadataProvider();
+        String units=provider==null?null:provider.getUnits(name);
+        return units==null?super.getUnits(name):units;
+    }
+
 	// static fields and constants
 	protected final static int RENAME_COLUMN_EDIT = 0;
 	protected final static int INSERT_COLUMN_EDIT = 1;
