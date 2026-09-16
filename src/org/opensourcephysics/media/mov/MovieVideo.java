@@ -228,7 +228,7 @@ public abstract class MovieVideo extends VideoAdapter {
 		}
 		sourcePlatform = (platform == null ? "unknown" : platform);
 		frameCount = count;
-		startTimesMS = (double[]) control.getObject("start_times");
+		startTimesMS = (double[]) control.getObject("start_times"); // may be null--see Loader.saveObject() below
 		rawDuration = control.getDouble("duration");
 		nominalFrameRate = control.getInt("frame_rate");
 		//System.out.println("MovieVideo.setFromControl from " + sourcePlatform + " " + rawDuration + " " + frameCount + " " + frameRate);
@@ -282,7 +282,8 @@ public abstract class MovieVideo extends VideoAdapter {
 		public void saveObject(XMLControl control, Object obj) {
 			super.saveObject(control, obj);
 			MovieVideo vid = (MovieVideo) obj;
-			control.setValue("start_times", vid.startTimesMS, 3); // in milliseconds
+			if (vid.startTimesMS != null)
+				control.setValue("start_times", vid.startTimesMS, 3); // in milliseconds
 			double rawDuration = vid.rawDuration; // in seconds
 			control.setValue("duration", rawDuration); // convert to seconds
 			int fc = vid.frameCount;
