@@ -9,6 +9,7 @@ package org.opensourcephysics.display;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -462,9 +463,9 @@ public class OSPRuntime {
 	private static boolean isiOS;
 	private static boolean isiPad;
 	private static boolean isAndroid;	
-    private static boolean isMobile;
-    public static boolean alwaysMobile = true;  // for testing WC
-    private static String userAgent;	//navigator user agent
+  private static boolean isMobile;
+  public static boolean preferMobile, neverMobile;  // for testing WC
+  private static String userAgent;	//navigator user agent
     //skip loading for testing mobile devices
 	private static boolean skipDisplayOfPDF;// isMobile;// true;// isJS; // for TrackerIO, for now.
 	private static boolean askIfMobileKeyboard = true; // for now since Tracker is not connected to this; future might be false?
@@ -476,7 +477,13 @@ public class OSPRuntime {
 	 * @return true if running on a mobile device
 	 */
 	static public boolean isMobile() {
-		return alwaysMobile || isJS || cssCursor;
+		if (neverMobile)
+			return false;
+		if (preferMobile)
+			return true;
+		// DB--we could check screen/window size here
+		Dimension dim = getHTMLPageSize();
+		return cssCursor;
 	}
 	
 	private static void readMobileParam() {
@@ -646,6 +653,28 @@ public class OSPRuntime {
 		return sBrowser;
 	}
 	
+ /**
+	* Gets the HTML page size in JS, or screen size in desktop Java.
+	* 
+	* @return Dimension (width, height)
+	*/
+	public static Dimension getHTMLPageSize() {
+		if (OSPRuntime.isJS) {
+			int width = 0;
+			int height = 0;
+			
+			/**
+			* @j2sNative
+			* width = window.innerWidth || document.documentElement.clientWidth || (document.body ? document.body.clientWidth : 0);
+			* height = window.innerHeight || document.documentElement.clientHeight || (document.body ? document.body.clientHeight : 0);
+			* console.log("[Tracker] HTML page dimensions: " + width + " x " + height);
+			*/
+	
+			return new Dimension(width, height);
+		}
+		return Toolkit.getDefaultToolkit().getScreenSize();
+	}
+		
 	public static final char DECIMAL_SEPARATOR_COMMA = ',';
 	public static final char DECIMAL_SEPARATOR_PERIOD = '.';
 
