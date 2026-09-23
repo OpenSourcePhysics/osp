@@ -207,9 +207,18 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		canRecord = false;
 
 		if (!isZipType && savedFilePaths != null && savedFilePaths.length > 0) {
-			// save xml description of the video (for frame duration)
-			Video video = getVideo();
-			XMLControl control = new XMLControlElement(video);
+			// Describe the exported sequence without reopening its images. In SwingJS
+			// the files have been downloaded, so they cannot be read from the server.
+			XMLControl control = new XMLControlElement(ImageVideo.class);
+			String basePath = XML.getDirectoryPath(savedFilePaths[0]);
+			String[] paths = new String[savedFilePaths.length];
+			for (int i = 0; i < paths.length; i++) {
+				paths[i] = XML.getPathRelativeTo(savedFilePaths[i], basePath);
+			}
+			control.setValue("paths", paths); //$NON-NLS-1$
+			control.setValue("path", paths[0]); //$NON-NLS-1$
+			control.setValue("delta_t", frameDuration); //$NON-NLS-1$
+			control.setBasepath(basePath);
 			String fileName = savedFilePaths[0];
 			fileName = XML.stripExtension(fileName) + ".xml"; //$NON-NLS-1$
 			control.write(fileName);
