@@ -10,10 +10,10 @@ class Test_Assets extends Test_ {
 			/**
 			 * @j2sNative
 			 * 
-			 * javajs.async.Assets.add$O({name:"test",zipPath:"test/t.zip",classPath:"xl"});
+			 * javajs.async.Assets.add$O({name:"test",zipPath:"test/assetTest.zip",classPath:"xl"});
 			 */
 		} else {
-			Assets.add(new Assets.Asset("test",  "src/test/t.zip", "xl"));
+			Assets.add(new Assets.Asset("test",  "src/test/assetTest.zip", "xl"));
 		}
 
 		String worksheet = Assets.getAssetStringFromZip("xl/worksheets/sheet1.xml");
