@@ -383,6 +383,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 
 	/**
 	 * The inner class that will handle all mouse related events.
+	 * Just stubs so that there are no synthetic references to InteractivePanel.this
+	 * and much simpler JavaScript code.
 	 */
 	protected class IADMouseController extends MouseInputAdapter {
 
