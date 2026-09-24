@@ -85,17 +85,6 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 			"  transform: translateX(-50%);\r\n" + 
 			"}";
 	
-	static  {
-		/**
-		 * @j2sNative
-		 * 
-		 *  $("body").append('<style>'+ C$.ipadStyle + '</style>');
-		 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
-		 * 		
-		 */
-	}
-
-
 	/**
      * Constructs an InteractivePanel with the given handler.
      * @param in InteractiveMouseHandler
@@ -558,6 +547,20 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 		// System.out.println(" event=" + e);
 		if (!OSPRuntime.cssCursor)
 			return;
+		
+		if (ipadStyle != null) {
+			/**
+			 * Set this only once.
+			 * 
+			 * @j2sNative
+			 * 
+			 *  $("body").append('<style>'+ C$.ipadStyle + '</style>');
+			 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
+			 * 		
+			 */		
+			ipadStyle = null;
+		}
+		
 		String x = e.getXOnScreen() + "px";
 		String y = e.getYOnScreen() + "px";
 		switch (action) {
