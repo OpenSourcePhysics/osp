@@ -999,8 +999,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 				fileName += ".xml";
 				file = new File(fileName);
 			}
-			if (/** @j2sNative false && */
-			file.exists()) {
+			if (!OSPRuntime.isJS && file.exists()) {
 				int selected = JOptionPane.showConfirmDialog(null, "Replace existing " + file.getName() + "?",
 						"Replace File", JOptionPane.YES_NO_CANCEL_OPTION);
 				if (selected != JOptionPane.YES_OPTION) {

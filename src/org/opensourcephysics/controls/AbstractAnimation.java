@@ -82,7 +82,7 @@ public void setControl(Control control) {
   /**
    * Gets the main OSPFrame.  The main frame will usually exit program when it is closed.
    * 
-   *  @j2sAlias getMainFrame
+   *  @j2sAlias
    * 
    * @return OSPFrame
    */
@@ -93,7 +93,7 @@ public void setControl(Control control) {
   /**
    * Gets the Main Frame size. 
    * 
-   * @j2sAlias getMainFrameSize
+   * @j2sAlias
    * 
    */
   public int[] getMainFrameSize(){

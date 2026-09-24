@@ -177,7 +177,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 	 * Gets the OSPFrame that contains the control. The main frame will usually exit
 	 * program when it is closed.
 	 *
-	 * @j2sAlias getMainFrame
+	 * @j2sAlias
 	 *
 	 * @return
 	 */
@@ -189,7 +189,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 	/**
 	 * Gets the Main Frame size.
 	 * 
-	 * @j2sAlias getMainFrameSize
+	 * @j2sAlias
 	 * 
 	 */
 	public int[] getMainFrameSize() {

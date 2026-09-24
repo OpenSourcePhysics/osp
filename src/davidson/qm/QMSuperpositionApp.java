@@ -71,7 +71,7 @@ public class QMSuperpositionApp extends AbstractAnimation implements PropertyCha
     * see _embedded_example.html
     * 
     * 
-    * @j2sAlias startStopAnimation
+    * @j2sAlias
     * 
     * @param start
     */

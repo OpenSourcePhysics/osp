@@ -354,7 +354,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * Replace any open tabs with a single tab loaded with the given path.
 	 * JavaScript only?
 	 * 
-	 * @j2sAlias loadDatasetURL
+	 * @j2sAlias
 	 * 
 	 * @param path
 	 */
@@ -372,7 +372,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * Replace any open tabs with a single tab loaded with the given path.
 	 * JavaScript only?
 	 * 
-	 * @j2sAlias loadDatasetURI
+	 * @j2sAlias
 	 * 
 	 * @param relpath
 	 */
@@ -413,7 +413,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	/**
 	 * Gets the main OSPFrame when DataTool is a stand alone application.
 	 * 
-	 * @j2sAlias getMainFrame
+	 * @j2sAlias
 	 * 
 	 * @return OSPFrame
 	 */
@@ -424,7 +424,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	/**
 	 * Gets the DataTool frame size.
 	 * 
-	 * @j2sAlias getMainFrameSize
+	 * @j2sAlias
 	 * 
 	 */
 	public int[] getMainFrameSize() {

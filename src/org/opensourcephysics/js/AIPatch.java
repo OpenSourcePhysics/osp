@@ -14,6 +14,7 @@ import javax.swing.RootPaneContainer;
 import javax.swing.plaf.TextUI;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.media.core.NumberField;
 
 import swingjs.api.js.DOMNode;
 
@@ -406,7 +407,7 @@ public class AIPatch {
 	}
 
 
-	public static void hackStyle(JComponent jc, String... styles) {
+	public static void hackUIDOMNodeStyle(JComponent jc, String... styles) {
 		DOMNode node = /** @j2sNative jc.ui.domNode || */null;
 		DOMNode.setStyles(node, styles);
 	}
@@ -439,20 +440,25 @@ public class AIPatch {
 		JEditorPane thePane = ep;
 		@SuppressWarnings("unused")
 		TextUI ui = thePane.getUI();
+		@SuppressWarnings("unused")
 		DOMNode domNode = (/** @j2sNative ui.domNode || */
 		null);
 		Runnable injectDOM = () -> {
+			System.err.println("!!!AIP inject");
+			// make explicitly final in JavaScript as well
+			// we do not want to use Java's this.$finals$ here.
+			DOMNode dnode = (/** @j2sNative domNode || */ null);
+			DOMNode rHTML = (/** @j2sNative rawHTML || */ null);
 			/**
 			 * @j2sNative ui.mytext = null; ui.rawHTML = null; ui.currentHTML = null;
-			 *            ui.setText$S(rawHTML);
+			 *            ui.setText$S(rHTML);
 			 */
-			DOMNode target = (/** @j2sNative ui.bodyNode || */
-			domNode);
+			DOMNode target = (/** @j2sNative ui.bodyNode ||*/ dnode);
 			String html = (String) DOMNode.getAttr(target, "innerHTML");
 			if (html.indexOf("Open Source Physics") < 0) {
-				DOMNode.setAttr(target, "innerHTML", rawHTML);
+				DOMNode.setAttr(target, "innerHTML", rHTML);
 			}
-			DOMNode.setStyles(domNode, //
+			DOMNode.setStyles(dnode, //
 					"width", "100%", //
 					"height", "100%", //
 					"minHeight", "350px", //
@@ -468,7 +474,7 @@ public class AIPatch {
 					"padding", "20px", //
 					"fontFamily", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", //
 					"boxSizing", "border-box");
-			DOMNode parentElement = (DOMNode) DOMNode.getAttr(domNode, "parentElement");
+			DOMNode parentElement = (DOMNode) DOMNode.getAttr(dnode, "parentElement");
 			if (parentElement != null) {
 				DOMNode.setStyles(parentElement, //
 						"width", "100%", //
@@ -490,7 +496,7 @@ public class AIPatch {
 		 * 
 		 * 			if (window.requestAnimationFrame) {
 		 *            window.requestAnimationFrame(injectDOM.run$); }
-		 */
+		*/
 		setTimeout(injectDOM, 30);
 		setTimeout(injectDOM, 100);
 		setTimeout(injectDOM, 250);
@@ -514,54 +520,73 @@ public class AIPatch {
 	 * Gets the screen or page location of a mouse event, compatible with desktop Java
 	 * and touch events in SwingJS on iPad.
 	 */
-	public static Point getScreenLocation(MouseEvent e, Component comp) {
-		int[] pt = new int[2];
-		boolean found = false;
+	public static Point getScreenLocation(MouseEvent e, Component comp, String from) {
+		Point p = e.getLocationOnScreen();
+		System.err.println("\nAIP getScLoc simple: " + p + " from " + from);
+		int[] pt = null;
 		/**
 		 * @j2sNative
 		 * try {
 		 *   var je = (e && e.bdata ? e.bdata.jqevent : null);
 		 *   if (je) {
 		 *     var oe = je.originalEvent || je;
-		 *     var t = (oe.touches && oe.touches.length > 0 ? oe.touches[0] : 
-		 *             (oe.changedTouches && oe.changedTouches.length > 0 ? oe.changedTouches[0] : 
-		 *             (oe.targetTouches && oe.targetTouches.length > 0 ? oe.targetTouches[0] : null)));
+		 *     var t = (oe.targetTouches && oe.targetTouches.length > 0 ? oe.targetTouches[0] : null);
 		 *     var px = (t ? t.pageX : (je.pageX != null ? je.pageX : null));
 		 *     var py = (t ? t.pageY : (je.pageY != null ? je.pageY : null));
 		 *     if (px == null && window.J2S && J2S._mousePageX != null) {
+		
+			System.err.println("AIP getScLoc using J2S._mousePageX/Y ");
+		 
 		 *       px = J2S._mousePageX;
 		 *       py = J2S._mousePageY;
 		 *     }
 		 *     if (px != null && isFinite(px) && py != null && isFinite(py)) {
-		 *       pt[0] = Math.round(px);
-		 *       pt[1] = Math.round(py);
-		 *       found = true;
+		 *       pt = [Math.round(px), Math.round(py)];
 		 *     }
 		 *   }
 		 * } catch (ex) {}
 		 */
-		{
+		if (pt != null) {
+			p = new Point(pt[0], pt[1]);
+			System.err.println("AIP getScLoc AI calc " + p);
+			return p;
 		}
-		if (found) {
-			return new Point(pt[0], pt[1]);
-		}
-		try {
-			Point p = e.getLocationOnScreen();
-			if (p != null && (p.x != 0 || p.y != 0)) {
-				return p;
-			}
-		} catch (Throwable t) {
+		if (p != null && (p.x != 0 || p.y != 0)) {
+			return p;
 		}
 		if (comp != null && comp.isShowing()) {
 			try {
-				Point p = comp.getLocationOnScreen();
-				return new Point(p.x + e.getX(), p.y + e.getY());
+				p = comp.getLocationOnScreen();
+				p = new Point(p.x + e.getX(), p.y + e.getY());
+				System.err.println("AIP getScLoc returning component offset " + p);
 			} catch (Throwable t) {
 			}
 		}
-		return e.getPoint();
+		
+		p = e.getPoint();
+		System.err.println("AIP getScLoc returning e.getPoint() " + p);
+		return p;
 	}
 
-
-	
+	public static void virtualNumberPad(NumberField nf, String action) {
+		switch (action) {
+		case "add":
+		/**
+		 * @j2sNative
+		 * 
+		 * 			J2S.Mobile.addNumberPad(nf);
+		 */
+		{
+		}
+		//$FALL-THROUGH$
+		case "show":
+		/**
+		 * @j2sNative
+		 * 
+		 * 			J2S.Mobile.showNumberPad(nf);
+		 */
+		{
+		}
+		}
+	}
 }

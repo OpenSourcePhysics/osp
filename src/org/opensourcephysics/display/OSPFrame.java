@@ -148,7 +148,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 	/**
 	 * Sets the window resize action for JavaScript implementation.
 	 * 
-	 * @j2sAlias setResizeAction
+	 * @j2sAlias
 	 * 
 	 */
 	public void setResizeAction(String o) {

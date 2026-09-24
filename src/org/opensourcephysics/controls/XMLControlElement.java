@@ -741,8 +741,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				writeDocType(new FileWriter(fileName));
 			}
 
-			if (/** @j2sNative true || */
-			file.exists()) {
+			if (OSPRuntime.isJS || file.exists()) {
 				return XML.getAbsolutePath(file);
 			}
 		} catch (IOException ex) {

@@ -53,6 +53,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.js.AIPatch;
 
 /**
  * A NumberField is a JTextField that formats and displays numbers. This default
@@ -654,18 +655,10 @@ public class NumberField extends JTextField {
 
 	public void addVirtualNumberPad() {
 		if (!haveVirtualNumberPad) {
+			AIPatch.virtualNumberPad(this,"add");
 			haveVirtualNumberPad = true;
-			/**
-			 * @j2sNative
-			 * 
-			 * J2S.Mobile.addNumberPad(this);
-			 */
 		}
-		/**
-		 * @j2sNative
-		 * 
-		 * J2S.Mobile.showNumberPad(this);
-		 */
+		AIPatch.virtualNumberPad(this,"show");
 	}
 
 	public char getDecimalSeparator() {

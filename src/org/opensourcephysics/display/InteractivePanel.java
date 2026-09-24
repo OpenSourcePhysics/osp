@@ -86,6 +86,8 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 			"}";
 	
 	/**
+	 * Never called? 
+	 * 
      * Constructs an InteractivePanel with the given handler.
      * @param in InteractiveMouseHandler
      */
@@ -545,10 +547,10 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 	}
 
 	private static void jsCustomCursor(String action, String cursorColor, MouseEvent e) {
-		// System.out.println(action +" isMobile="+OSPRuntime.isMobileWC);
-		// System.out.println(" event=" + e);
 		if (!OSPRuntime.cssCursor)
 			return;
+		// System.out.println(action +" isMobile="+OSPRuntime.isMobileWC);
+		// System.out.println(" event=" + e);
 		
 		if (ipadStyle != null) {
 			/**
