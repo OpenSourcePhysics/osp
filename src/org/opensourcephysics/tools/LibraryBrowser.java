@@ -137,7 +137,7 @@ public class LibraryBrowser extends JPanel {
 	private static LibraryBrowser browser;
 	protected static Border buttonBorder;
 	private static boolean checkedWebConnection = OSPRuntime.isJS;
-	protected static JFrame frame;
+	public static JFrame frame;
 	protected static JDialog externalDialog;
 	protected static JMenuBar menubar;
 	protected static ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon;
@@ -197,7 +197,7 @@ public class LibraryBrowser extends JPanel {
 	protected PropertyChangeListener treePanelListener, metadataLoaderListener;
 	protected boolean keyPressed, textChanged;
 	protected TextFrame helpFrame;
-	protected JEditorPane htmlAboutPane;
+	public JEditorPane htmlAboutPane;
 	protected TrackerDLFilter dlFileFilter = TRACKER_FILTER;
 	protected boolean isResourcePathXML;
 	protected LibraryManager libraryManager;
@@ -1822,7 +1822,6 @@ public class LibraryBrowser extends JPanel {
 	protected void processTargetSelection(LibraryResource record, Object hint) {
 		if (record == null)
 			return;
-		/** @j2sNative debugger; */
 		String target = record.getAbsoluteTarget();
 		String uriPath = ResourceLoader.getURIPath(target);
 		
@@ -2210,7 +2209,7 @@ public class LibraryBrowser extends JPanel {
 	/**
 	 * Refreshes the GUI, including locale-dependent resources strings.
 	 */
-	protected void refreshGUI() {
+	public void refreshGUI() {
 		refreshGUI(false);
 	}
 
