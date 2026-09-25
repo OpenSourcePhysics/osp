@@ -522,8 +522,9 @@ public class AIPatch {
 	 */
 	public static Point getScreenLocation(MouseEvent e, Component comp, String from) {
 		Point p = e.getLocationOnScreen();
-		System.err.println("\nAIP getScLoc simple: " + p + " from " + from);
+		System.err.println("\nAIP getScLoc testing simple: " + p + " from " + from);
 		int[] pt = null;
+		if (false) {
 		/**
 		 * @j2sNative
 		 * try {
@@ -546,6 +547,7 @@ public class AIPatch {
 		 *   }
 		 * } catch (ex) {}
 		 */
+		}
 		if (pt != null) {
 			p = new Point(pt[0], pt[1]);
 			System.err.println("AIP getScLoc AI calc " + p);
