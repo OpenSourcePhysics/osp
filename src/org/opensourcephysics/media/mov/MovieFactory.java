@@ -161,7 +161,7 @@ public class MovieFactory {
 	 * @return array of video engine names that were updated. May return null.
 	 */
 	public static String[] getUpdatedVideoEngines() {
-		if (!OSPRuntime.isJS) /** @j2sNative */ {	
+		/** @j2sIgnore */ {	
 			if (movieEngineName.equals(ENGINE_XUGGLE)) {
 				// copy xuggle files to codebase
 				try {

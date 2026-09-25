@@ -806,8 +806,6 @@ public class LibraryTreePanel extends JPanel {
 				Runnable r = new Runnable() {
 					@Override
 					public void run() {
-				    // previously used by BH
-//				  boolean doNotify = (/** @j2sNative e.bdata.jqevent.target.tagName == "CANVAS"|| */ e.getX() < 75);
 						if (launchLater) {
 							javajs.async.AsyncDialog.showYesNoAsync(LibraryBrowser.frame,
 									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Message")

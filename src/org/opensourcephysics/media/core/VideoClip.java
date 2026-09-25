@@ -815,7 +815,7 @@ public class VideoClip extends OSPRuntime.Supported implements PropertyChangeLis
 					/**
 					 * Java only -- transpiler can skip this
 					 * 
-					 * @j2sNative
+					 * @j2sIgnore
 					 */
 					{
 						// let user look for it
