@@ -36,15 +36,17 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
-import org.opensourcephysics.tools.JarTool;
 import org.opensourcephysics.tools.ResourceLoader;
 
 /**
@@ -168,37 +170,32 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		boolean isZipType = videoType instanceof VideoIO.ZipImageVideoType;
 		// copy temp files or open and re-encode if needed
 		synchronized (tempFiles) {
-			String fileName = saveFile.getAbsolutePath();			
-			savedFilePaths = getFileNames(fileName, tempFiles.size(), null);
-			
-			for (int i = 0; i < tempFiles.size(); i++) {
-				String path = savedFilePaths[i];
-				File tempFile = tempFiles.get(i);
-				if (!tempFile.exists()) {
-					savedFilePaths = null;
-					throw new IOException("temp image file not found"); //$NON-NLS-1$
-				}
-				if (ext == tempFileType) {
-					// copy images
-					File targetFile = new File(path);
-					ResourceLoader.copyFile(tempFile, targetFile, 100000);
-				} else {
-					// open and encode images in desired format
-					BufferedImage image = ResourceLoader.getBufferedImage(tempFile.getAbsolutePath());
-					if (image == null) {
-						throw new IOException("unable to load temp image file"); //$NON-NLS-1$
-					}
-					javax.imageio.ImageIO.write(image, ext, new BufferedOutputStream(new FileOutputStream(path)));
-				}
-			}
 			if (isZipType) {
-				ArrayList<File> zipList = new ArrayList<File>();
-				for (int i = 0; i < savedFilePaths.length; i++)
-					zipList.add(new File(savedFilePaths[i]));
-				if (JarTool.compress(zipList, saveFile, null)) {
-					savedFilePaths = new String[] {saveFile.getAbsolutePath()};
+				saveZipImages();
+			} else {
+				String fileName = saveFile.getAbsolutePath();
+				savedFilePaths = getFileNames(fileName, tempFiles.size(), null);
+			
+				for (int i = 0; i < tempFiles.size(); i++) {
+					String path = savedFilePaths[i];
+					File tempFile = tempFiles.get(i);
+					if (!tempFile.exists()) {
+						savedFilePaths = null;
+						throw new IOException("temp image file not found"); //$NON-NLS-1$
+					}
+					if (ext == tempFileType) {
+						// copy images
+						File targetFile = new File(path);
+						ResourceLoader.copyFile(tempFile, targetFile, 100000);
+					} else {
+						// open and encode images in desired format
+						BufferedImage image = ResourceLoader.getBufferedImage(tempFile.getAbsolutePath());
+						if (image == null) {
+							throw new IOException("unable to load temp image file"); //$NON-NLS-1$
+						}
+						javax.imageio.ImageIO.write(image, ext, new BufferedOutputStream(new FileOutputStream(path)));
+					}
 				}
-				deleteFiles(zipList);
 			}
 		}
 		deleteTempFiles();
@@ -222,6 +219,41 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 			String fileName = savedFilePaths[0];
 			fileName = XML.stripExtension(fileName) + ".xml"; //$NON-NLS-1$
 			control.write(fileName);
+		}
+	}
+
+	/**
+	 * Packages the encoded scratch frames before writing anything to the chosen
+	 * destination. In SwingJS that destination is a browser download, not a file
+	 * that can be reopened to assemble an archive.
+	 */
+	private void saveZipImages() throws IOException {
+		if (tempFiles.isEmpty())
+			throw new IOException("No image frames to export"); //$NON-NLS-1$
+		String imageName = XML.stripExtension(saveFile.getName()) + "." + tempFileType; //$NON-NLS-1$
+		String[] entryNames = getFileNames(imageName, tempFiles.size(), tempFileType);
+		File archive = new File(XML.stripExtension(scratchFile.getAbsolutePath()) + "_images.zip"); //$NON-NLS-1$
+		try {
+			try (ZipOutputStream output = new ZipOutputStream(new FileOutputStream(archive))) {
+				byte[] buffer = new byte[8192];
+				for (int i = 0; i < tempFiles.size(); i++) {
+					File image = tempFiles.get(i);
+					if (!image.exists() || image.length() == 0)
+						throw new IOException("Temp image file missing or empty: " + image); //$NON-NLS-1$
+					output.putNextEntry(new ZipEntry(entryNames[i]));
+					try (FileInputStream input = new FileInputStream(image)) {
+						int count;
+						while ((count = input.read(buffer)) != -1)
+							output.write(buffer, 0, count);
+					}
+					output.closeEntry();
+				}
+			}
+			if (!ResourceLoader.copyFile(archive, saveFile, 100000))
+				throw new IOException("Unable to save image archive"); //$NON-NLS-1$
+			savedFilePaths = new String[] { saveFile.getAbsolutePath() };
+		} finally {
+			archive.delete();
 		}
 	}
 
