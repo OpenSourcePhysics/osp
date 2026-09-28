@@ -56,6 +56,10 @@ public class VideoClipControl extends ClipControl {
    */
   @Override
 public void play() {
+  	if (video instanceof VideoAdapter) {
+  		VideoAdapter vid = (VideoAdapter) video;
+  		vid.videoClip = clip;
+  	}
     video.play();
   }
 
