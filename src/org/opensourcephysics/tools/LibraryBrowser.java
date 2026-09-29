@@ -31,7 +31,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -1717,22 +1716,12 @@ public class LibraryBrowser extends JPanel {
 //		document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
 		htmlAboutPane.setCaretPosition(0);
 
-		if (externalDialog != null) {
-			externalDialog.addWindowListener(new java.awt.event.WindowAdapter() {
-				@Override
-				public void windowOpened(WindowEvent e) {
-					new LibraryLoader().execute();
-				}
-			});
-		} else {
-			frame.addWindowListener(new java.awt.event.WindowAdapter() {
-				@Override
-				public void windowOpened(WindowEvent e) {
-					new LibraryLoader().execute();
-				}
-			});
-		}
-		
+		(externalDialog == null ? frame : externalDialog).addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				new LibraryLoader().execute();
+			}
+		});
 		messageButton = new JButton();
 		messageButton.addActionListener((e) -> {
 			if (messageButton.getBackground() == Color.YELLOW) {
@@ -1760,7 +1749,7 @@ public class LibraryBrowser extends JPanel {
 //		if (!OSPRuntime.isJS)
 //			return;
 		openButton.setForeground(Color.yellow);
-		Timer t = new javax.swing.Timer(500, new ActionListener() {
+		Timer t = new Timer(500, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -3219,6 +3208,9 @@ public class LibraryBrowser extends JPanel {
 	 * @return the html code
 	 */
 	protected String getAboutLibraryBrowserText() {
+// BH there does not seem to be any differnce here
+//		if (true)
+//			return getWelcomeHTML();
 
 		String path = "/org/opensourcephysics/resources/tools/images/compadre_banner.jpg"; //$NON-NLS-1$
 		Resource res = ResourceLoader.getResource(path);
@@ -3237,6 +3229,44 @@ public class LibraryBrowser extends JPanel {
 				+ "</div>";
 		return code;
 	}
+
+//  AI-generated:
+//	public static String getWelcomeHTML() {
+//		String bannerUrl = null;
+//		try {
+//			Resource res = ResourceLoader.getResource("/org/opensourcephysics/resources/tools/images/compadre_banner.jpg"); //$NON-NLS-1$
+//			if (res != null && res.getURL() != null) {
+//				bannerUrl = res.getURL().toString();
+//			}
+//		} catch (Throwable t) {
+//		}
+//		if (bannerUrl == null) {
+//			bannerUrl = "https://opensourcephysics.github.io/tracker-website/images/compadre_banner.jpg"; //$NON-NLS-1$
+//		}
+//
+//		return "<html><head><style>" //$NON-NLS-1$
+//				+ "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #222222; background-color: #ffffff; padding: 15px; font-size: 14px; line-height: 1.6; }\n" //$NON-NLS-1$
+//				+ "h1 { color: #003366; font-size: 20px; text-align: center; margin-top: 10px; margin-bottom: 16px; font-weight: bold; }\n" //$NON-NLS-1$
+//				+ "p { color: #333333; margin-bottom: 12px; font-size: 14px; }\n" //$NON-NLS-1$
+//				+ "ul { margin-left: 24px; margin-bottom: 15px; padding-left: 0; }\n" //$NON-NLS-1$
+//				+ "li { color: #333333; margin-bottom: 6px; font-size: 14px; }\n" //$NON-NLS-1$
+//				+ "a { color: #0066cc; text-decoration: underline; }\n" //$NON-NLS-1$
+//				+ "</style></head><body>" //$NON-NLS-1$
+//				+ "<div style=\"max-width: 800px; margin: 0 auto; color: #222222;\">" //$NON-NLS-1$
+//				+ "<div style=\"text-align: center; margin-bottom: 18px;\"><img src=\"" + bannerUrl + "\" alt=\"ComPADRE Banner\" style=\"max-width: 100%; height: auto; border-radius: 4px;\" onerror=\"this.style.display='none'\"></div>" //$NON-NLS-1$ //$NON-NLS-2$
+//				+ "<h1 style=\"color: #003366; font-size: 20px; text-align: center; margin-top: 10px; margin-bottom: 16px; font-weight: bold;\">Open Source Physics Library Browser</h1>" //$NON-NLS-1$
+//				+ "<p style=\"color: #333333; margin-bottom: 12px; font-size: 14px;\">Use the OSP Library Browser to browse online collections of Tracker projects, EJS simulations and other learning resources.</p>" //$NON-NLS-1$
+//				+ "<ul style=\"margin-left: 24px; margin-bottom: 15px;\">" //$NON-NLS-1$
+//				+ "<li style=\"color: #333333; margin-bottom: 6px; font-size: 14px;\">Open a collection by choosing from the <strong>Collections</strong> menu or entering a URL directly in the toolbar as with a web browser.</li>" //$NON-NLS-1$
+//				+ "<li style=\"color: #333333; margin-bottom: 6px; font-size: 14px;\">Collections are organized and displayed in a tree. Each tree node is a resource or sub-collection. Click a node to learn about the resource or double-click to download and/or open it in Tracker, EJS, DataTool or your web browser.</li>" //$NON-NLS-1$
+//				+ "<li style=\"color: #333333; margin-bottom: 6px; font-size: 14px;\">To build your own collection choose <strong>File | New Collection</strong>. Add your own resources or copy and paste from other collections. Collections are saved as xml documents that contain references to the actual resource files. For more information, choose Help.</li>" //$NON-NLS-1$
+//				+ "</ul>" //$NON-NLS-1$
+//				+ "<p style=\"color: #333333; margin-bottom: 12px; font-size: 14px;\"><strong>ComPADRE</strong> is a network of online resource collections and community web sites supporting physics education with content, tools, and expert advice. Open a ComPADRE collection by choosing from the <strong>Collections | ComPADRE Library</strong> menu.</p>" //$NON-NLS-1$
+//				+ "<p style=\"color: #333333; margin-bottom: 12px; font-size: 14px;\">You can help build the ComPADRE collection by reviewing resources, participating in discussions, and adding your own OSP resources. For more information, see <a href=\"https://www.compadre.org/osp/\" target=\"_blank\" style=\"color: #0066cc; text-decoration: underline;\">https://www.compadre.org/osp/</a>. " //$NON-NLS-1$
+//				+ "To recommend a resource for ComPADRE, visit <a href=\"https://www.compadre.org/osp/items/suggest.cfm\" target=\"_blank\" style=\"color: #0066cc; text-decoration: underline;\">Suggest a Resource</a>. Contact Wolfgang Christian, the OSP Collection editor, for more information.</p>" //$NON-NLS-1$
+//				+ "</div></body></html>"; //$NON-NLS-1$
+//	}
+
 
 //______________________________ inner classes _________________________________
 

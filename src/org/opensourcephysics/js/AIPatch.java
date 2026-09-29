@@ -1,17 +1,34 @@
 package org.opensourcephysics.js;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ContainerAdapter;
+import java.awt.event.ContainerEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.AbstractButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JRootPane;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTree;
 import javax.swing.RootPaneContainer;
-import javax.swing.plaf.TextUI;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.JTextComponent;
+import javax.swing.tree.TreePath;
 
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.media.core.NumberField;
@@ -26,60 +43,79 @@ import swingjs.api.js.DOMNode;
 public class AIPatch {
 
 	
-	private static final String RESIZE_HANDLER_KEY = "TWindowResizeHandler_Installed"; //$NON-NLS-1$
+//	private static final String RESIZE_HANDLER_KEY = "TWindowResizeHandler_Installed"; //$NON-NLS-1$
 
 	/**
 	 * Installs the window resize handler on the specified window.
 	 *
 	 * @param window the top-level Window (TFrame or JDialog)
 	 */
-	public static void installResizeHandler(Window window) {
-		if (window == null) return;
-
-		if (window instanceof RootPaneContainer) {
-			JRootPane rp = ((RootPaneContainer) window).getRootPane();
-			if (rp != null) {
-				if (rp.getClientProperty(RESIZE_HANDLER_KEY) != null) {
-					setupResizer(window);
-					isolateWindowGestures(window);
-					return; // already installed
-				}
-				rp.putClientProperty(RESIZE_HANDLER_KEY, Boolean.TRUE);
-			}
-		}
+	public static void installResizeHandler(JFrame window) {
 
 		window.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
 				setupResizer(window);
-				isolateWindowGestures(window);
 			}
 
 			@Override
 			public void componentResized(ComponentEvent e) {
 				setupResizer(window);
-				isolateWindowGestures(window);
 			}
 		});
 
-		setupResizer(window);
-		isolateWindowGestures(window);
+//		setupResizer(window);
+//
+//		// BH This is a hack
+//
+//		// In SwingJS, Resizer DOM node may be created asynchronously when window peer finishes initializing
+//		if (OSPRuntime.isJS) {
+//			OSPRuntime.trigger(100, (e) -> {
+//				setupResizer(window);
+//			});
+//			OSPRuntime.trigger(500, (e) -> {
+//				setupResizer(window);
+//			});
+//			OSPRuntime.trigger(1500, (e) -> {
+//				setupResizer(window);
+//			});
+//		}
+	}
 
-		// In SwingJS, Resizer DOM node may be created asynchronously when window peer finishes initializing
-		if (OSPRuntime.isJS) {
-			OSPRuntime.trigger(100, (e) -> {
-				setupResizer(window);
+	/**
+	 * Installs the window resize handler on the specified window.
+	 *
+	 * @param window the top-level Window (TFrame or JDialog)
+	 */
+	public static void installGestureHandler(JFrame window) {
+
+		window.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
 				isolateWindowGestures(window);
-			});
-			OSPRuntime.trigger(500, (e) -> {
-				setupResizer(window);
+			}
+
+			@Override
+			public void componentResized(ComponentEvent e) {
 				isolateWindowGestures(window);
-			});
-			OSPRuntime.trigger(1500, (e) -> {
-				setupResizer(window);
-				isolateWindowGestures(window);
-			});
-		}
+			}
+		});
+//		isolateWindowGestures(window);
+//
+//		// BH This is a hack
+//
+//		// In SwingJS, Resizer DOM node may be created asynchronously when window peer finishes initializing
+//		if (OSPRuntime.isJS) {
+//			OSPRuntime.trigger(100, (e) -> {
+//				isolateWindowGestures(window);
+//			});
+//			OSPRuntime.trigger(500, (e) -> {
+//				isolateWindowGestures(window);
+//			});
+//			OSPRuntime.trigger(1500, (e) -> {
+//				isolateWindowGestures(window);
+//			});
+//		}
 	}
 
 	
@@ -206,7 +242,6 @@ public class AIPatch {
 	public static void setupResizer(Window window) {
 		if (window == null || !OSPRuntime.isJS) 
 			return;
-		isolateWindowGestures(window);
 		int minw = MIN_WIDTH;
 		int minh = MIN_HEIGHT;
 		/**
@@ -248,8 +283,8 @@ public class AIPatch {
 		 *   // 1. Keep the 20x20 hotspot inside the frame to avoid page overflow
 		 *   resizerNode.style.width = "20px";
 		 *   resizerNode.style.height = "20px";
-		 *   resizerNode.style.marginLeft = "-20px";
-		 *   resizerNode.style.marginTop = "-20px";
+		 *   resizerNode.style.marginLeft = "-15px";
+		 *   resizerNode.style.marginTop = "-15px";
 		 *   resizerNode.style.touchAction = "none";
 		 *   resizerNode.style.zIndex = "100002";
 		 *   resizerNode.style.userSelect = "none";
@@ -434,85 +469,85 @@ public class AIPatch {
 		 */
 	}
 
-	public static void hackWelcomePane(JEditorPane ep, String rawHTML) {
-		// BH NOT ACCEPTABLE?
-		// In SwingJS on iPad / Safari: directly inject and style the DOM elements
-		JEditorPane thePane = ep;
-		@SuppressWarnings("unused")
-		TextUI ui = thePane.getUI();
-		@SuppressWarnings("unused")
-		DOMNode domNode = (/** @j2sNative ui.domNode || */
-		null);
-		Runnable injectDOM = () -> {
-			System.err.println("!!!AIP inject");
-			// make explicitly final in JavaScript as well
-			// we do not want to use Java's this.$finals$ here.
-			DOMNode dnode = (/** @j2sNative domNode || */ null);
-			DOMNode rHTML = (/** @j2sNative rawHTML || */ null);
-			/**
-			 * @j2sNative ui.mytext = null; ui.rawHTML = null; ui.currentHTML = null;
-			 *            ui.setText$S(rHTML);
-			 */
-			DOMNode target = (/** @j2sNative ui.bodyNode ||*/ dnode);
-			String html = (String) DOMNode.getAttr(target, "innerHTML");
-			if (html.indexOf("Open Source Physics") < 0) {
-				DOMNode.setAttr(target, "innerHTML", rHTML);
-			}
-			DOMNode.setStyles(dnode, //
-					"width", "100%", //
-					"height", "100%", //
-					"minHeight", "350px", //
-					"display", "block", //
-					"backgroundColor", "#ffffff", //
-					"webkitOverflowScrolling", "touch", //
-					"boxSizing", "border-box");
-			DOMNode.setStyles(target, //
-					"width", "100%", //
-					"display", "block", //
-					"color", "#000000", //
-					"backgroundColor", "#ffffff", //
-					"padding", "20px", //
-					"fontFamily", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", //
-					"boxSizing", "border-box");
-			DOMNode parentElement = (DOMNode) DOMNode.getAttr(dnode, "parentElement");
-			if (parentElement != null) {
-				DOMNode.setStyles(parentElement, //
-						"width", "100%", //
-						"overflow", "auto", //
-						"backgroundColor", "#ffffff");
-				parentElement = (DOMNode) DOMNode.getAttr(parentElement, "parentElement");
-				if (parentElement != null) {
-					DOMNode.setStyles(parentElement, //
-							"width", "100%", //
-							"height", "100%", //
-							"backgroundColor", "#ffffff");
-				}
-			}
-
-		};
-		injectDOM.run();
-		/**
-		 * @j2sNative
-		 * 
-		 * 			if (window.requestAnimationFrame) {
-		 *            window.requestAnimationFrame(injectDOM.run$); }
-		*/
-		setTimeout(injectDOM, 30);
-		setTimeout(injectDOM, 100);
-		setTimeout(injectDOM, 250);
-		setTimeout(injectDOM, 500);
-		setTimeout(injectDOM, 1000);
-	}
-
-
-	private static void setTimeout(Runnable r, int ms) {
-		/**
-		 * @j2sNative
-		 * 
-		 * setTimeout(r.run$, ms); 
-		 */
-	}
-
+//	public static void hackWelcomePane(JEditorPane ep, String rawHTML) {
+//		// BH NOT ACCEPTABLE?
+//		// In SwingJS on iPad / Safari: directly inject and style the DOM elements
+//		JEditorPane thePane = ep;
+//		@SuppressWarnings("unused")
+//		TextUI ui = thePane.getUI();
+//		@SuppressWarnings("unused")
+//		DOMNode domNode = (/** @j2sNative ui.domNode || */
+//		null);
+//		Runnable injectDOM = () -> {
+//			System.err.println("!!!AIP inject");
+//			// make explicitly final in JavaScript as well
+//			// we do not want to use Java's this.$finals$ here.
+//			DOMNode dnode = (/** @j2sNative domNode || */ null);
+//			DOMNode rHTML = (/** @j2sNative rawHTML || */ null);
+//			/**
+//			 * @j2sNative ui.mytext = null; ui.rawHTML = null; ui.currentHTML = null;
+//			 *            ui.setText$S(rHTML);
+//			 */
+//			DOMNode target = (/** @j2sNative ui.bodyNode ||*/ dnode);
+//			String html = (String) DOMNode.getAttr(target, "innerHTML");
+//			if (html.indexOf("Open Source Physics") < 0) {
+//				DOMNode.setAttr(target, "innerHTML", rHTML);
+//			}
+//			DOMNode.setStyles(dnode, //
+//					"width", "100%", //
+//					"height", "100%", //
+//					"minHeight", "350px", //
+//					"display", "block", //
+//					"backgroundColor", "#ffffff", //
+//					"webkitOverflowScrolling", "touch", //
+//					"boxSizing", "border-box");
+//			DOMNode.setStyles(target, //
+//					"width", "100%", //
+//					"display", "block", //
+//					"color", "#000000", //
+//					"backgroundColor", "#ffffff", //
+//					"padding", "20px", //
+//					"fontFamily", "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", //
+//					"boxSizing", "border-box");
+//			DOMNode parentElement = (DOMNode) DOMNode.getAttr(dnode, "parentElement");
+//			if (parentElement != null) {
+//				DOMNode.setStyles(parentElement, //
+//						"width", "100%", //
+//						"overflow", "auto", //
+//						"backgroundColor", "#ffffff");
+//				parentElement = (DOMNode) DOMNode.getAttr(parentElement, "parentElement");
+//				if (parentElement != null) {
+//					DOMNode.setStyles(parentElement, //
+//							"width", "100%", //
+//							"height", "100%", //
+//							"backgroundColor", "#ffffff");
+//				}
+//			}
+//
+//		};
+//		injectDOM.run();
+//		/**
+//		 * @j2sNative
+//		 * 
+//		 * 			if (window.requestAnimationFrame) {
+//		 *            window.requestAnimationFrame(injectDOM.run$); }
+//		*/
+//		setTimeout(injectDOM, 30);
+//		setTimeout(injectDOM, 100);
+//		setTimeout(injectDOM, 250);
+//		setTimeout(injectDOM, 500);
+//		setTimeout(injectDOM, 1000);
+//	}
+//
+//
+//	private static void setTimeout(Runnable r, int ms) {
+//		/**
+//		 * @j2sNative
+//		 * 
+//		 * setTimeout(r.run$, ms); 
+//		 */
+//	}
+//
 
 	/**
 	 * BH this does not look right to me
@@ -522,51 +557,51 @@ public class AIPatch {
 	 */
 	public static Point getScreenLocation(MouseEvent e, Component comp, String from) {
 		Point p = e.getLocationOnScreen();
-		System.err.println("\nAIP getScLoc testing simple: " + p + " from " + from);
-		int[] pt = null;
-		if (false) {
-		/**
-		 * @j2sNative
-		 * try {
-		 *   var je = (e && e.bdata ? e.bdata.jqevent : null);
-		 *   if (je) {
-		 *     var oe = je.originalEvent || je;
-		 *     var t = (oe.targetTouches && oe.targetTouches.length > 0 ? oe.targetTouches[0] : null);
-		 *     var px = (t ? t.pageX : (je.pageX != null ? je.pageX : null));
-		 *     var py = (t ? t.pageY : (je.pageY != null ? je.pageY : null));
-		 *     if (px == null && window.J2S && J2S._mousePageX != null) {
-		
-			System.err.println("AIP getScLoc using J2S._mousePageX/Y ");
-		 
-		 *       px = J2S._mousePageX;
-		 *       py = J2S._mousePageY;
-		 *     }
-		 *     if (px != null && isFinite(px) && py != null && isFinite(py)) {
-		 *       pt = [Math.round(px), Math.round(py)];
-		 *     }
-		 *   }
-		 * } catch (ex) {}
-		 */
-		}
-		if (pt != null) {
-			p = new Point(pt[0], pt[1]);
-			System.err.println("AIP getScLoc AI calc " + p);
-			return p;
-		}
-		if (p != null && (p.x != 0 || p.y != 0)) {
-			return p;
-		}
-		if (comp != null && comp.isShowing()) {
-			try {
-				p = comp.getLocationOnScreen();
-				p = new Point(p.x + e.getX(), p.y + e.getY());
-				System.err.println("AIP getScLoc returning component offset " + p);
-			} catch (Throwable t) {
-			}
-		}
-		
-		p = e.getPoint();
-		System.err.println("AIP getScLoc returning e.getPoint() " + p);
+//		System.err.println("\nAIP getScLoc testing simple: " + p + " from " + from);
+//		int[] pt = null;
+//		if (false) {
+//		/**
+//		 * @j2sNative
+//		 * try {
+//		 *   var je = (e && e.bdata ? e.bdata.jqevent : null);
+//		 *   if (je) {
+//		 *     var oe = je.originalEvent || je;
+//		 *     var t = (oe.targetTouches && oe.targetTouches.length > 0 ? oe.targetTouches[0] : null);
+//		 *     var px = (t ? t.pageX : (je.pageX != null ? je.pageX : null));
+//		 *     var py = (t ? t.pageY : (je.pageY != null ? je.pageY : null));
+//		 *     if (px == null && window.J2S && J2S._mousePageX != null) {
+//		
+//			System.err.println("AIP getScLoc using J2S._mousePageX/Y ");
+//		 
+//		 *       px = J2S._mousePageX;
+//		 *       py = J2S._mousePageY;
+//		 *     }
+//		 *     if (px != null && isFinite(px) && py != null && isFinite(py)) {
+//		 *       pt = [Math.round(px), Math.round(py)];
+//		 *     }
+//		 *   }
+//		 * } catch (ex) {}
+//		 */
+//		}
+//		if (pt != null) {
+//			p = new Point(pt[0], pt[1]);
+//			System.err.println("AIP getScLoc AI calc " + p);
+//			return p;
+//		}
+//		if (p != null && (p.x != 0 || p.y != 0)) {
+//			return p;
+//		}
+//		if (comp != null && comp.isShowing()) {
+//			try {
+//				p = comp.getLocationOnScreen();
+//				p = new Point(p.x + e.getX(), p.y + e.getY());
+//				System.err.println("AIP getScLoc returning component offset " + p);
+//			} catch (Throwable t) {
+//			}
+//		}
+//		
+//		p = e.getPoint();
+//		System.err.println("AIP getScLoc returning e.getPoint() " + p);
 		return p;
 	}
 
@@ -591,4 +626,262 @@ public class AIPatch {
 		}
 		}
 	}
+	
+	
+	/**
+	 * Installs mouse and touch dragging on the Library Browser dialog/window.
+	 * 
+	 * Allows dragging the dialog by dragging anywhere inside the dialog (including
+	 * empty dialog frame, welcome message pane, and empty tree background), while
+	 * preserving interactive controls (buttons, editable text fields, scrollbars, and tree
+	 * node selection / folder expansion).
+	 * 
+	 * Also guarantees the Welcome screen content is rendered with proper styling
+	 * the very first time the Library Browser is displayed and on any subsequent display,
+	 * in both desktop Java and transpiled SwingJS on iPad.
+	 */
+	public static class FullFrameDragHandler {
+
+		private static String DRAG_LISTENER_KEY = "Full_Frame_Drag_Listener_Installed"; //$NON-NLS-1$
+		private static String WINDOW_LISTENER_KEY = "Full_Frame_Drag_WindowListener_Attached"; //$NON-NLS-1$
+
+		/**
+		 * Installs the drag handler and welcome screen renderer on the given JPanel instance.
+		 * 
+		 * @param panel the JPanel instance
+		 */
+		public static void installFullFrameDragHandler(JPanel panel, boolean hasResizer) {
+
+			// Attach to panel and all existing components in the dialog
+			attachToHierarchy(panel, panel);
+
+			// Also attach to the top-level window / root pane if available
+			attachToWindow(panel, hasResizer);
+
+			// Listen for tab changes
+			attachTabListeners(panel, panel);
+		}
+
+		/**
+		 * Attaches drag listeners and window listeners to the window, root pane, and layered pane.
+		 */
+		private static void attachToWindow(JPanel panel, boolean hasResizer) {
+			Window w = (Window) panel.getTopLevelAncestor();
+			if (w != null) {
+				attachDragAdapter(w, panel);
+				if (w instanceof RootPaneContainer) {
+					JRootPane rp = ((RootPaneContainer) w).getRootPane();
+					if (rp != null) {
+						if (rp.getClientProperty(WINDOW_LISTENER_KEY) != null) {
+							return; // already attached
+						}
+						rp.putClientProperty(WINDOW_LISTENER_KEY, Boolean.TRUE);
+
+						attachDragAdapter(rp, panel);
+						if (rp.getLayeredPane() != null) {
+							attachDragAdapter(rp.getLayeredPane(), panel);
+						}
+						if (rp.getContentPane() != null) {
+							attachDragAdapter(rp.getContentPane(), panel);
+						}
+					}
+				}
+			}
+		}
+
+		private static void attachTabListeners(Container root, JPanel panel) {
+			if (root == null)
+				return;
+			if (root instanceof JTabbedPane) {
+				JTabbedPane tabbedPane = (JTabbedPane) root;
+				if (tabbedPane.getClientProperty(DRAG_LISTENER_KEY) == null) {
+					tabbedPane.putClientProperty(DRAG_LISTENER_KEY, Boolean.TRUE);
+					tabbedPane.addChangeListener(new ChangeListener() {
+						@Override
+						public void stateChanged(ChangeEvent e) {
+							attachToHierarchy(tabbedPane.getSelectedComponent(), panel);
+						}
+					});
+					tabbedPane.addContainerListener(new ContainerAdapter() {
+						@Override
+						public void componentAdded(ContainerEvent e) {
+							attachToHierarchy(e.getChild(), panel);
+						}
+					});
+				}
+			}
+			for (Component child : root.getComponents()) {
+				if (child instanceof Container) {
+					attachTabListeners((Container) child, panel);
+				}
+			}
+		}
+
+		/**
+		 * Recursively finds components in the container and attaches the drag adapter to them.
+		 */
+		public static void attachToHierarchy(Component comp) {
+			attachToHierarchy(comp, null);
+		}
+
+		public static void attachToHierarchy(Component comp, JPanel panel) {
+			if (comp == null) return;
+
+			// Attach to this component if eligible
+			attachDragAdapter(comp, panel);
+
+			if (comp instanceof JScrollPane) {
+				JScrollPane sp = (JScrollPane) comp;
+				if (sp.getViewport() != null) {
+					attachDragAdapter(sp.getViewport(), panel);
+					if (sp.getViewport().getView() != null) {
+						attachToHierarchy(sp.getViewport().getView(), panel);
+					}
+				}
+			}
+
+			if (comp instanceof Container) {
+				Container cont = (Container) comp;
+				for (Component child : cont.getComponents()) {
+					attachToHierarchy(child, panel);
+				}
+			}
+		}
+
+		/**
+		 * Determines whether a component should receive the window drag listener.
+		 * Interactive components (buttons, editable text fields, dropdowns, scrollbars)
+		 * are excluded so their primary interactions are preserved.
+		 */
+		private static boolean isEligibleForDrag(Component comp) {
+			if (comp == null) return false;
+			// Skip buttons and menu items so clicking them still functions
+			if (comp instanceof AbstractButton) return false;
+			// Skip combo boxes and scroll bars
+			if (comp instanceof JComboBox) return false;
+			if (comp instanceof JScrollBar) return false;
+			// Skip editable text fields (allow user to type in search/command fields)
+			if (comp instanceof JTextComponent && ((JTextComponent) comp).isEditable()) {
+				return false;
+			}
+			// Skip split pane divider so column resizing still works
+			if (comp.getClass().getName().contains("Divider")) return false;
+
+			return true;
+		}
+
+		private static void attachDragAdapter(Component comp, JPanel panel) {
+			if (!isEligibleForDrag(comp)) return;
+
+			if (comp instanceof JComponent) {
+				JComponent jc = (JComponent) comp;
+				if (jc.getClientProperty(DRAG_LISTENER_KEY) != null) {
+					return; // already attached
+				}
+				jc.putClientProperty(DRAG_LISTENER_KEY, Boolean.TRUE);
+			}
+			DragMouseAdapter adapter = new DragMouseAdapter(comp, panel);
+			comp.addMouseListener(adapter);
+			comp.addMouseMotionListener(adapter);
+		}
+
+		/**
+		 * MouseAdapter that implements dragging of the top-level window when pressing
+		 * on empty space of the dialog, tree, or viewports.
+		 */
+		private static class DragMouseAdapter extends MouseAdapter {
+			private Component component;
+			private JPanel panel;
+			private Point mouseLoc = new Point();
+			private Point windowLoc = new Point();
+			private Dimension windowDim = new Dimension();
+			private boolean isDragging = false;
+			private boolean isResizing = false;
+
+			public DragMouseAdapter(Component comp, JPanel panel) {
+				this.component = comp;
+				this.panel = panel;
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				isDragging = false;
+				if (SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
+					return;
+				}
+
+				// If event is on a JTree, hit-test to see if user clicked a node
+				if (component instanceof JTree) {
+					JTree tree = (JTree) component;
+					TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+					if (path != null) {
+						return; // Clicked on a node -> normal tree selection / open
+					}
+					int row = tree.getClosestRowForLocation(e.getX(), e.getY());
+					if (row >= 0) {
+						Rectangle bounds = tree.getRowBounds(row);
+						if (bounds != null && e.getY() >= bounds.y && e.getY() <= bounds.y + bounds.height
+								&& e.getX() <= bounds.x + bounds.width) {
+							return; // Clicked near row expander handle or node text
+						}
+					}
+				}
+				Window w = getWindowForPanel(component, panel);
+				if (w != null) {
+					Point startPt = getScreenLocation(e, component, "LB mouse pressed");
+					if (startPt != null) {
+						Point ptInWindow = SwingUtilities.convertPoint(component, e.getPoint(), w);
+						int cornerSize = 20;
+						if (ptInWindow.x >= w.getWidth() - cornerSize && ptInWindow.y >= w.getHeight() - cornerSize) {
+							mouseLoc.setLocation(startPt);
+							windowDim.setSize(w.getSize());
+							isResizing = true;
+							isDragging = false;
+						} else {
+							mouseLoc.setLocation(startPt);
+							windowLoc.setLocation(w.getLocation());
+							isDragging = true;
+							isResizing = false;
+						}
+					}
+				}
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if (!isDragging && !isResizing) return;
+				Window w = getWindowForPanel(component, panel);
+				if (w != null) {
+					Point curPt = getScreenLocation(e, component, "LB mouseDragged");
+					if (curPt != null) {
+						int dx = curPt.x - mouseLoc.x;
+						int dy = curPt.y - mouseLoc.y;
+						if (isResizing) {
+							int newW = Math.max(400, windowDim.width + dx);
+							int newH = Math.max(300, windowDim.height + dy);
+							w.setSize(newW, newH);
+							w.validate();
+							w.repaint();
+							//setupResizer(w);
+						} else {
+							w.setLocation(windowLoc.x + dx, windowLoc.y + dy);
+							w.repaint();
+						}
+					}
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				isDragging = false;
+				isResizing = false;
+			}
+		}
+
+		public static Window getWindowForPanel(Component component, JPanel panel) {
+			return (Window) panel.getTopLevelAncestor();
+		}
+		
+	}
+
 }
