@@ -1715,8 +1715,9 @@ public class LibraryBrowser extends JPanel {
 //		HTMLDocument document = (HTMLDocument) htmlAboutPane.getDocument();
 //		document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
 		htmlAboutPane.setCaretPosition(0);
-
-		(externalDialog == null ? frame : externalDialog).addWindowListener(new WindowAdapter() {
+		
+		Window window = externalDialog == null ? frame : externalDialog;
+		window.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent e) {
 				new LibraryLoader().execute();
