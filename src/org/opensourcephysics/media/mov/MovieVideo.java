@@ -152,15 +152,13 @@ public abstract class MovieVideo extends VideoAdapter {
 
 	@Override
 	protected void setStartTimes() {
-		if (startTimesMS == null) {
-			startTimesMS = new double[frameCount];
-			startTimesMS[0] = 0;
-			for (int i = 1; i < startTimesMS.length; i++) {
-				startTimesMS[i] = frameTimes.get(i) * 1000;
-				//System.out.println("startTimes[" + i + "]=" + startTimes[i] + "\tdt=" + (startTimes[i] - startTimes[i - 1]));
-			}
+		double[] timesMS = new double[frameCount];
+		timesMS[0] = 0;
+		for (int i = 1; i < timesMS.length; i++) {
+			timesMS[i] = frameTimes.get(i) * 1000;
 		}
-		//System.out.println("MovieVideo.setStartTimes rawDuration=" + rawDuration + " frameCount=" + frameCount);
+		startTimesMS = timesMS;
+//		System.out.println("MovieVideo.setStartTimes rawDuration=" + rawDuration + " frameCount=" + frameCount);
 	}
 
 	private void addFramePropertyListeners() {
