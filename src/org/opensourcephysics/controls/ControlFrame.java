@@ -358,11 +358,14 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 				fileName += ".xml"; //$NON-NLS-1$
 				file = new File(fileName);
 			}
-			if (!OSPRuntime.isJS && file.exists()) {
-				int selected = JOptionPane.showConfirmDialog(null, "Replace existing " + file.getName() + "?",
-						"Replace File", JOptionPane.YES_NO_CANCEL_OPTION);
-				if (selected != JOptionPane.YES_OPTION) {
-					return;
+			/** j2sIgnore */
+			{
+				if (file.exists()) {
+					int selected = JOptionPane.showConfirmDialog(null, "Replace existing " + file.getName() + "?",
+							"Replace File", JOptionPane.YES_NO_CANCEL_OPTION);
+					if (selected != JOptionPane.YES_OPTION) {
+						return;
+					}
 				}
 			}
 			XMLControl xml = new XMLControlElement(getOSPApp());

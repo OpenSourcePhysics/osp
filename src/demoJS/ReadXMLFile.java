@@ -29,20 +29,20 @@ public class ReadXMLFile {
     String oldTitle = chooser.getDialogTitle();
     chooser.setDialogTitle("Load XML Data");
     chooser.showOpenDialog(null, new Runnable() {
-   	 // OK
-		@Override
-		public void run() {
-			if (!OSPRuntime.isJS) {
-				// no directory information in HTML5
-		     org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+			// OK
+			@Override
+			public void run() {
+				if (!OSPRuntime.isJS) {
+					// no directory information in HTML5
+					org.opensourcephysics.display.OSPRuntime.chooserDir = chooser.getCurrentDirectory().toString();
+				}
+				// It is critical to pass the actual file along, as it has the bytes already.
+				File file = chooser.getSelectedFile();
+				OSPLog.fine("reading file=" + file);
+				XMLControlElement xml = new XMLControlElement(file);
+				chooser.setDialogTitle(oldTitle);
+				displayXML(xml);
 			}
-		     // It is critical to pass the actual file along, as it has the bytes already.
-		     File file=chooser.getSelectedFile();
-		     OSPLog.fine("reading file="+file);
-		     XMLControlElement xml = new XMLControlElement(file);
-		     chooser.setDialogTitle(oldTitle);
-		     displayXML(xml);
-		}
    	 
     }, new Runnable() {
    	 // cancel

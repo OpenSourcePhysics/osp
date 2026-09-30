@@ -11,6 +11,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -89,6 +91,10 @@ public class LibraryManager extends JDialog {
 	 */
 	protected LibraryManager(LibraryBrowser browser, JFrame frame) {
 		super(frame, true);
+		init(browser);
+	}
+
+	private void init(LibraryBrowser browser) {
 		this.browser = browser;
 		library = browser.library;
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -98,6 +104,13 @@ public class LibraryManager extends JDialog {
 		dim.width = (int) (dim.width * factor);
 		dim.height = (int) (dim.height * factor);
 		setSize(dim);
+		refreshGUI();
+		// center on screen
+		dim = Toolkit.getDefaultToolkit().getScreenSize();
+		Rectangle bounds = getBounds();
+		int x = (dim.width - bounds.width) / 2;
+		int y = (dim.height - bounds.height) / 2;
+		setLocation(x, y);
 	}
 
 	/**
@@ -108,15 +121,7 @@ public class LibraryManager extends JDialog {
 	 */
 	protected LibraryManager(LibraryBrowser browser, JDialog dialog) {
 		super(dialog, true);
-		this.browser = browser;
-		library = browser.library;
-		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-		createGUI();
-		Dimension dim = new Dimension(defaultSize);
-		double factor = 1 + FontSizer.getLevel() * 0.25;
-		dim.width = (int) (dim.width * factor);
-		dim.height = (int) (dim.height * factor);
-		setSize(dim);
+		init(browser);
 	}
 
 	@Override
@@ -139,7 +144,7 @@ public class LibraryManager extends JDialog {
 	 */
 	protected void createGUI() {
 		JButton throwaway = new JButton("by"); //$NON-NLS-1$
-		throwaway.setBorder(LibraryBrowser.buttonBorder);
+		throwaway.setBorder(browser.buttonBorder);
 		int h = throwaway.getPreferredSize().height;
 		sharedFont = throwaway.getFont();
 
@@ -276,7 +281,7 @@ public class LibraryManager extends JDialog {
 
 		moveUpButton = new JButton();
 		moveUpButton.setOpaque(false);
-		moveUpButton.setBorder(LibraryBrowser.buttonBorder);
+		moveUpButton.setBorder(browser.buttonBorder);
 		moveUpButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -294,7 +299,7 @@ public class LibraryManager extends JDialog {
 		});
 		moveDownButton = new JButton();
 		moveDownButton.setOpaque(false);
-		moveDownButton.setBorder(LibraryBrowser.buttonBorder);
+		moveDownButton.setBorder(browser.buttonBorder);
 		moveDownButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -312,7 +317,7 @@ public class LibraryManager extends JDialog {
 		});
 		addButton = new JButton();
 		addButton.setOpaque(false);
-		addButton.setBorder(LibraryBrowser.buttonBorder);
+		addButton.setBorder(browser.buttonBorder);
 		addButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -379,7 +384,7 @@ public class LibraryManager extends JDialog {
 		});
 		removeButton = new JButton();
 		removeButton.setOpaque(false);
-		removeButton.setBorder(LibraryBrowser.buttonBorder);
+		removeButton.setBorder(browser.buttonBorder);
 		removeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -405,7 +410,7 @@ public class LibraryManager extends JDialog {
 		// create all and none buttons
 		allButton = new JButton();
 		allButton.setOpaque(false);
-		allButton.setBorder(LibraryBrowser.buttonBorder);
+		allButton.setBorder(browser.buttonBorder);
 		allButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -416,7 +421,7 @@ public class LibraryManager extends JDialog {
 		});
 		noneButton = new JButton();
 		noneButton.setOpaque(false);
-		noneButton.setBorder(LibraryBrowser.buttonBorder);
+		noneButton.setBorder(browser.buttonBorder);
 		noneButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -428,7 +433,7 @@ public class LibraryManager extends JDialog {
 
 		clearCacheButton = new JButton();
 		clearCacheButton.setOpaque(false);
-		clearCacheButton.setBorder(LibraryBrowser.buttonBorder);
+		clearCacheButton.setBorder(browser.buttonBorder);
 		clearCacheButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -440,7 +445,7 @@ public class LibraryManager extends JDialog {
 
 		setCacheButton = new JButton();
 		setCacheButton.setOpaque(false);
-		setCacheButton.setBorder(LibraryBrowser.buttonBorder);
+		setCacheButton.setBorder(browser.buttonBorder);
 		setCacheButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

@@ -3493,7 +3493,7 @@ public class Launcher {
 	 */
 	private static void start(String[] args, long desiredMemorySize) {
 		// get current memory size
-		if (!OSPRuntime.isJS) { // Added by WC.
+		/** @j2sIgnore */ { // Added by WC.
 			java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory.getMemoryMXBean();
 			long memorySize = memory.getHeapMemoryUsage().getMax() / (1024 * 1024);
 			// if memory size is not at least 90% of desired, then relaunch
@@ -3576,13 +3576,14 @@ public class Launcher {
 							JOptionPane.WARNING_MESSAGE);
 					if (mainLauncher == null) {
 						// if not yet started, start with current memory size
-						if (!OSPRuntime.isJS) { // WC: MemoryMXBean not supported in JavaScript
+						if (OSPRuntime.isJS) { 
+							start(args, 512); // start with 512 MB of memory
+						} else {
+							// WC: MemoryMXBean not supported in JavaScript
 							java.lang.management.MemoryMXBean memory = java.lang.management.ManagementFactory
 									.getMemoryMXBean();
 							long memorySize = memory.getHeapMemoryUsage().getMax() / (1024 * 1024);
 							start(args, memorySize);
-						} else {
-							start(args, 512); // start with 512 MB of memory
 						}
 					}
 				} catch (Exception ex) {

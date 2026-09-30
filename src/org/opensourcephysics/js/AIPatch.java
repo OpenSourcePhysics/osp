@@ -128,8 +128,6 @@ public class AIPatch {
 	 */
 	public static void isolateWindowGestures(final Window window) {
 		if (window == null) return;
-		if (!OSPRuntime.isJS) return;
-
 		/**
 		 * @j2sNative
 		 * try {

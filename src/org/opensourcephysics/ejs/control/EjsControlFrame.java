@@ -447,7 +447,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 		JMenu aliasMenu = new JMenu(EjsRes.getString("EjsControlFrame.AntiAlias_menu")); //$NON-NLS-1$
 		if (!OSPRuntime.isJS)
 			displayMenu.add(aliasMenu);
-		final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(EjsRes.getString("EjsControlFrame.Text_check_box"), //$NON-NLS-1$
+		final JCheckBoxMenuItem textAliasItem = new JCheckBoxMenuItem(
+				EjsRes.getString("EjsControlFrame.Text_check_box"), //$NON-NLS-1$
 				false);
 		textAliasItem.addActionListener(new ActionListener() {
 			@Override
@@ -475,7 +476,8 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			}
 
 		});
-		if (!OSPRuntime.isJS)
+		/** j2sIgnore */
+		{
 			aliasMenu.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
@@ -491,9 +493,10 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 				}
 
 			});
+		}
 		aliasMenu.add(shapeAliasItem);
 		menuBar.add(displayMenu);
-		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { // $NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI();

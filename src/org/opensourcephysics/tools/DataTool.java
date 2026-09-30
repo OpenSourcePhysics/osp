@@ -3447,9 +3447,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @return true if data is pastable
 	 */
 	protected boolean hasPastableData() {
-		if (OSPRuntime.isJS)
-			return true; // just guessing
-		return isPastableData(OSPRuntime.paste(null));
+		return (OSPRuntime.isJS || isPastableData(OSPRuntime.paste(null)));
 	}
 
 	private boolean isPastableData(String dataString) {

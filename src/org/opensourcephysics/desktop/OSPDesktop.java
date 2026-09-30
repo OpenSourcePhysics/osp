@@ -26,7 +26,7 @@ public class OSPDesktop {
   // No java.awt.Desktop for SwingJS
   
 	static {
-		if (!OSPRuntime.isJS) {
+		/** @j2sIgnore */ {
 			java.lang.reflect.Method m;
 			try {
 				m = Class.forName(desktopClassName).getMethod("isDesktopSupported", (Class<?>[]) null); //$NON-NLS-1$

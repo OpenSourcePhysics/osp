@@ -59,7 +59,7 @@ public class MovieFactory {
 				movieEngineName = ENGINE_XUGGLE;
 			}
 		} catch (Throwable e) {			
-			if (!OSPRuntime.isJS) {
+			/** @j2sIgnore */ {
 				// failed to load xuggle
 				if (code == 7) {
 					xuggleNeeds32bitVM = true;

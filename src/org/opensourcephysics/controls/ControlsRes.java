@@ -65,11 +65,13 @@ public class ControlsRes {
 //    }
 //  }
 
-  public static void setLocale(Locale locale) {
-	if(OSPRuntime.isJS) return;
-    res = ResourceLoader.getBundle(BUNDLE_NAME, locale);
-    setLocalStrings();
-  }
+	public static void setLocale(Locale locale) {
+		/** j2sIgnore */
+		{
+			res = ResourceLoader.getBundle(BUNDLE_NAME, locale);
+			setLocalStrings();
+		}
+	}
 
   /**
    * Gets the localized value of a string. If no localized value is found, the

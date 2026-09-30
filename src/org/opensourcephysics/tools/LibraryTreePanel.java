@@ -807,7 +807,7 @@ public class LibraryTreePanel extends JPanel {
 					@Override
 					public void run() {
 						if (launchLater) {
-							javajs.async.AsyncDialog.showYesNoAsync(LibraryBrowser.frame,
+							javajs.async.AsyncDialog.showYesNoAsync(browser.window,
 									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Message")
 									+ " \"" + node.getName() + "\"?", 
 									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Title"), 
@@ -839,7 +839,7 @@ public class LibraryTreePanel extends JPanel {
 				cutButton, pasteButton, moveUpButton, moveDownButton, metadataButton};
 		for (JButton next: buttons) {
 			next.setOpaque(false);
-			next.setBorder(LibraryBrowser.buttonBorder);			
+			next.setBorder(browser.buttonBorder);			
 		}
 
 		editorbar = new JToolBar();

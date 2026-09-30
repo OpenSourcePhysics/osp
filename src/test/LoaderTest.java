@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.zip.ZipEntry;
@@ -48,24 +49,24 @@ import javajs.async.AsyncFileChooser;
 import javajs.async.AsyncSwingWorker;
 
 public class LoaderTest {
-	
+
 	LibraryBrowser libraryBrowser = getLibraryBrowser();
 	JFrame frame = new JFrame("JFrame Example");
 	JPanel panel = new JPanel();
 	JPanel topPanel = new JPanel();
 	JTextArea textArea = new JTextArea();
-	JScrollPane scrollPane= new JScrollPane(textArea);
-	
+	JScrollPane scrollPane = new JScrollPane(textArea);
+
 	String tempDir;
 	ArrayList<String> xmlFiles = new ArrayList<String>();
 	ArrayList<String> otherFiles = new ArrayList<String>();
 	AsyncFileChooser fileChooser;
 	String zipFilePath;
 	String editedFilePath;
-	
+
 	int progressInit = 0, progress_done = 100;
-	
-	public LoaderTest(){
+
+	public LoaderTest() {
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		panel.setLayout(new BorderLayout());
 		topPanel.setLayout(new FlowLayout());
@@ -79,47 +80,46 @@ public class LoaderTest {
 		getButton.setText("Open Browser");
 		JButton saveButton = new JButton();
 		saveButton.setText("Save Model");
-		
-		getButton.addActionListener(new ActionListener(){
+
+		getButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-	   		libraryBrowser.setVisible(true);
+				libraryBrowser.setVisible(true);
 			}
 		});
-		saveButton.addActionListener(new ActionListener(){
+		saveButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-	   		if (!saveNewZip()) {
-	   			String msg = "Failed to save file "+XML.getName(zipFilePath);
-	   		  JOptionPane.showMessageDialog(frame, msg, "Error", JOptionPane.ERROR_MESSAGE);  
-	   		}	   			
+				if (!saveNewZip()) {
+					String msg = "Failed to save file " + XML.getName(zipFilePath);
+					JOptionPane.showMessageDialog(frame, msg, "Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		});
 		topPanel.add(label);
 		topPanel.add(getButton);
 		topPanel.add(saveButton);
-		panel.add(scrollPane,BorderLayout.CENTER);
-		panel.add(topPanel,BorderLayout.NORTH);
+		panel.add(scrollPane, BorderLayout.CENTER);
+		panel.add(topPanel, BorderLayout.NORTH);
 		frame.add(panel);
 		frame.setSize(450, 300);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 	}
-	
+
 	private void setEditorText(String text) {
 		textArea.setText(text);
 	}
-	
-	
+
 	private void showHelp() {
-		String msg="The Lord helps those who help themselves.";
-	  JOptionPane.showMessageDialog(null,msg);  
+		String msg = "The Lord helps those who help themselves.";
+		JOptionPane.showMessageDialog(null, msg);
 		System.out.println(msg);
 	}
-	
+
 	/**
 	 * Gets the library browser.
 	 *
@@ -130,25 +130,24 @@ public class LoaderTest {
 			try {
 // BH this disallows Tracker lib in JS
 				LibraryComPADRE.desiredOSPType = "EJS";
-				libraryBrowser = LibraryBrowser.getBrowser(null);
-				libraryBrowser.addComPADRECollection(
-						LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
-				libraryBrowser.addComPADRECollection(
-						LibraryComPADRE.EJS_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
+				libraryBrowser = LibraryBrowser.getBrowser();
+				libraryBrowser
+						.addComPADRECollection(LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
+				libraryBrowser.addComPADRECollection(LibraryComPADRE.EJS_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
 				libraryBrowser.refreshCollectionsMenu();
 				libraryBrowser.addPropertyChangeListener(LibraryBrowser.PROPERTY_LIBRARY_TARGET,
-					new PropertyChangeListener() {
-						@Override
-						public void propertyChange(PropertyChangeEvent e) {
-							// if HINT_LOAD_RESOURCE, then e.getNewValue() is LibraryResource to load
-							if (LibraryBrowser.HINT_LOAD_RESOURCE == e.getOldValue()) {
-								LibraryResource record = (LibraryResource) e.getNewValue();
-								libraryBrowser.setComandButtonEnabled(false);
-								openLibraryResource(record);
+						new PropertyChangeListener() {
+							@Override
+							public void propertyChange(PropertyChangeEvent e) {
+								// if HINT_LOAD_RESOURCE, then e.getNewValue() is LibraryResource to load
+								if (LibraryBrowser.HINT_LOAD_RESOURCE == e.getOldValue()) {
+									LibraryResource record = (LibraryResource) e.getNewValue();
+									libraryBrowser.setComandButtonEnabled(false);
+									openLibraryResource(record);
+								}
 							}
-						}
-					});
-				LibraryBrowser.fireHelpEvent = true;
+						});
+				libraryBrowser.setFireHelpEvent(true);
 				libraryBrowser.addPropertyChangeListener("help", new PropertyChangeListener() {
 					@Override
 					public void propertyChange(PropertyChangeEvent e) {
@@ -161,36 +160,46 @@ public class LoaderTest {
 		}
 		return libraryBrowser;
 	}
-	
-  private void enableDragAndDrop(JTextArea jt){
-    DropTarget dropTarget=new DropTarget(jt,new DropTargetListener(){
-        public void dragEnter(DropTargetDragEvent e){}
-        
-        public void dragExit(DropTargetEvent e){}
-        
-        public void dragOver(DropTargetDragEvent e){}
-        
-        public void dropActionChanged(DropTargetDragEvent e){}
-        
-        public void drop(DropTargetDropEvent e){
-            try{
-                // Accept the drop first, important!
-                e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
-                
-                // Get the files that are dropped as java.util.List
-                java.util.List list=(java.util.List) e.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-                
-                // Now get the first file from the list,
-                File file=(File)list.get(0);
-                String path=file.getAbsolutePath();
-                //jt.read(new FileReader(file),null);
-                loadIntoEditor(path);
-                
-            }catch(Exception ex){}
-        }
-    });
-  }
-	
+
+	private void enableDragAndDrop(JTextArea jt) {
+		new DropTarget(jt, new DropTargetListener() {
+			@Override
+			public void dragEnter(DropTargetDragEvent e) {
+			}
+
+			@Override
+			public void dragExit(DropTargetEvent e) {
+			}
+
+			@Override
+			public void dragOver(DropTargetDragEvent e) {
+			}
+
+			@Override
+			public void dropActionChanged(DropTargetDragEvent e) {
+			}
+
+			@Override
+			public void drop(DropTargetDropEvent e) {
+				try {
+					// Accept the drop first, important!
+					e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+
+					// Get the files that are dropped as java.util.List
+					List<?> list = (List<?>) e.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+
+					// Now get the first file from the list,
+					File file = (File) list.get(0);
+					String path = file.getAbsolutePath();
+					// jt.read(new FileReader(file),null);
+					loadIntoEditor(path);
+
+				} catch (Exception ex) {
+				}
+			}
+		});
+	}
+
 	private void openDnDResource(String target, String fileName) {
 		boolean loadFailed = false;
 		try {
@@ -210,24 +219,20 @@ public class LoaderTest {
 				if (name == null || "".equals(name))
 					name = "Unknown";
 				String s = "No resource could be downloaded for node " + name;
-				JOptionPane.showMessageDialog(libraryBrowser, s, "Error",
-						JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(libraryBrowser, s, "Error", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			if (!isZip(target)) {
-	 			String msg = XML.getName(target)+ " is not a zip file.";
-	 		  JOptionPane.showMessageDialog(frame, msg, "Wrong File Type", 
-	 		  		JOptionPane.WARNING_MESSAGE);  
-	 		  return;
-			}
-			else {
+				String msg = XML.getName(target) + " is not a zip file.";
+				JOptionPane.showMessageDialog(frame, msg, "Wrong File Type", JOptionPane.WARNING_MESSAGE);
+				return;
+			} else {
 				// check target to make sure it is a readable zip file
 				Map<String, ZipEntry> contents = ResourceLoader.getZipContents(target, true);
 				if (contents.isEmpty()) {
-		 			String msg = XML.getName(target)+ " is empty.";
-		 		  JOptionPane.showMessageDialog(frame, msg, "Empty File", 
-		 		  		JOptionPane.WARNING_MESSAGE);
-		 		  return;
+					String msg = XML.getName(target) + " is empty.";
+					JOptionPane.showMessageDialog(frame, msg, "Empty File", JOptionPane.WARNING_MESSAGE);
+					return;
 				}
 //				loadIntoEditor(target);
 				new AsyncLoader(target).executeAsync();
@@ -237,7 +242,7 @@ public class LoaderTest {
 			libraryBrowser.setCursor(Cursor.getDefaultCursor());
 		}
 	}
-	
+
 	private void openLibraryResource(LibraryResource record) {
 		boolean loadFailed = false;
 		try {
@@ -263,24 +268,20 @@ public class LoaderTest {
 				if (name == null || "".equals(name))
 					name = "Unknown";
 				String s = "No resource could be downloaded for node " + name;
-				JOptionPane.showMessageDialog(libraryBrowser, s, "Error",
-						JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(libraryBrowser, s, "Error", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			if (!isZip(target)) {
-	 			String msg = XML.getName(target)+ " is not a zip file.";
-	 		  JOptionPane.showMessageDialog(frame, msg, "Wrong File Type", 
-	 		  		JOptionPane.WARNING_MESSAGE);  
-	 		  return;
-			}
-			else {
+				String msg = XML.getName(target) + " is not a zip file.";
+				JOptionPane.showMessageDialog(frame, msg, "Wrong File Type", JOptionPane.WARNING_MESSAGE);
+				return;
+			} else {
 				// check target to make sure it is a readable zip file
 				Map<String, ZipEntry> contents = ResourceLoader.getZipContents(target, true);
 				if (contents.isEmpty()) {
-		 			String msg = XML.getName(target)+ " is empty.";
-		 		  JOptionPane.showMessageDialog(frame, msg, "Empty File", 
-		 		  		JOptionPane.WARNING_MESSAGE);
-		 		  return;
+					String msg = XML.getName(target) + " is empty.";
+					JOptionPane.showMessageDialog(frame, msg, "Empty File", JOptionPane.WARNING_MESSAGE);
+					return;
 				}
 //				loadIntoEditor(target);
 				new AsyncLoader(target).executeAsync();
@@ -290,7 +291,7 @@ public class LoaderTest {
 			libraryBrowser.setCursor(Cursor.getDefaultCursor());
 		}
 	}
-	
+
 	private boolean loadIntoEditor(String path) {
 		Map<String, ZipEntry> contents = ResourceLoader.getZipContents(path, true);
 		// extract the zip file contents
@@ -298,21 +299,19 @@ public class LoaderTest {
 		otherFiles.clear();
 		for (String next : contents.keySet()) {
 			String s = ResourceLoader.getURIPath(path + "!/" + next);
-			if (next.endsWith(".trk") 
-					|| next.endsWith(".xml")
-					|| next.endsWith(".ejss")) {
+			if (next.endsWith(".trk") || next.endsWith(".xml") || next.endsWith(".ejss")) {
 				xmlFiles.add(s);
 			} else {
-				otherFiles.add(s);					
+				otherFiles.add(s);
 			}
 		}
 		contents = null;
 		if (xmlFiles.isEmpty()) {
- 			String msg = XML.getName(path)+ " contains no editable xml files.";
- 		  JOptionPane.showMessageDialog(frame, msg, "No Editable Content", JOptionPane.WARNING_MESSAGE);  
+			String msg = XML.getName(path) + " contains no editable xml files.";
+			JOptionPane.showMessageDialog(frame, msg, "No Editable Content", JOptionPane.WARNING_MESSAGE);
 			return false;
 		}
-		// remove file that will be edited so the original 
+		// remove file that will be edited so the original
 		// will not be included in the output zip
 		editedFilePath = xmlFiles.remove(0);
 		String text = ResourceLoader.getString(editedFilePath);
@@ -320,18 +319,17 @@ public class LoaderTest {
 		libraryBrowser.setVisible(false);
 		return true;
 	}
-	
+
 	private boolean isZip(String path) {
-		return path.toLowerCase().endsWith(".zip")
-				|| path.toLowerCase().endsWith(".trz");
+		return path.toLowerCase().endsWith(".zip") || path.toLowerCase().endsWith(".trz");
 	}
-	
+
 	private boolean saveNewZip() {
 		// choose zip file path and create list to fill
 		ArrayList<File> toBeZipped = defineZipFilePath();
 		if (toBeZipped == null)
 			return false;
-		
+
 		// add files, including edited text, to list
 		if (!prepareZipFiles(toBeZipped))
 			return false;
@@ -339,12 +337,12 @@ public class LoaderTest {
 		// compress the list of files with JarTool
 		File target = new File(zipFilePath);
 		boolean success = JarTool.compress(toBeZipped, target, null);
-		
+
 		// delete temp directory after short delay
 		OSPRuntime.trigger(1000, (e) -> {
 			ResourceLoader.deleteFile(new File(getTempDirectory()));
 		});
-		
+
 		return success;
 	}
 
@@ -413,7 +411,7 @@ public class LoaderTest {
 			}
 		};
 	}
-	
+
 	private AsyncFileChooser getFileChooser() {
 		if (fileChooser == null) {
 			File dir = (OSPRuntime.chooserDir == null) ? new File(OSPRuntime.getUserHome())
@@ -423,14 +421,13 @@ public class LoaderTest {
 
 				@Override
 				public boolean accept(File f) {
-					return f.isDirectory()
-					|| "zip".equalsIgnoreCase(VideoIO.getExtension(f));
+					return f.isDirectory() || "zip".equalsIgnoreCase(VideoIO.getExtension(f));
 				}
 
 				@Override
 				public String getDescription() {
 					return "ZIP files";
-				}				
+				}
 			};
 			fileChooser.setDialogTitle("Save As");
 			fileChooser.setAcceptAllFileFilterUsed(false);
@@ -441,7 +438,6 @@ public class LoaderTest {
 		return fileChooser;
 	}
 
-	
 	/**
 	 * Adds files to the zip list
 	 * 
@@ -454,18 +450,18 @@ public class LoaderTest {
 		int n = editedFilePath.indexOf("!");
 		if (n == -1)
 			return false;
-		String subPath = editedFilePath.substring(n+2,  editedFilePath.length());
+		String subPath = editedFilePath.substring(n + 2, editedFilePath.length());
 		File targetFile = new File(tmpDir, subPath);
 		targetFile = saveEditorTextTo(targetFile);
 		if (targetFile == null || !targetFile.exists())
 			return false;
-		zipList.add(targetFile);		
+		zipList.add(targetFile);
 
 		for (String path : xmlFiles) {
 			n = path.indexOf("!");
 			if (n == -1)
 				return false;
-			subPath = path.substring(n+2,  path.length());
+			subPath = path.substring(n + 2, path.length());
 			targetFile = new File(tmpDir, subPath);
 			if (!(targetFile.getParentFile().exists() || targetFile.getParentFile().mkdirs()))
 				return false;
@@ -474,12 +470,12 @@ public class LoaderTest {
 				return false;
 			zipList.add(targetFile);
 		}
-		
+
 		for (String path : otherFiles) {
 			n = path.indexOf("!");
 			if (n == -1)
 				return false;
-			subPath = path.substring(n+2,  path.length());
+			subPath = path.substring(n + 2, path.length());
 			targetFile = new File(tmpDir, subPath);
 			if (!(targetFile.getParentFile().exists() || targetFile.getParentFile().mkdirs()))
 				return false;
@@ -493,8 +489,8 @@ public class LoaderTest {
 
 	private String getTempDirectory() {
 		if (tempDir == null) {
-			tempDir = new File(System.getProperty("java.io.tmpdir"), 
-					"ejss" + new Random().nextInt()).toString() + File.separator;
+			tempDir = new File(System.getProperty("java.io.tmpdir"), "ejss" + new Random().nextInt()).toString()
+					+ File.separator;
 		}
 		return tempDir;
 	}
@@ -502,14 +498,13 @@ public class LoaderTest {
 	public static void main(String[] args) {
 		new LoaderTest();
 	}
-	
+
 	class AsyncLoader extends AsyncSwingWorker {
-		
+
 		String path;
-		
+
 		AsyncLoader(String path) {
-			super(frame, "Loading " + XML.getName(path), 10,
-					progressInit, progress_done);
+			super(frame, "Loading " + XML.getName(path), 10, progressInit, progress_done);
 			this.path = path;
 		}
 
@@ -525,21 +520,19 @@ public class LoaderTest {
 			otherFiles.clear();
 			for (String next : contents.keySet()) {
 				String s = ResourceLoader.getURIPath(path + "!/" + next);
-				if (next.endsWith(".trk") 
-						|| next.endsWith(".xml")
-						|| next.endsWith(".ejss")) {
+				if (next.endsWith(".trk") || next.endsWith(".xml") || next.endsWith(".ejss")) {
 					xmlFiles.add(s);
 				} else {
-					otherFiles.add(s);					
+					otherFiles.add(s);
 				}
 			}
 			contents = null;
 			if (xmlFiles.isEmpty()) {
-	 			String msg = XML.getName(path)+ " contains no editable xml files.";
-	 		  JOptionPane.showMessageDialog(frame, msg, "No Editable Content", JOptionPane.WARNING_MESSAGE);  
+				String msg = XML.getName(path) + " contains no editable xml files.";
+				JOptionPane.showMessageDialog(frame, msg, "No Editable Content", JOptionPane.WARNING_MESSAGE);
 				return progress_done;
 			}
-			// remove file that will be edited so the original 
+			// remove file that will be edited so the original
 			// will not be included in the output zip
 			editedFilePath = xmlFiles.remove(0);
 			String text = ResourceLoader.getString(editedFilePath);
@@ -552,5 +545,5 @@ public class LoaderTest {
 			libraryBrowser.setVisible(false);
 		}
 	}
-	
+
 }

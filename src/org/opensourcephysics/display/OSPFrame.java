@@ -116,30 +116,32 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 			}
 
 		});
-		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { //$NON-NLS-1$
+		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { // $NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshGUI();
 			}
 
 		});
-		if (!OSPRuntime.isJS)
+		/** j2sIgnore */
+		{
 			try {
 				setIconImage(ResourceLoader.getImageIcon(OSP_ICON_FILE).getImage());
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				// image not found
 			}
-		addWindowListener(new WindowAdapter() {
-			/**
-			 * Closes and disposes child windows when this window is about to be closed.
-			 */
-			@Override
-			public void windowClosed(WindowEvent e) {
-				disposeChildWindows();
-			}
+			addWindowListener(new WindowAdapter() {
+				/**
+				 * Closes and disposes child windows when this window is about to be closed.
+				 */
+				@Override
+				public void windowClosed(WindowEvent e) {
+					disposeChildWindows();
+				}
 
-		});
+			});
+		}
 	}
 	
 	protected String action=null;

@@ -324,14 +324,17 @@ public class GUIUtils {
 		}
 		OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
 		File file = fileChooser.getSelectedFile();
-		if (!OSPRuntime.isJS && file.exists()) {
-			int selected = JOptionPane.showConfirmDialog(parent,
-					DisplayRes.getString("DrawingFrame.ReplaceExisting_message") + " " + file.getName() //$NON-NLS-1$ //$NON-NLS-2$
-							+ DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$
-					DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"), //$NON-NLS-1$
-					JOptionPane.YES_NO_CANCEL_OPTION);
-			if (selected != JOptionPane.YES_OPTION) {
-				return null;
+		/** j2sIgnore */
+		{
+			if (file.exists()) {
+				int selected = JOptionPane.showConfirmDialog(parent,
+						DisplayRes.getString("DrawingFrame.ReplaceExisting_message") + " " + file.getName() //$NON-NLS-1$ //$NON-NLS-2$
+								+ DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$
+						DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"), //$NON-NLS-1$
+						JOptionPane.YES_NO_CANCEL_OPTION);
+				if (selected != JOptionPane.YES_OPTION) {
+					return null;
+				}
 			}
 		}
 		return file;
@@ -492,14 +495,17 @@ public class GUIUtils {
 			return;
 		}
 		File file = fixExtension(new File(fileName), extensions[0]);
-		if (!OSPRuntime.isJS && file.exists()) { // BH 2020.02.25
-			int selected = JOptionPane.showConfirmDialog(null,
-					DisplayRes.getString("DrawingFrame.ReplaceExisting_message") //$NON-NLS-1$
-							+ " " + file.getName() + DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$ //$NON-NLS-2$
-					DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"), //$NON-NLS-1$
-					JOptionPane.YES_NO_CANCEL_OPTION);
-			if (selected != JOptionPane.YES_OPTION) {
-				return;
+		/** j2sIgnore */
+		{
+			if (file.exists()) { // BH 2020.02.25
+				int selected = JOptionPane.showConfirmDialog(null,
+						DisplayRes.getString("DrawingFrame.ReplaceExisting_message") //$NON-NLS-1$
+								+ " " + file.getName() + DisplayRes.getString("DrawingFrame.QuestionMark"), //$NON-NLS-1$ //$NON-NLS-2$
+						DisplayRes.getString("DrawingFrame.ReplaceFile_option_title"), //$NON-NLS-1$
+						JOptionPane.YES_NO_CANCEL_OPTION);
+				if (selected != JOptionPane.YES_OPTION) {
+					return;
+				}
 			}
 		}
 		try {

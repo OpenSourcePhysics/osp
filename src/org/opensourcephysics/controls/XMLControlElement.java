@@ -695,7 +695,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	@Override
 	public String write(String fileName) {
 		canWrite = true;
-		if (!OSPRuntime.isJS) { // BH 2022.03.19 skip checks in JS
+		/** j2sIgnore */
+		{ // BH 2022.03.19 skip checks in JS
 			int n = fileName.lastIndexOf("/"); //$NON-NLS-1$
 			if (n < 0) {
 				n = fileName.lastIndexOf("\\"); //$NON-NLS-1$
