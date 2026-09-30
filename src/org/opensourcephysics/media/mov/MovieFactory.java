@@ -20,15 +20,18 @@ public class MovieFactory {
 	public static final String ENGINE_NONE = "none"; //$NON-NLS-1$
 	public static final String ENGINE_JS = "JS"; //$NON-NLS-1$
 	public static final String ENGINE_XUGGLE = "Xuggle"; //$NON-NLS-1$
+	public static final String ENGINE_CV = "CV"; //$NON-NLS-1$
 
 	private static String xuggleClassPath = "org.opensourcephysics.media.xuggle."; //$NON-NLS-1$
 	private static String xugglePropertiesPath = "org/opensourcephysics/resources/xuggle/xuggle.properties"; //$NON-NLS-1$
+	private static String cvClassPath = "org.opensourcephysics.media.cv."; //$NON-NLS-1$
 
 	private static String movieEngineName = ENGINE_NONE;
 
 	public static boolean hadXuggleError = false;
 	public static boolean xuggleIsPresent = false;
 	public static boolean xuggleNeeds32bitVM = false;
+	public static boolean cvIsPresent = false;
 	
 	/**
 	 * Initialize video classes to register their video types
@@ -48,15 +51,32 @@ public class MovieFactory {
 					xuggleIsPresent = false;
 				}
 			} else /** @j2sIgnore */ {
-				// get xuggle status code by reflection
-				Class<?> type = Class.forName(xuggleClassPath + "DiagnosticsForXuggle"); //$NON-NLS-1$
-				Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
-				code = (Integer)m.invoke(type, (Object[])null);
-
-				// try to load XuggleVideo class--will register xuggle video types
-				Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
-				xuggleIsPresent = true;
-				movieEngineName = ENGINE_XUGGLE;
+				try {
+					// get CV status code by reflection
+					Class<?> type = Class.forName(cvClassPath + "CVDiagnostics"); //$NON-NLS-1$
+					Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
+					code = (Integer)m.invoke(type, (Object[])null);
+	
+					// try to load CVVideo class--will register video types
+					Class.forName(cvClassPath + "CVVideo"); //$NON-NLS-1$
+					cvIsPresent = true;
+					movieEngineName = ENGINE_CV;	
+				} catch (Throwable e) {			
+						// failed to load CV
+						OSPLog.config("CVVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+				
+				if (!cvIsPresent) {
+					// get xuggle status code by reflection
+					Class<?> type = Class.forName(xuggleClassPath + "DiagnosticsForXuggle"); //$NON-NLS-1$
+					Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
+					code = (Integer)m.invoke(type, (Object[])null);
+	
+					// try to load XuggleVideo class--will register xuggle video types
+					Class.forName(xuggleClassPath + "XuggleVideo"); //$NON-NLS-1$
+					xuggleIsPresent = true;
+					movieEngineName = ENGINE_XUGGLE;
+				}
 			}
 		} catch (Throwable e) {			
 			/** @j2sIgnore */ {
@@ -191,6 +211,14 @@ public class MovieFactory {
 			try {
 				Class<?> clas = Class.forName("org.opensourcephysics.media.xuggle.DiagnosticsForXuggle"); //$NON-NLS-1$
 				Method method = clas.getMethod("aboutXuggle", new Class[] {String.class}); //$NON-NLS-1$
+				method.invoke(null, new Object[] {requester});
+			} catch (Exception e1) {}
+		}
+		else if (engineName==ENGINE_CV) {
+			// call CVDiagnostics.aboutCV by reflection
+			try {
+				Class<?> clas = Class.forName("org.opensourcephysics.media.cv.CVDiagnostics"); //$NON-NLS-1$
+				Method method = clas.getMethod("aboutCV", new Class[] {String.class}); //$NON-NLS-1$
 				method.invoke(null, new Object[] {requester});
 			} catch (Exception e1) {}
 		}

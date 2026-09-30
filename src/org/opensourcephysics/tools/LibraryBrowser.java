@@ -147,13 +147,6 @@ public class LibraryBrowser extends JPanel {
 	 */
 	private static LibraryBrowser browser;
 
-	/**
-	 * either frame or externalDialog; never null
-	 */
-	public Window window;
-	
-	public boolean fireHelpEvent;
-
 	protected Library library = new Library();
 	protected LibraryManager libraryManager;
 	protected boolean isResourcePathXML;
@@ -165,6 +158,11 @@ public class LibraryBrowser extends JPanel {
 	protected JButton openButton, refreshButton;
 	protected JTextField commandField, searchField;
 
+	/**
+	 * either frame or externalDialog; never null
+	 */
+	protected Window window;
+	
 	/**
 	 * A JFrame was supplied or made here
 	 */
@@ -183,11 +181,13 @@ public class LibraryBrowser extends JPanel {
 
 	private String libraryPath;
 
+	private boolean fireHelpEvent;
 	private boolean webConnected = OSPRuntime.isJS;
 	private boolean localLibraryLoaded;
 	private boolean exitOnClose;
 	private boolean keyPressed, textChanged;
 	private boolean checkedWebConnection = OSPRuntime.isJS;
+
 
 	private TextFrame helpFrame;
 	private JEditorPane htmlAboutPane;

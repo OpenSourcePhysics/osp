@@ -94,6 +94,7 @@ public abstract class VideoAdapter extends OSPRuntime.Supported implements Video
 	protected HashMap<String, Object> properties = new HashMap<String, Object>();
 	protected FilterStack filterStack = new FilterStack();
 	protected DataBufferInt clearRaster;
+	protected VideoClip videoClip;
 
 	/**
 	 * startTimes in MS. Created from MediaInfo.analyzeData(JavaScript) or from
