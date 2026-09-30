@@ -972,9 +972,13 @@ public abstract class FunctionEditor extends JPanel implements PropertyChangeLis
 		FObject o = getSelectedObject();
 		copyButton.setEnabled(o != null);
 		cutButton.setEnabled(o != null && isRemovable(getSelectedObject()));
-		getClipboardContentsAsync((contents) -> {
-			pasteButton.setEnabled(contents != null);
-		});
+		if (OSPRuntime.isJS) {
+			pasteButton.setEnabled(true);
+		} else {
+			getClipboardContentsAsync((contents) -> {
+				pasteButton.setEnabled(contents != null);
+			});
+		}
 	}
 
 	@Override
