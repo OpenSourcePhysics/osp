@@ -70,9 +70,9 @@
     <echo> unzipping ${swingjs.zip} into ${site.dir}</echo>
   	<unzip src="${swingjs.zip}" dest="${site.dir}/" overwrite="true"/>  	
 
-  	<echo> Deleting /_, /_ES6, and /_wasm</echo>
+  	<echo> Deleting /_, /ES6, and /_wasm</echo>
    	<delete dir="${j2s.dir}/_" />
-   	<delete dir="${j2s.dir}/_ES6" />
+   	<delete dir="${j2s.dir}/ES6" />
    	<delete dir="${j2s.dir}/_wasm" />
       		
  	<!-- transfer resources -->
