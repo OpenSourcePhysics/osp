@@ -435,11 +435,8 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						public void accept(String err) {
 							System.err.println("JSMovieVideo MediaInfo Error: " + err);
 							control = null;
-							v.startTimesMS = null;
-							v.frameTimes = new ArrayList<Double>();
-							// Fall back once; returning to LOAD_VIDEO_READY retries
-							// MediaInfo indefinitely and starves the browser event loop.
-							next(canSeek ? STATE_FIND_FRAMES_INIT : STATE_PLAY_WITH_CALLBACK);
+							helper.next(STATE_LOAD_VIDEO_READY);
+							stateLoop();
 						}
 					};
 
@@ -677,15 +674,12 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 
 			// set initial video clip properties
 			setFrameCount(frameTimes.size());
-			setStartTimes();
-		} else {
-			// MediaInfo/control already supplied timing, but the per-frame arrays
-			// still need to be initialized for the reported number of frames.
-			setFrameCount(frameCount);
 		}
 		OSPLog.debug("JSMovieVideo " + size + "\n duration:" + rawDuration + " act. frameCount:" + frameCount);
 		startFrameNumber = 0;
 		endFrameNumber = frameCount - 1;
+		// create startTimes array
+		setStartTimes();
 		firePropertyChange(PROPERTY_VIDEO_PROGRESS, fileName, frame); // to TFrame
 		frameNumber = -1;
 		// to VideoClip: time to initArray()
