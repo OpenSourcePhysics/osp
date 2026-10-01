@@ -354,6 +354,15 @@ public interface HTML5Video extends DOMNode {
 		/**
 		 * @j2sNative
 		 * 
+		 * // iPhone must keep the analysis video inline when frame scanning plays it.
+		 * jsvideo.playsInline = true;
+		 * jsvideo.setAttribute("playsinline", "");
+		 * jsvideo.setAttribute("webkit-playsinline", "");
+		 * if (!addControls) {
+		 *     jsvideo.muted = true;
+		 *     jsvideo.defaultMuted = true;
+		 *     jsvideo.setAttribute("muted", "");
+		 * }
 		 * jsvideo.dialog = dialog;
 		 * jsvideo.label = label;
 		 * 
