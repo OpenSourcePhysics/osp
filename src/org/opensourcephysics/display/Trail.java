@@ -104,7 +104,7 @@ public void closeTrail() {
   /**
    * Gets the connected flag.
    *
-   * @param connected boolean
+   * @param isConnected boolean
    */
   public boolean isConnected() {
     return connected;

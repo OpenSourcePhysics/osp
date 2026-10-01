@@ -172,6 +172,17 @@ public class Parameter implements FObject {
 		return false;
 	}
 
+	@Override
+	public int hashCode() {
+		int h = 0;
+		h |= paramName.hashCode();
+		if (nameEditable)
+			h *= 31;
+		if (expressionEditable)
+			h *= 29;
+		return h;
+	}
+
 	/**
 	 * Determines the value of this parameter based on input parameter values.
 	 *

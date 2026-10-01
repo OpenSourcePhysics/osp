@@ -34,7 +34,6 @@ import org.opensourcephysics.display.axes.XYAxis;
  * @version    1.0
  */
 public class SiteLattice extends Grid implements Measurable, ByteLattice {
-  boolean visible = true; // shadow super.visible
   Color[] colors = new Color[256];
   byte[][] data;
   int sx, sy;

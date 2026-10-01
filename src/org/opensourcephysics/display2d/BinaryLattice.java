@@ -38,7 +38,6 @@ public class BinaryLattice extends MeasuredImage implements ByteLattice {
   Grid grid;
   byte[] packedData;
   int ny, nx;
-  boolean visible = true;
   Color zeroColor = Color.red, oneColor = Color.blue;
 
   /**

@@ -91,7 +91,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	protected File saveFile = null; // file to which scratch will be copied
 	protected boolean saveChanges = false; // true to ask to save changes
 	protected String tempFileBasePath;
-	protected String tempFileType = "png"; //$NON-NLS-1$
+	protected static String tempFileType = "png"; //$NON-NLS-1$
 	protected ArrayList<File> tempFiles = new ArrayList<File>();
 	protected String suggestedFileName;
 	protected String chosenExtension;

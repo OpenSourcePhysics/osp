@@ -1733,7 +1733,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		/**
 		 * not .pdf, .doc, or .txt 
 		 */
-		boolean isDisplayable;
+		boolean isTabDisplayable;
 
 		/**
 		 * Constructor.
@@ -1913,7 +1913,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 		 */
 		private boolean setURL(String path) {
 			url = null;
-			isDisplayable = false;
+			isTabDisplayable = false;
 			urlExists = null;
 			Resource res = ResourceLoader.getResource(path);
 			if (res != null && res.getURL() != null) {
@@ -1928,7 +1928,7 @@ public class LaunchNode extends DefaultMutableTreeNode {
 			}
 			if (url == null)
 				return false;
-			isDisplayable = Launcher.isDisplayable(path); // pdf, doc, or txt
+			isTabDisplayable = Launcher.isDisplayable(path); // pdf, doc, or txt
 			return true;
 		}
 

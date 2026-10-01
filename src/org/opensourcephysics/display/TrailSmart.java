@@ -16,7 +16,7 @@ import java.awt.Graphics2D;
  * @version 1.0
  */
 public class TrailSmart extends TrailBezier {
-  double x1, y1, x2, y2; // shadows superclass fields
+  double x1d, y1d, x2d, y2d; // shadows superclass fields
   double dx1, dy1, ds1;
   double max_error = 0.001;
 
@@ -51,10 +51,10 @@ public synchronized void addPoint(double x, double y) {
       dx1 = dx2;
       dy1 = dy2;
     }
-    x1 = x2;
-    y1 = y2;
-    x2 = x;
-    y2 = y;
+    x1d = x2d;
+    y1d = y2d;
+    x2d = x;
+    y2d = y;
   }
 
   /**
@@ -66,8 +66,8 @@ public synchronized void addPoint(double x, double y) {
     pathEnd.reset();
     path.moveTo(endPts[0], endPts[1]); // start the path at the last point
     path.lineTo(endPts[2], endPts[3]);
-    path.lineTo((float) x1, (float) y1);
-    path.lineTo((float) x2, (float) y2);
+    path.lineTo((float) x1d, (float) y1d);
+    path.lineTo((float) x2d, (float) y2d);
     g2.draw(panel.transformPath(pathEnd));
   }
 
@@ -77,7 +77,7 @@ public synchronized void addPoint(double x, double y) {
    */
   @Override
 public double getXMin() {
-    return Math.min(x2, xmin);
+    return Math.min(x2d, xmin);
   }
 
   /**
@@ -86,7 +86,7 @@ public double getXMin() {
    */
   @Override
 public double getXMax() {
-    return Math.max(x2, xmax);
+    return Math.max(x2d, xmax);
   }
 
   /**
@@ -95,7 +95,7 @@ public double getXMax() {
    */
   @Override
 public double getYMin() {
-    return Math.min(y2, ymin);
+    return Math.min(y2d, ymin);
   }
 
   /**
@@ -104,7 +104,7 @@ public double getYMin() {
    */
   @Override
 public double getYMax() {
-    return Math.max(y2, ymax);
+    return Math.max(y2d, ymax);
   }
 
 }

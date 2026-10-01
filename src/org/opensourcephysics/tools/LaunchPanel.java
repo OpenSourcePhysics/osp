@@ -291,7 +291,7 @@ public class LaunchPanel extends JPanel {
 				DisplayTab tab = node.getDisplayTab(i);
 				// next!=null condition added by W. Christian
 				// skip display tabs with PDFs
-				if (tab == null || tab.isDisplayable) // - was checking only for PDF
+				if (tab == null || tab.isTabDisplayable) // - was checking only for PDF
 					break;
 			}
 			// node has multiple URLs so pick the tab-associated one
@@ -301,7 +301,7 @@ public class LaunchPanel extends JPanel {
 				// do nothing
 			} else if (displayTab.url == null) {
 				hasModel = displayTab.getModelClass() != null;
-			} else if (displayTab.isDisplayable) { // - was checking only for PDF
+			} else if (displayTab.isTabDisplayable) { // - was checking only for PDF
 				// display only non-PDF files in Launcher
 				url = displayTab.url;
 			}
@@ -318,7 +318,7 @@ public class LaunchPanel extends JPanel {
 		Iterator<?> it = node.tabData.iterator();
 		while (it.hasNext()) {
 			LaunchNode.DisplayTab displayTab = (LaunchNode.DisplayTab) it.next();
-			if (displayTab.isDisplayable) { // - was checking only for PDF
+			if (displayTab.isTabDisplayable) { // - was checking only for PDF
 				if (displayTab.urlExists()) {
 					Launcher.HTMLPane html = launcher.getHTMLTab(tabCount);
 					URL theURL = (tabNumber == tabCount && url != null ? url : displayTab.url);

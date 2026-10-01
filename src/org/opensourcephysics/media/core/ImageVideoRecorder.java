@@ -58,9 +58,9 @@ import org.opensourcephysics.tools.ResourceLoader;
 public class ImageVideoRecorder extends ScratchVideoRecorder {
 	
 	// instance fields
-	protected int frameCount;
-	private String tempFileBasePath;
-	private String tempFileType = "png"; //$NON-NLS-1$
+	protected int expectedFrameCount;
+	//private String tempFileBasePath;
+	//private String tempFileType = "png"; //$NON-NLS-1$
 	private String[] savedFilePaths;
 
 	/**
@@ -131,7 +131,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 	 * @param n the expected frame count
 	 */
 	public void setExpectedFrameCount(int n) {
-		frameCount = n;
+		expectedFrameCount = n;
 	}
 
 	/**
@@ -139,7 +139,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 	 */
 	@Override
 	public void reset() {
-		frameCount = 0;
+		expectedFrameCount = 0;
 		deleteTempFiles();
 		super.reset();
 	}
@@ -351,7 +351,7 @@ public class ImageVideoRecorder extends ScratchVideoRecorder {
 		}
 
 		// determine number of digits to append to file names
-		int n = frameCount > 0 ? frameCount : tempFiles.size();
+		int n = expectedFrameCount > 0 ? expectedFrameCount : tempFiles.size();
 		// if single or no image, return file itself
 		if (n <= 1) {
 			return file;

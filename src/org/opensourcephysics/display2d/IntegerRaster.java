@@ -37,7 +37,6 @@ public class IntegerRaster extends MeasuredImage implements Dimensioned {
   WritableRaster raster;
   byte[][] rgbData;
   int nrow, ncol;
-  boolean visible = true;
   Dimension dimension;
   protected double scaleFactor = 1;
 

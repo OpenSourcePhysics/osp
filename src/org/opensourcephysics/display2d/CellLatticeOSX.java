@@ -39,7 +39,6 @@ import org.opensourcephysics.display.axes.XYAxis;
  * @version    1.0
  */
 public class CellLatticeOSX extends Grid implements Measurable, CellLattice.OSLattice {
-  boolean visible = true; // shadow super.visible
   Color[] colors = new Color[256];
   byte[][] data;
   private JFrame legendFrame;

@@ -97,6 +97,20 @@ public class FunctionTool extends JDialog implements PropertyChangeListener {
 		}
 		
 		@Override
+		public int hashCode() {
+			int h = 0;
+			if (name != null)
+				h |= name.hashCode();
+			if (track != null)
+				h |= track.hashCode();
+			if (displayName != null)
+				h |= displayName.hashCode();
+			if (icon != null)
+				h |= icon.hashCode();
+			return h;
+		}
+
+		@Override
 		public String toString() {
 			return displayName;
 		}

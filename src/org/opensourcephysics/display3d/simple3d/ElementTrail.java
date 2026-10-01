@@ -118,7 +118,7 @@ public void setGhostPoint(double[] _point, boolean _connected) {
       ghostPoint.xp = _point[0];
       ghostPoint.yp = _point[1];
       ghostPoint.zp = _point[2];
-      ghostPoint.connected = _connected;
+      ghostPoint.isConnected = _connected;
       if(getDrawingPanel3D()!=null) {
         ghostPoint.transformAndProject();
       }
@@ -166,7 +166,7 @@ void draw(Graphics2D _g2, int _index) {
     Color theColor = getDrawingPanel3D().projectColor(getRealStyle().getLineColor(), point.getDistance());
     _g2.setStroke(getRealStyle().getLineStroke());
     _g2.setColor(theColor);
-    if((_index==0)||!point.connected) {
+    if((_index==0)||!point.isConnected) {
       _g2.drawLine((int) point.pixel[0], (int) point.pixel[1], (int) point.pixel[0], (int) point.pixel[1]);
     } else {
       TrailPoint pointPrev = points[_index-1];
@@ -194,7 +194,7 @@ void drawQuickly(Graphics2D _g2) {
     _g2.drawLine(aPrev, bPrev, aPrev, bPrev);
     for(int i = 1, n = points.length; i<n; i++) { // The order is relevant
       point = points[i];
-      if(point.connected) {
+      if(point.isConnected) {
         _g2.drawLine((int) point.pixel[0], (int) point.pixel[1], aPrev, bPrev);
       } else {
         _g2.drawLine((int) point.pixel[0], (int) point.pixel[1], (int) point.pixel[0], (int) point.pixel[1]);
@@ -331,7 +331,7 @@ public java.util.ArrayList<Dataset> getDatasets() {
   // A class for the individual points of the trail
   // ----------------------------------------------------
   private class TrailPoint extends Object3D {
-    boolean connected; // shadows ElementTrail field
+    boolean isConnected; // shadows ElementTrail field
     private double xp, yp, zp;
     private double[] coordinates = new double[3];
     double[] pixel = new double[3];
@@ -375,7 +375,7 @@ public java.util.ArrayList<Dataset> getDatasets() {
            zp = _z;
            break;
       }
-      connected = _c;
+      isConnected = _c;
     }
 
     void transformAndProject() {

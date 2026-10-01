@@ -18,11 +18,10 @@ import java.awt.Rectangle;
  * @version 1.0
  */
 public class TitleText extends DrawableTextLine {
-  public static final int CENTER = 0; // shadows superclass field
   public static final int BOTTOM = 1;
-  public static final int LEFT = 2;   // shadows superclass field
+  public static final int TT_LEFT = 2;   // shadows superclass field
   public static final int TOP = 3;
-  public static final int RIGHT = 4;  // shadows superclass field
+  public static final int TT_RIGHT = 4;  // shadows superclass field
   public static final int CUSTOM = 5;
   int location = TOP;
   int xoff = 0, yoff = 0;             // offsets
@@ -57,8 +56,8 @@ public class TitleText extends DrawableTextLine {
   public void setLocation(int location) {
     this.location = location;
     switch(location) {
-       case LEFT :
-       case RIGHT :
+       case TT_LEFT :
+       case TT_RIGHT :
          theta = Math.PI/2;
          break;
        default :
@@ -112,7 +111,7 @@ public void draw(DrawingPanel panel, Graphics g) {
            panel.getHeight()-panel.bottomGutter+yoff+height : // draw in bottom gutter
              panel.getHeight()-panel.bottomGutter-yoff;       // draw in display area
          break;
-       case LEFT :
+       case TT_LEFT :
          xpix = (panel.leftGutter>height+xoff) ?              // is left gutter large enought?
            panel.leftGutter-xoff :                            // draw in left of gutter
              panel.leftGutter+xoff+height;                    // draw in display area
@@ -125,7 +124,7 @@ public void draw(DrawingPanel panel, Graphics g) {
            panel.getTopGutter()-yoff-descent-1 :              // draw in gutter
              panel.getTopGutter()+yoff+ascent+1;              // draw in display area
          break;
-       case RIGHT :
+       case TT_RIGHT :
          xpix = (panel.rightGutter>height+xoff) ?             // is right gutter large enought?
            panel.lastWidth-panel.leftGutter+xoff+height :         // draw in left of gutter
              panel.lastWidth-panel.leftGutter-xoff;               // draw in display area

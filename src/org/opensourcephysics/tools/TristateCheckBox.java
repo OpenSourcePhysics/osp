@@ -41,7 +41,7 @@ public class TristateCheckBox extends JCheckBox {
 	public static final State NOT_SELECTED = new State();
 	public static final State SELECTED = new State();
 	public static final State PART_SELECTED = new State();
-	private final TristateDecorator model;
+	private final TristateDecorator decorator;
 
 	/**
 	 * Constructor TristateCheckBox
@@ -57,7 +57,7 @@ public class TristateCheckBox extends JCheckBox {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				grabFocus();
-				model.nextState();
+				decorator.nextState();
 			}
 
 		});
@@ -67,15 +67,15 @@ public class TristateCheckBox extends JCheckBox {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				grabFocus();
-				model.nextState();
+				decorator.nextState();
 			}
 
 		});
 		map.put("released", null); //$NON-NLS-1$
 		SwingUtilities.replaceUIActionMap(this, map);
 		// set the model to the adapted model
-		model = new TristateDecorator(getModel());
-		setModel(model);
+		decorator = new TristateDecorator(getModel());
+		setModel(decorator);
 		setState(initial);
 	}
 
@@ -116,7 +116,7 @@ public class TristateCheckBox extends JCheckBox {
 	 * == null, it is treated as PART_SELECTED.
 	 */
 	public void setState(State state) {
-		model.setState(state);
+		decorator.setState(state);
 	}
 
 	/**
@@ -124,7 +124,7 @@ public class TristateCheckBox extends JCheckBox {
 	 * model.
 	 */
 	public State getState() {
-		return model.getState();
+		return decorator.getState();
 	}
 
 	@Override

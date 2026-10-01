@@ -236,6 +236,15 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 	}
 
 	@Override
+	public int hashCode() {
+		int h = 0;
+		int n = getParameterCount();
+		for (int i = 0; i < n; i++) {
+			h |= getParameterName(i).hashCode();
+		}
+		return h;
+	}
+	@Override
 	public String toString() {
 		return "KnownPolynomial: " + getExpression("<x>"); 
 	}
@@ -256,6 +265,7 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 			uf.setExpression(getExpression(var), new String[] { var });
 		return uf;
 	}
+
 }
 
 /*

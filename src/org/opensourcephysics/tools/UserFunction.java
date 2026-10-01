@@ -576,6 +576,16 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		return true;
 	}
 
+	@Override
+	public int hashCode() {
+		int h = 0;
+		h |= name.hashCode();
+		int n = getParameterCount();
+		for (int i = 0; i < n; i++) {
+			h |= getParameterName(i).hashCode();
+		}
+		return h;
+	}
 	/**
 	 * Updates the associated polynomial, if any, with this functions current
 	 * properties.

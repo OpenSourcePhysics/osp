@@ -1328,7 +1328,6 @@ public class DataTable extends JTable {
 			/**
 			 * Constructor SortDecorator
 			 * 
-			 * @param model
 			 */
 			private SortDecorator() {
 			}
