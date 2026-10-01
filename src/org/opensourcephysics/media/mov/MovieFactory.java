@@ -66,7 +66,7 @@ public class MovieFactory {
 						OSPLog.config("CVVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				
-				if (!cvIsPresent) {
+//				if (!cvIsPresent) {
 					// get xuggle status code by reflection
 					Class<?> type = Class.forName(xuggleClassPath + "DiagnosticsForXuggle"); //$NON-NLS-1$
 					Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
@@ -77,7 +77,7 @@ public class MovieFactory {
 					xuggleIsPresent = true;
 					movieEngineName = ENGINE_XUGGLE;
 				}
-			}
+//			}
 		} catch (Throwable e) {			
 			/** @j2sIgnore */ {
 				// failed to load xuggle

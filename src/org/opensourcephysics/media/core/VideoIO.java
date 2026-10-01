@@ -119,6 +119,7 @@ public class VideoIO {
 	public static SingleExtFileFilter delimitedTextFileFilter;
 	protected static boolean dataCopiedToClipboard;
 	private static ArrayList<String> filenamesToReload = new ArrayList<String>();
+	public static String preferredVideoEngine;
 
 
 	/**
@@ -723,7 +724,20 @@ public class VideoIO {
 	 */
 	public static ArrayList<VideoType> getVideoTypes(boolean mustBeWritable) {
 		ArrayList<VideoType> available = new ArrayList<VideoType>();
+		if (preferredVideoEngine != null) {
+			// look for preferredVideoEngine types first
+			for (VideoType next : videoTypes) {
+				if (!preferredVideoEngine.equals(next.getTypeName()))
+						continue;
+				if (!mustBeWritable || next.canRecord())
+					available.add(next);
+			}			
+		}
+		// add other types
 		for (VideoType next : videoTypes) {
+			if (preferredVideoEngine != null
+					&& preferredVideoEngine.equals(next.getTypeName()))
+				continue;
 			if (!mustBeWritable || next.canRecord())
 				available.add(next);
 		}
