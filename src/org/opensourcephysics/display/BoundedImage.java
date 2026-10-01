@@ -31,7 +31,7 @@ public class BoundedImage extends BoundedShape implements ImageObserver {
    * @param image Image
    */
   public BoundedImage(Image image, double x, double y) {
-    super(null, x, y);
+    super(null, x, y, null);
     this.image = image;
     width = image.getWidth(this);
     width = Math.max(0, width);   // -1 if image is not available

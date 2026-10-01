@@ -43,7 +43,7 @@ public class BoundedShape extends InteractiveShape implements Selectable {
   boolean xyDrag = true;
   boolean rotateDrag = false;
   Shape pixelBounds = new Rectangle2D.Double(0, 0, 0, 0); // bounding rectangle in pixel coordinates.
-  Point2D.Double[] hotSpots = new Point2D.Double[6];
+  Point2D.Double[] hotSpots;
   XYDelegate xyDelegate = new XYDelegate();
 
   Point2D.Double pt00 = new Point2D.Double();
@@ -54,14 +54,18 @@ public class BoundedShape extends InteractiveShape implements Selectable {
    * @param x double
    * @param y double
    */
-  public BoundedShape(Shape s, double x, double y) {
+  public BoundedShape(Shape s, double x, double y, Point2D.Double[] hotSpots) {
     super(s, x, y);
+    if (hotSpots == null) {
+    	 hotSpots = new Point2D.Double[6];
+    }
     for(int i = 0, n = hotSpots.length; i<n; i++) {
       hotSpots[i] = pt00;//new Point2D.Float(0, 0);
     }
+    this.hotSpots = hotSpots;
   }
 
-  /**
+/**
    * Creates a bounded rectangle.
    * @param x
    * @param y
@@ -71,7 +75,7 @@ public class BoundedShape extends InteractiveShape implements Selectable {
    */
   public static BoundedShape createBoundedRectangle(double x, double y, double w, double h) {
     Shape shape = new Rectangle2D.Double(-w/2, -h/2, w, h);
-    return new BoundedShape(shape, x, y);
+    return new BoundedShape(shape, x, y, null);
   }
 
   /**
@@ -89,7 +93,7 @@ public class BoundedShape extends InteractiveShape implements Selectable {
     path.lineTo(0, (float) (h/2));
     path.closePath();
     Shape shape = path;
-    return new BoundedShape(shape, x, y);
+    return new BoundedShape(shape, x, y, null);
   }
 
   /**
@@ -142,7 +146,7 @@ public class BoundedShape extends InteractiveShape implements Selectable {
    */
   public static BoundedShape createBoundedEllipse(double x, double y, double w, double h) {
     Shape shape = new Ellipse2D.Double(-w/2, -h/2, w, h);
-    return new BoundedShape(shape, x, y);
+    return new BoundedShape(shape, x, y, null);
   }
 
   /**
@@ -155,7 +159,7 @@ public class BoundedShape extends InteractiveShape implements Selectable {
    */
   public static BoundedShape createBoundedCircle(double x, double y, double d) {
     Shape shape = new Ellipse2D.Double(-d/2, -d/2, d, d);
-    return new BoundedShape(shape, x, y);
+    return new BoundedShape(shape, x, y, null);
   }
 
   @Override
@@ -591,7 +595,7 @@ public String toString() {
 
     @Override
 	public Object createObject(XMLControl control) {
-      return new BoundedShape(new Rectangle2D.Double(0, 0, 0, 0), 0, 0); // default shape is a rectangle for now
+      return new BoundedShape(new Rectangle2D.Double(0, 0, 0, 0), 0, 0, null); // default shape is a rectangle for now
     }
 
     @Override

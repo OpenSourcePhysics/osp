@@ -23,7 +23,6 @@ import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLLoader;
 
 public class InteractiveArrow extends BoundedShape {
-  Point2D.Double[] hotSpots = new Point2D.Double[2]; // shadows superclass field
   BasicStroke stroke = new BasicStroke(2);
   Shape head;
   final static int HEAD = 1;
@@ -36,16 +35,13 @@ public class InteractiveArrow extends BoundedShape {
    * @param h
    */
   public InteractiveArrow(double x, double y, double w, double h) {
-    super(new Line2D.Double(0, 0, w, h), x, y);
+    super(new Line2D.Double(0, 0, w, h), x, y, new Point2D.Double[2]);
     theta = (w==0) ? 0 : Math.atan2(h, w);
     head = getHead(theta);
     setRotateDrag(true);
     hideBounds = true;
     width = w;
     height = h;
-    for(int i = 0, n = hotSpots.length; i<n; i++) {
-      hotSpots[i] = new Point2D.Double();
-    }
   }
 
   /**
