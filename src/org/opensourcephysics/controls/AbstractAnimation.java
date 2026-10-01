@@ -245,9 +245,9 @@ public void resetAnimation() {
   
    StateHelper stateHelper;
 	//private int delay = (/** @j2sNative 20 || */ 20);
-	private final static int STATE_INIT = 0;
-	private final static int STATE_LOOP = 1;
-  final static int STATE_DONE = 2;
+	protected final static int STATE_INIT = 0;
+	protected final static int STATE_LOOP = 1;
+	protected final static int STATE_DONE = 2;
   
 	@Override
 	public boolean stateLoop() {

@@ -22,25 +22,25 @@ public abstract class AbstractEmbeddableSimulation  extends AbstractSimulation i
   protected String timeMsg="Done";
 
   @Override
-public Control getControl() {
+  public SimControl getControl() {
     return control;
   }
 
   @Override
-public ObjectManager getManager() {
+  public ObjectManager getManager() {
     return objectManager;
   }
 
-  /**
- * Sets the Control for this model and initializes the control's values.
- *
- * @param control
- */
-@Override
-public void setControl (Control control) {
-  if(this.control!=null)stopSimulation();
-  super.setControl(control);
-}
+	/**
+	 * Sets the Control for this model and initializes the control's values.
+	 *
+	 * @param control
+	 */
+	@Override
+	public void setControl(Control control) {
+		if(this.control!=null)stopSimulation();
+		super.setControl(control);
+	}
 
 /**
  *  Sets the maximum animation time and the display message when this time is reached.

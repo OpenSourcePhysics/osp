@@ -29,7 +29,6 @@ import java.util.Collection;
 import org.opensourcephysics.display.GUIUtils;
 
 import javajs.async.SwingJSUtils;
-import javajs.async.SwingJSUtils.StateHelper;
 import javajs.async.SwingJSUtils.StateMachine;
 
 /**
@@ -45,44 +44,51 @@ import javajs.async.SwingJSUtils.StateMachine;
  * @version 1.0
  */
 abstract public class AbstractSimulation extends AbstractAnimation implements Simulation, StateMachine {
+	/**
+	 * control overrides AbstractAnimation.control so that 
+	 * subclasses can still use the "control" field and not 
+	 * accidentally use "control" to refer to super.control.
+	 * 
+	 */
+  @SuppressWarnings("hiding")
   protected SimControl control; // shadows superclass field
   protected boolean showStepsPerDisplay = false;
   protected int stepsPerDisplay = 1;
   protected int stepCounter = 0;
 
-  /**
-   * Sets the Control for this model and initializes the control's values.
-   *
-   * @param control
-   */
-  @Override
-public void setControl(Control control) {
-    if(control instanceof SimControl) {
-      this.control = (SimControl) control;
-    } else {
-      this.control = new ShadowControl(control);
-    }
-    super.control = control;
-    mainFrame = null;
-    if(control!=null) {
-      if(control instanceof MainFrame) {
-        mainFrame = ((MainFrame) control).getMainFrame();
-      }
-      control.setLockValues(true);
-      resetAnimation();
-      control.setLockValues(false);
-      if(control instanceof Frame) {
-        ((Frame) control).pack();
-      }
-    }
-  }
+	/**
+	 * Sets the Control for this model and initializes the control's values.
+	 *
+	 * @param control
+	 */
+	@Override
+	public void setControl(Control control) {
+		if (control instanceof SimControl) {
+			this.control = (SimControl) control;
+		} else {
+			// BH! note that control could be null here 
+			this.control = new ShadowControl(control);
+		}
+		// allowing this shadowing so that subclasses do not
+		// confuse the SimControl with the originally set control
+		super.control = control;
+		if (control != null) {
+			mainFrame = (control instanceof MainFrame ? ((MainFrame) control).getMainFrame() : null);
+			control.setLockValues(true);
+			resetAnimation();
+			control.setLockValues(false);
+			if (control instanceof Frame) {
+				((Frame) control).pack();
+			}
+		}
+	}
 
   /**
    * Gets this simulation's control.
    * @return Control
    */
   @Override
-public Control getControl() {
+public SimControl getControl() {
     return control;
   }
 
@@ -168,7 +174,7 @@ final public void stopSimulation() {
    *
    */
   @Override
-public final void stepAnimation() {
+public final synchronized void stepAnimation() {
     if(showStepsPerDisplay) {
       stepsPerDisplay = control.getInt("steps per display"); //$NON-NLS-1$
     }
@@ -276,12 +282,6 @@ public void resetAnimation() {
    */
   public void reset() {}
 	
-	private StateHelper stateHelper;
-	//private int delay = (/** @j2sNative 20 || */ 20);
-	private final static int STATE_INIT = 0;
-	private final static int STATE_LOOP = 1;
-	private final static int STATE_DONE = 2;
-  
 	@Override
 	public boolean stateLoop() {
 		while (animationThread != null && !animationThread.isInterrupted() && stateHelper.isAlive()) {
@@ -342,30 +342,31 @@ public void run() {
 
   // Inner class that lets any control act as a SimControl.
   private class ShadowControl implements SimControl {
-    Control control; // shadows AbstractSimulation field
+    private Control shadowControl; // shadows AbstractSimulation field
 
     ShadowControl(Control control) {
-      this.control = control;
+    	// could be null???
+      this.shadowControl = control;
     }
 
     @Override
 	public void setAdjustableValue(String name, boolean val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
 	public void setAdjustableValue(String name, double val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
 	public void setAdjustableValue(String name, int val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
 	public void setAdjustableValue(String name, Object val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
@@ -375,92 +376,92 @@ public void run() {
 
     @Override
 	public void setLockValues(boolean lock) {
-      control.setLockValues(lock);
+      shadowControl.setLockValues(lock);
     }
 
     @Override
 	public void setValue(String name, Object val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
 	public void setValue(String name, double val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
 	public void setValue(String name, int val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
 	public void setValue(String name, boolean val) {
-      control.setValue(name, val);
+      shadowControl.setValue(name, val);
     }
 
     @Override
 	public int getInt(String name) {
-      return control.getInt(name);
+      return shadowControl.getInt(name);
     }
 
     @Override
 	public double getDouble(String name) {
-      return control.getDouble(name);
+      return shadowControl.getDouble(name);
     }
 
     @Override
 	public Object getObject(String name) {
-      return control.getObject(name);
+      return shadowControl.getObject(name);
     }
 
     @Override
 	public String getString(String name) {
-      return control.getString(name);
+      return shadowControl.getString(name);
     }
 
     @Override
 	public boolean getBoolean(String name) {
-      return control.getBoolean(name);
+      return shadowControl.getBoolean(name);
     }
 
     @Override
 	public Collection<String> getPropertyNames() {
-      return control.getPropertyNames();
+      return shadowControl.getPropertyNames();
     }
 
     @Override
 	public Collection<String> getPropertyNamesRaw() {
-      return control.getPropertyNamesRaw();
+      return shadowControl.getPropertyNamesRaw();
     }
 
     @Override
 	public void println(String s) {
-      control.println(s);
+      shadowControl.println(s);
     }
 
     @Override
 	public void println() {
-      control.println();
+      shadowControl.println();
     }
 
     @Override
 	public void print(String s) {
-      control.print(s);
+      shadowControl.print(s);
     }
 
     @Override
 	public void clearMessages() {
-      control.clearMessages();
+      shadowControl.clearMessages();
     }
 
     @Override
 	public void clearValues() {
-      control.clearValues();
+      shadowControl.clearValues();
     }
 
     @Override
 	public void calculationDone(String message) {
-      control.calculationDone(message);
+      shadowControl.calculationDone(message);
     }
 
     @Override
