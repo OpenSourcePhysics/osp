@@ -70,6 +70,19 @@ public java.util.ArrayList<String> getPropertyList() {
     return infoList;
   }
 
+	static final private int OFFSET = 1;
+
+	@Override
+	public void variableChanged(int _variableIndex, Value _value) {
+		super.variableChanged(_variableIndex - OFFSET, _value);
+
+	}
+	@Override
+	protected int getOffset() {
+		return OFFSET + super.getOffset();
+	}
+
+
   @Override
 public String getPropertyInfo(String _property) {
     if(_property.equals("title")) { //$NON-NLS-1$
@@ -93,7 +106,7 @@ public void setValue(int _index, Value _value) {
          pane.repaint();
          break;
        default :
-         super.setValue(_index-1, _value);
+         super.setValue(_index- OFFSET, _value);
          break;
     }
   }
@@ -106,20 +119,20 @@ public void setDefaultValue(int _index) {
          pane.repaint();
          break;
        default :
-         super.setDefaultValue(_index-1);
+         super.setDefaultValue(_index-OFFSET);
          break;
     }
   }
 
-  @Override
-public Value getValue(int _index) {
-    switch(_index) {
-       case 0 :
-         return null;
-       default :
-         return super.getValue(_index-1);
-    }
-  }
+	@Override
+	public Value getValue(int _index) {
+		switch (_index) {
+		case 0:
+			return null;
+		default:
+			return super.getValue(_index - OFFSET);
+		}
+	}
 
 } // End of class
 

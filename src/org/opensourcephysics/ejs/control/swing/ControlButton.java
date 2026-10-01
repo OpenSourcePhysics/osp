@@ -11,142 +11,156 @@ import org.opensourcephysics.ejs.control.ControlElement;
 import org.opensourcephysics.ejs.control.value.Value;
 
 /**
- * A configurable control button. It will trigger an action when clicked.
- * It has no internal value.
+ * A configurable control button. It will trigger an action when clicked. It has
+ * no internal value.
  */
 public class ControlButton extends ControlSwingElement {
-  protected JButton button;
-  private String imageFile = null;
+	protected JButton button;
+	private String imageFile = null;
 
-  // ------------------------------------------------
-  // Visual component
-  // ------------------------------------------------
+	// ------------------------------------------------
+	// Visual component
+	// ------------------------------------------------
 
-  /**
-   * Constructor ControlButton
-   * @param _visual
-   */
-  public ControlButton(Object _visual) {
-    super(_visual);
-  }
+	/**
+	 * Constructor ControlButton
+	 * 
+	 * @param _visual
+	 */
+	public ControlButton(Object _visual) {
+		super(_visual);
+	}
 
-  @Override
-protected java.awt.Component createVisual(Object _visual) {
-    if(_visual instanceof JButton) {
-      button = (JButton) _visual;
-    } else {
-      button = new JButton();
-    }
-    button.addActionListener(new java.awt.event.ActionListener() {
-      @Override
-	public void actionPerformed(java.awt.event.ActionEvent _e) {
-        invokeActions();
-      }
+	@Override
+	protected java.awt.Component createVisual(Object _visual) {
+		if (_visual instanceof JButton) {
+			button = (JButton) _visual;
+		} else {
+			button = new JButton();
+		}
+		button.addActionListener(new java.awt.event.ActionListener() {
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent _e) {
+				invokeActions();
+			}
 
-    });
-    return button;
-  }
+		});
+		return button;
+	}
 
-  // ------------------------------------------------
-  // Properties
-  // ------------------------------------------------
-  static private java.util.ArrayList<String> infoList = null;
+	// ------------------------------------------------
+	// Properties
+	// ------------------------------------------------
+	static private java.util.ArrayList<String> infoList = null;
 
-  @Override
-public java.util.ArrayList<String> getPropertyList() {
-    if(infoList==null) {
-      infoList = new java.util.ArrayList<String>();
-      infoList.add("text");      //$NON-NLS-1$
-      infoList.add("image");     //$NON-NLS-1$
-      infoList.add("alignment"); //$NON-NLS-1$
-      infoList.add("action");    //$NON-NLS-1$
-      infoList.addAll(super.getPropertyList());
-    }
-    return infoList;
-  }
+	@Override
+	public java.util.ArrayList<String> getPropertyList() {
+		if (infoList == null) {
+			infoList = new java.util.ArrayList<String>();
+			infoList.add("text"); //$NON-NLS-1$
+			infoList.add("image"); //$NON-NLS-1$
+			infoList.add("alignment"); //$NON-NLS-1$
+			infoList.add("action"); //$NON-NLS-1$
+			infoList.addAll(super.getPropertyList());
+		}
+		return infoList;
+	}
 
-  @Override
-public String getPropertyInfo(String _property) {
-    if(_property.equals("text")) {             //$NON-NLS-1$
-      return "String NotTrimmed TRANSLATABLE"; //$NON-NLS-1$
-    }
-    if(_property.equals("image")) { //$NON-NLS-1$
-      return "File|String";         //$NON-NLS-1$
-    }
-    if(_property.equals("alignment")) { //$NON-NLS-1$
-      return "Alignment|int";           //$NON-NLS-1$
-    }
-    if(_property.equals("action")) { //$NON-NLS-1$
-      return "Action CONSTANT";      //$NON-NLS-1$
-    }
-    if(_property.equals("enabled")) { //$NON-NLS-1$
-      return "boolean";               // Not hidden //$NON-NLS-1$
-    }
-    return super.getPropertyInfo(_property);
-  }
+	final static private int OFFSET = 4;
 
-  // ------------------------------------------------
-  // Set and Get the values of the properties
-  // ------------------------------------------------
-  @Override
-public void setValue(int _index, Value _value) {
-    switch(_index) {
-       case 0 :
-         button.setText(_value.getString());
-         break;                                                      // text
-       case 1 :                                                      // image
-         if(_value.getString().equals(imageFile)) {
-           return;                                                   // no need to do it again
-         }
-         button.setIcon(getIcon(imageFile = _value.getString()));
-         break;
-       case 2 :
-         button.setHorizontalAlignment(_value.getInteger());
-         break;                                                      // alignment
-       case 3 :                                                      // action
-         removeAction(ControlElement.ACTION, getProperty("action")); //$NON-NLS-1$
-         addAction(ControlElement.ACTION, _value.getString());
-         break;
-       default :
-         super.setValue(_index-4, _value);
-         break;
-    }
-  }
+	@Override
+	public void variableChanged(int _variableIndex, Value _value) {
+		super.variableChanged(_variableIndex - OFFSET, _value);
 
-  @Override
-public void setDefaultValue(int _index) {
-    switch(_index) {
-       case 0 :
-         button.setText("");                                         //$NON-NLS-1$
-         break;
-       case 1 :
-         imageFile = null;
-         button.setIcon(null);
-         break;
-       case 2 :
-         button.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-         break;
-       case 3 :
-         removeAction(ControlElement.ACTION, getProperty("action")); //$NON-NLS-1$
-         break;
-       default :
-         super.setDefaultValue(_index-4);
-         break;
-    }
-  }
+	}
 
-  @Override
-public Value getValue(int _index) {
-    switch(_index) {
-       case 0 :
-       case 1 :
-       case 2 :
-       case 3 :
-         return null;
-       default :
-         return super.getValue(_index-4);
-    }
-  }
+	@Override
+	protected int getOffset() {
+		return OFFSET + super.getOffset();
+	}
+
+	@Override
+	public String getPropertyInfo(String _property) {
+		if (_property.equals("text")) { //$NON-NLS-1$
+			return "String NotTrimmed TRANSLATABLE"; //$NON-NLS-1$
+		}
+		if (_property.equals("image")) { //$NON-NLS-1$
+			return "File|String"; //$NON-NLS-1$
+		}
+		if (_property.equals("alignment")) { //$NON-NLS-1$
+			return "Alignment|int"; //$NON-NLS-1$
+		}
+		if (_property.equals("action")) { //$NON-NLS-1$
+			return "Action CONSTANT"; //$NON-NLS-1$
+		}
+		if (_property.equals("enabled")) { //$NON-NLS-1$
+			return "boolean"; // Not hidden //$NON-NLS-1$
+		}
+		return super.getPropertyInfo(_property);
+	}
+
+	// ------------------------------------------------
+	// Set and Get the values of the properties
+	// ------------------------------------------------
+	@Override
+	public void setValue(int _index, Value _value) {
+		switch (_index) {
+		case 0:
+			button.setText(_value.getString());
+			break; // text
+		case 1: // image
+			if (_value.getString().equals(imageFile)) {
+				return; // no need to do it again
+			}
+			button.setIcon(getIcon(imageFile = _value.getString()));
+			break;
+		case 2:
+			button.setHorizontalAlignment(_value.getInteger());
+			break; // alignment
+		case 3: // action
+			removeAction(ACTION, getProperty("action")); //$NON-NLS-1$
+			addAction(ACTION, _value.getString());
+			break;
+		default:
+			super.setValue(_index - OFFSET, _value);
+			break;
+		}
+	}
+
+	@Override
+	public void setDefaultValue(int _index) {
+		switch (_index) {
+		case 0:
+			button.setText(""); //$NON-NLS-1$
+			break;
+		case 1:
+			imageFile = null;
+			button.setIcon(null);
+			break;
+		case 2:
+			button.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+			break;
+		case 3:
+			removeAction(ACTION, getProperty("action")); //$NON-NLS-1$
+			break;
+		default:
+			super.setDefaultValue(_index - OFFSET);
+			break;
+		}
+	}
+
+	@Override
+	public Value getValue(int _index) {
+		switch (_index) {
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+			return null;
+		default:
+			return super.getValue(_index - OFFSET);
+		}
+	}
 
 } // End of class
 

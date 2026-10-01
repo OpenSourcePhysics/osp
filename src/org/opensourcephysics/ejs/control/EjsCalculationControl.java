@@ -22,7 +22,7 @@ import org.opensourcephysics.display.GUIUtils;
 public class EjsCalculationControl extends EjsControlFrame {
   protected JPanel controlPanel;
   protected DrawingPanel drawingPanel;
-  protected Calculation model; // shadows superclass field
+  protected Calculation calc; // shadows superclass field
 
   /**
    * Constructor EjsCalculationControl
@@ -32,7 +32,7 @@ public class EjsCalculationControl extends EjsControlFrame {
    */
   public EjsCalculationControl(Calculation model, DrawingFrame frame, String[] args) {
     super(model, "name=controlFrame;title=QM Superposition;location=400,0;layout=border;exit=true; visible=false"); //$NON-NLS-1$
-    this.model = model;
+    this.calc = model;
     addTarget("control", this); //$NON-NLS-1$
     addTarget("model", model);  //$NON-NLS-1$
     if(frame!=null) {
@@ -80,11 +80,11 @@ public class EjsCalculationControl extends EjsControlFrame {
   public void resetCalculation() {
     messageArea.setText(""); //$NON-NLS-1$
     GUIUtils.clearDrawingFrameData(true);
-    model.resetCalculation();
+    calc.resetCalculation();
     if(xmlDefault!=null) { // the default xml loader invokes calculate.
       xmlDefault.loadObject(getOSPApp());
     } else {               // do the calculation to bring everything up to date
-      model.calculate();
+      calc.calculate();
     }
     GUIUtils.showDrawingAndTableFrames();
   }
@@ -94,7 +94,7 @@ public class EjsCalculationControl extends EjsControlFrame {
    */
   public void calculate() {
     GUIUtils.clearDrawingFrameData(true);
-    model.calculate();
+    calc.calculate();
     GUIUtils.showDrawingAndTableFrames();
   }
 

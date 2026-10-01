@@ -12,6 +12,8 @@ import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.ejs.control.NeedsUpdate;
 
 /**
+ * never implmented
+ * 
  * A container to hold Drawables.
  * The base class for ControlDrawingParent, ControlDrawingPanel3D and ControlPlottingPanel
  * Its visual MUST be a (subclass of) DrawingPanel

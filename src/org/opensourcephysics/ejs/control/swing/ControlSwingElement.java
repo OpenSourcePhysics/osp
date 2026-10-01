@@ -28,7 +28,7 @@ public abstract class ControlSwingElement extends ControlElement {
   // these constants accordingly!!!
   // These constants are her for use of any subclass that overrides the
   // setValue() method for any of these properties
-  static public final int NAME = 0;                   // The name of the element // shadows superclass field
+  //static public final int NAME = 0;                   // The name of the element // shadows superclass field
   static public final int POSITION = 1;               // The position in its parent
   static public final int PARENT = 2;                 // Its parent
   static public final int ENABLED = 3;                // Whetehr it is responsive or not
@@ -134,6 +134,16 @@ public ArrayList<String> getPropertyList() {
     }
     return myInfoList;
   }
+  
+	@Override
+	public void variableChanged(int _variableIndex, Value _value) {
+		super.variableChanged0(_variableIndex, _value);
+	}
+
+	protected int getOffset() {
+		return 0;
+	}
+
 
   /**
    * Returns information about a given property.

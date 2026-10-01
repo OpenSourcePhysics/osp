@@ -15,7 +15,7 @@ import org.opensourcephysics.display.DrawingPanel;
 import org.opensourcephysics.display.GUIUtils;
 
 public class EjsSimulationControl extends EjsControlFrame {
-  protected Simulation model; // shadows superclass field
+  protected Simulation sim; // shadows superclass field
   protected DrawingPanel drawingPanel;
   protected JPanel controlPanel;
 
@@ -27,9 +27,9 @@ public class EjsSimulationControl extends EjsControlFrame {
    */
   public EjsSimulationControl(Simulation model, DrawingFrame frame, String[] args) {
     super(model, "name=controlFrame;title=OSP Simulation;location=400,0;layout=border;exit=true; visible=false"); //$NON-NLS-1$
-    this.model = model;
     addTarget("control", this); //$NON-NLS-1$
     addTarget("model", model);  //$NON-NLS-1$
+    sim = model;
     if(frame!=null) {
       getMainFrame().setAnimated(frame.isAnimated());
       getMainFrame().setAutoclear(frame.isAutoclear());
@@ -89,7 +89,7 @@ public void render() {
    */
   @Override
 public void clearDefaultXML() {
-    if((xmlDefault==null)||(model==null)) {
+    if((xmlDefault==null)||(sim==null)) {
       return;
     }
     xmlDefault = null;
@@ -101,10 +101,10 @@ public void clearDefaultXML() {
    * Resets the model and switches the text on the run button.
    */
   public void resetSimulation() {
-    model.stopAnimation();
+    sim.stopAnimation();
     messageArea.setText(""); //$NON-NLS-1$
     GUIUtils.clearDrawingFrameData(true);
-    model.resetAnimation();
+    sim.resetAnimation();
     if(xmlDefault!=null) { // loading an object should initialize the model
       xmlDefault.loadObject(getOSPApp());
     } else {
@@ -116,12 +116,12 @@ public void clearDefaultXML() {
   }
 
   public void stepSimulation() {
-    if(model.isRunning()) {
-      model.stopAnimation();
+    if(sim.isRunning()) {
+      sim.stopAnimation();
     }
     //getControl("runButton").setProperty("text", "Start");
     getControl("runButton").setProperty("image", "/org/opensourcephysics/resources/controls/images/play.gif"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-    model.stepAnimation();
+    sim.stepAnimation();
     GUIUtils.repaintAnimatedFrames();
   }
 
@@ -129,14 +129,14 @@ public void clearDefaultXML() {
    * Runs the Simulation switches the text on the run button
    */
   public void runSimulation() {
-    if(model.isRunning()) {
-      model.stopSimulation();
+    if(sim.isRunning()) {
+      sim.stopSimulation();
       //getControl("runButton").setProperty("text", "Start");
       getControl("runButton").setProperty("image", "/org/opensourcephysics/resources/controls/images/play.gif"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     } else {
       //getControl("runButton").setProperty("text", "Stop");
       getControl("runButton").setProperty("image", "/org/opensourcephysics/resources/controls/images/pause.gif"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-      model.startSimulation();
+      sim.startSimulation();
     }
   }
 
@@ -145,10 +145,10 @@ public void clearDefaultXML() {
    */
   @Override
 public void initialize() {
-    model.stopAnimation();
+    sim.stopAnimation();
     getControl("runButton").setProperty("image", "/org/opensourcephysics/resources/controls/images/play.gif"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     GUIUtils.clearDrawingFrameData(true);
-    model.initializeAnimation();
+    sim.initializeAnimation();
     GUIUtils.showDrawingAndTableFrames();
   }
 

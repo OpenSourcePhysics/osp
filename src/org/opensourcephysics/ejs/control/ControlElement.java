@@ -828,7 +828,7 @@ public String toString() {
    * Invokes all actions of type ACTION
    */
   final public void invokeActions() {
-    invokeActions(ControlElement.ACTION);
+    invokeActions(ACTION);
   }
 
   /**
@@ -860,7 +860,7 @@ public String toString() {
     if(myActiveState) {
       for(Enumeration<MethodWithOneParameter> e = myActionsList.elements(); e.hasMoreElements(); ) {
         MethodWithOneParameter method = e.nextElement();
-        method.invoke(ControlElement.VARIABLE_CHANGED, this);
+        method.invoke(VARIABLE_CHANGED, this);
       }
     }
   }
@@ -870,7 +870,7 @@ public String toString() {
    * @param     int _variableIndex the index of the internal variable that changed
    * @param     Value _value the new value for the variable
    */
-  final public void variableChanged(int _variableIndex, Value _value) {
+  public void variableChanged0(int _variableIndex, Value _value) {
     if(myMethodsForProperties[_variableIndex]!=null) { // AMAVP
       // System.out.println ("Do not update because of method "+myMethodsForProperties[_variableIndex].toString());
       return;
@@ -882,36 +882,38 @@ public String toString() {
       myGroup.getSimulation().update();
     }
   }
+  
+  abstract public void variableChanged(int _variableIndex, Value _value);
 
-  /**
-   * Reports changes of more than one internal variables
-   * @param     int[] _variableIndexes the indexes of the internal variables that changed
-   * @param     Value[] _value the new values for the variables
-   */
-  final public void variablesChanged(int[] _variableIndex, Value[] _value) {
-    boolean doMore = false;
-    if((myGroup!=null)&&(myProperties!=null)) {
-      for(int i = 0; i<_variableIndex.length; i++) {
-        if(myMethodsForProperties[_variableIndex[i]]==null) { // AMAVP
-          // System.out.println ("Do not update this one because of method "+myMethodsForProperties[_variableIndex[i]].toString());
-          myGroup.variableChanged(myProperties[_variableIndex[i]], this, _value[i]);
-          doMore = true;
-        }
-      }
-    }
-    if(!doMore) {
-      return; // AMAVP Nothing has changed
-    }
-    if(myActiveState) {
-      for(Enumeration<MethodWithOneParameter> e = myActionsList.elements(); e.hasMoreElements(); ) {
-        MethodWithOneParameter method = e.nextElement();
-        method.invoke(ControlElement.VARIABLE_CHANGED, this);
-      }
-    }
-    if((myGroup!=null)&&(myGroup.getSimulation()!=null)) {
-      myGroup.getSimulation().update();
-    }
-  }
+//  /**
+//   * Reports changes of more than one internal variables
+//   * @param     int[] _variableIndexes the indexes of the internal variables that changed
+//   * @param     Value[] _value the new values for the variables
+//   */
+//  final public void variablesChanged(int[] _variableIndex, Value[] _value) {
+//    boolean doMore = false;
+//    if((myGroup!=null)&&(myProperties!=null)) {
+//      for(int i = 0; i<_variableIndex.length; i++) {
+//        if(myMethodsForProperties[_variableIndex[i]]==null) { // AMAVP
+//          // System.out.println ("Do not update this one because of method "+myMethodsForProperties[_variableIndex[i]].toString());
+//          myGroup.variableChanged(myProperties[_variableIndex[i]], this, _value[i]);
+//          doMore = true;
+//        }
+//      }
+//    }
+//    if(!doMore) {
+//      return; // AMAVP Nothing has changed
+//    }
+//    if(myActiveState) {
+//      for(Enumeration<MethodWithOneParameter> e = myActionsList.elements(); e.hasMoreElements(); ) {
+//        MethodWithOneParameter method = e.nextElement();
+//        method.invoke(VARIABLE_CHANGED, this);
+//      }
+//    }
+//    if((myGroup!=null)&&(myGroup.getSimulation()!=null)) {
+//      myGroup.getSimulation().update();
+//    }
+//  }
 
   /**
    * Sets whether a <code>ControlElement</code> actually invokes actions.

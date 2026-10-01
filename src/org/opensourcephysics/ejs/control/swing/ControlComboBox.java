@@ -12,7 +12,6 @@ import java.util.StringTokenizer;
 
 import javax.swing.JComboBox;
 
-import org.opensourcephysics.ejs.control.ControlElement;
 import org.opensourcephysics.ejs.control.value.StringValue;
 import org.opensourcephysics.ejs.control.value.Value;
 
@@ -24,7 +23,6 @@ public class ControlComboBox extends ControlSwingElement {
 	static private final int VARIABLE = 0;
 	// static private final int BACKGROUND = ControlSwingElement.BACKGROUND+6; //
 	// shadows superclass field, also unused
-	static private final int FOREGROUND = ControlSwingElement.FOREGROUND + 6; // shadows superclass field
 	protected JComboBox<String> combo;
 	private java.awt.Component editorComponent;
 	private String optionsString;
@@ -131,6 +129,18 @@ public class ControlComboBox extends ControlSwingElement {
 		return infoList;
 	}
 
+	static final private int OFFSET = 6;
+
+	@Override
+	public void variableChanged(int _variableIndex, Value _value) {
+		super.variableChanged(_variableIndex - OFFSET, _value);
+
+	}
+	@Override
+	protected int getOffset() {
+		return OFFSET + super.getOffset();
+	}
+
 	@Override
 	public String getPropertyInfo(String _property) {
 		if (_property.equals("variable")) { //$NON-NLS-1$
@@ -183,17 +193,17 @@ public class ControlComboBox extends ControlSwingElement {
 			decideColors(editorComponent.getBackground());
 			break;
 		case 5: // action
-			removeAction(ControlElement.ACTION, getProperty("action")); //$NON-NLS-1$
-			addAction(ControlElement.ACTION, _value.getString());
+			removeAction(ACTION, getProperty("action")); //$NON-NLS-1$
+			addAction(ACTION, _value.getString());
 			break;
-		default:
-			super.setValue(_index - 6, _value);
-			break;
-		case FOREGROUND:
-			super.setValue(ControlSwingElement.FOREGROUND, _value);
+		case FOREGROUND + 6:
+			super.setValue(FOREGROUND, _value);
 			if (_value.getObject() instanceof Color) {
 				editorComponent.setForeground((Color) _value.getObject());
 			}
+			break;
+		default:
+			super.setValue(_index - OFFSET, _value);
 			break;
 		}
 	}
@@ -217,14 +227,14 @@ public class ControlComboBox extends ControlSwingElement {
 			decideColors(editorComponent.getBackground());
 			break;
 		case 5:
-			removeAction(ControlElement.ACTION, getProperty("action")); //$NON-NLS-1$
+			removeAction(ACTION, getProperty("action")); //$NON-NLS-1$
+			break;
+		case FOREGROUND + OFFSET:
+			super.setDefaultValue(FOREGROUND);
+			editorComponent.setForeground(Color.black);
 			break;
 		default:
-			super.setDefaultValue(_index - 6);
-			break;
-		case FOREGROUND:
-			super.setDefaultValue(ControlSwingElement.FOREGROUND);
-			editorComponent.setForeground(Color.black);
+			super.setDefaultValue(_index - OFFSET);
 			break;
 		}
 	}
@@ -241,7 +251,7 @@ public class ControlComboBox extends ControlSwingElement {
 		case 5:
 			return null;
 		default:
-			return super.getValue(_index - 6);
+			return super.getValue(_index - OFFSET);
 		}
 	}
 
