@@ -94,6 +94,22 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				&& treeNode.getName().equals(this.getName()));
 	}
 
+	@Override
+	public int hashCode() {
+		int h = 0;
+		String target = getAbsoluteTarget();
+		String html = getHTMLPath();
+		String name = getName();
+		if (target != null)
+			h |= target.hashCode();
+		if (html != null)
+			h |= html.hashCode();
+		if (name != null)
+			h |= name.hashCode();
+		return h;
+	}
+
+
 	/**
 	 * Compares this to the specified node.
 	 *

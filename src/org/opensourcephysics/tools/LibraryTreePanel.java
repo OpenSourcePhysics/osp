@@ -827,21 +827,14 @@ public class LibraryTreePanel extends JPanel {
 		};
 
 		// create toolbar and buttons
-		addCollectionButton = new JButton(addCollectionAction);
-		addResourceButton = new JButton(addResourceAction);
-		copyButton = new JButton(copyAction);
-		cutButton = new JButton(cutAction);
-		pasteButton = new JButton(pasteAction);
-		moveUpButton = new JButton(moveUpAction);
-		moveDownButton = new JButton(moveDownAction);
-		metadataButton = new JButton(metadataAction);
-		JButton[] buttons = new JButton[] {addCollectionButton, addResourceButton, copyButton,				
-				cutButton, pasteButton, moveUpButton, moveDownButton, metadataButton};
-		for (JButton next: buttons) {
-			next.setOpaque(false);
-			next.setBorder(browser.buttonBorder);			
-		}
-
+		addCollectionButton = newJButton(addCollectionAction);
+		addResourceButton = newJButton(addResourceAction);
+		copyButton = newJButton(copyAction);
+		cutButton = newJButton(cutAction);
+		pasteButton = newJButton(pasteAction);
+		moveUpButton = newJButton(moveUpAction);
+		moveDownButton = newJButton(moveDownAction);
+		metadataButton = newJButton(metadataAction);
 		editorbar = new JToolBar();
 		editorbar.setFloatable(false);
 		editorbar.setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
@@ -1269,6 +1262,14 @@ public class LibraryTreePanel extends JPanel {
 		metadataBox.add(metadataDropdown);
 	}
 
+	private JButton newJButton(Action a) {
+		JButton b = new JButton();
+		b.setAction(a);
+		b.setOpaque(false);
+		b.setBorder(browser.getButtonBorder());			
+		return b;
+	}
+
 	protected void doMouseClick(MouseEvent e) {
 		if (!OSPRuntime.isPopupTrigger(e))
 			return;
@@ -1496,7 +1497,7 @@ public class LibraryTreePanel extends JPanel {
 				popup.add(item);
 				item.addActionListener((e) -> {
 						String path = node.record.getCollectionPath();
-						browser.loadTab(path, node.record.treePath);
+						browser.doLoadTab(path, node.record.treePath);
 				});
 			}
 	  	if (rootResource==browser.getRecentCollection()) { // this is the recent collection tab
@@ -2207,15 +2208,10 @@ public class LibraryTreePanel extends JPanel {
 						}
 					}
 					// inform library manager
-					if (browser.libraryManager != null) {
-						browser.libraryManager.refreshSearchTab();
-					}
+					browser.refreshLibraryManagerGUI(true);
 
 					showInfo(getSelectedNode(), "LibraryTreePanel.propChange " + propName);
-					if (browser.metadataLoaderListener != null) {
-						PropertyChangeEvent event = new PropertyChangeEvent(browser, pathToRoot, null, cacheFile);
-						browser.metadataLoaderListener.propertyChange(event);
-					}
+					browser.fireTreePanelPropertyChange(pathToRoot, cacheFile);
 				}
 			}
 		}

@@ -34,7 +34,6 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
 	private final String ftpURLFormat = "ftp://%s@%s;type=i";
 	private final String[] libraryPaths = { LibraryBrowser.TRACKER_LIBRARY, LibraryBrowser.SHARED_LIBRARY };
 
-	private LibraryBrowser browser;
 	private ArrayList<String> paths = new ArrayList<String>();
 	private ArrayList<String> names = new ArrayList<String>();
 	private TreeMap<String, String> nameToPathMap = new TreeMap<String, String>();
@@ -75,8 +74,8 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
 	 * Opens the LibraryBrowser.
 	 */
 	void openLibraryBrowser() {
-		browser = LibraryBrowser.getBrowser();
-		browser.addMetadataLoaderListener(this);
+		LibraryBrowser browser = LibraryBrowser.getBrowser();
+		browser.setMetadataLoaderListener(this);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		int x = (dim.width - browser.getBounds().width) / 2;
 		int y = (dim.height - browser.getBounds().height) / 2;
@@ -121,7 +120,7 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
 			String next = paths.get(currentIndex);
 			currentIndex++;
 			// System.out.println("start refreshing "+next);
-			browser.open(next);
+			LibraryBrowser.getBrowser().open(next);
 		} else {
 			// System.out.println("finished refreshing "+paths.size()+" collections in " +
 			// (t-t0)/1000 +" sec");
@@ -159,12 +158,9 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		File file = (File) e.getNewValue();
-		//long now = System.currentTimeMillis();
 		if (file.exists())
 			uploadToWeb(file.getAbsolutePath());
-		browser.closeTab(0);
-		// System.out.println("finished refreshing "+ e.getPropertyName() + " in " +
-		// (now-t)/1000 + " sec");
+		LibraryBrowser.getBrowser().closeTab(0);
 		refreshNext();
 	}
 

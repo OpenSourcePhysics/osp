@@ -23,6 +23,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.TreeMap;
+
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -63,14 +65,13 @@ import org.opensourcephysics.display.OSPRuntime;
 @SuppressWarnings("serial")
 public class LibraryManager extends JDialog {
 
-	LibraryBrowser browser;
+	private LibraryBrowser browser;
 	Library library;
 	JTabbedPane tabbedPane;
 	JPanel collectionsPanel, importsPanel, searchPanel, cachePanel, recentPanel;
 	JList<String> collectionList;
 	JList<String> guestList;
 	JTextField nameField, pathField;
-	ActionListener nameAction, pathAction;
 	JButton okButton, setCacheButton;
 	JButton moveUpButton, moveDownButton, addButton, removeButton; // for collections and imports tabs
 	JButton allButton, noneButton, clearCacheButton; // for search and cache tabs
@@ -143,8 +144,7 @@ public class LibraryManager extends JDialog {
 	 * Creates the GUI.
 	 */
 	protected void createGUI() {
-		JButton throwaway = new JButton("by"); //$NON-NLS-1$
-		throwaway.setBorder(browser.buttonBorder);
+		JButton throwaway = newJButton("by", null); //$NON-NLS-1$
 		int h = throwaway.getPreferredSize().height;
 		sharedFont = throwaway.getFont();
 
@@ -197,7 +197,7 @@ public class LibraryManager extends JDialog {
 		guestList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		// create name action, field and label
-		nameAction = new ActionListener() {
+		ActionListener nameAction = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String path = pathField.getText();
@@ -271,186 +271,60 @@ public class LibraryManager extends JDialog {
 		pathLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 
 		// create buttons
-		okButton = new JButton();
-		okButton.addActionListener(new ActionListener() {
+		okButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);
 			}
 		});
 
-		moveUpButton = new JButton();
-		moveUpButton.setOpaque(false);
-		moveUpButton.setBorder(browser.buttonBorder);
-		moveUpButton.addActionListener(new ActionListener() {
+		moveUpButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean isImports = tabbedPane.getSelectedComponent() == importsPanel;
-				JList<String> list = isImports ? guestList : collectionList;
-				ArrayList<String> paths = isImports ? library.importedPathList : library.pathList;
-				int i = list.getSelectedIndex();
-				String path = paths.get(i);
-				paths.remove(path);
-				paths.add(i - 1, path);
-				list.setSelectedIndex(i - 1);
-				browser.refreshCollectionsMenu();
-				browser.refreshGUI();
+				doMove(true);
 			}
 		});
-		moveDownButton = new JButton();
-		moveDownButton.setOpaque(false);
-		moveDownButton.setBorder(browser.buttonBorder);
-		moveDownButton.addActionListener(new ActionListener() {
+		moveDownButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean isImports = tabbedPane.getSelectedComponent() == importsPanel;
-				JList<String> list = isImports ? guestList : collectionList;
-				ArrayList<String> paths = isImports ? library.importedPathList : library.pathList;
-				int i = list.getSelectedIndex();
-				String path = paths.get(i);
-				paths.remove(path);
-				paths.add(i + 1, path);
-				list.setSelectedIndex(i + 1);
-				browser.refreshCollectionsMenu();
-				browser.refreshGUI();
+				doMove(false);
 			}
 		});
-		addButton = new JButton();
-		addButton.setOpaque(false);
-		addButton.setBorder(browser.buttonBorder);
-		addButton.addActionListener(new ActionListener() {
+		addButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean imported = tabbedPane.getSelectedComponent() == importsPanel;
-				String message = imported ? ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Message") : //$NON-NLS-1$
-				ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Message"); //$NON-NLS-1$
-				String title = imported ? ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Title") : //$NON-NLS-1$
-				ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Title"); //$NON-NLS-1$
-				String input = GUIUtils.showInputDialog(browser, message, title, JOptionPane.QUESTION_MESSAGE, null);
-				if (input == null || input.equals("")) { //$NON-NLS-1$
-					return;
-				}
-				String path = input;
-				path = XML.forwardSlash(path);
-				// BH 2020.11.12 presumes file not https here
-				path = ResourceLoader.getNonURIPath(path);
-
-				if (tabbedPane.getSelectedComponent() == collectionsPanel) {
-					boolean isResource = false;
-					if (!ResourceLoader.isHTTP(path) && new File(path).isDirectory()) {
-						isResource = true;
-					} else {
-						XMLControl control = new XMLControlElement(path);
-						if (!control.failedToRead() && control.getObjectClass() == LibraryCollection.class) {
-							isResource = true;
-						}
-					}
-					if (isResource) {
-						System.out.println("LM OK " + path);
-						browser.addToCollections(path);
-						ListModel<String> model = collectionList.getModel();
-						collectionList.setModel(model);
-						refreshGUI();
-						collectionList.repaint();
-						collectionList.setSelectedIndex(library.pathList.size() - 1);
-						browser.refreshCollectionsMenu();
-						return;
-					}
-				}
-				if (tabbedPane.getSelectedComponent() == importsPanel) {
-					boolean isLibrary = false;
-					XMLControl control = new XMLControlElement(path);
-					if (!control.failedToRead() && control.getObjectClass() == Library.class) {
-						isLibrary = true;
-					}
-					if (isLibrary) {
-						Library newLibrary = new Library();
-						newLibrary.browser = LibraryManager.this.browser;
-						control.loadObject(newLibrary);
-						if (library.importLibrary(path, newLibrary)) {
-							ListModel<String> model = guestList.getModel();
-							guestList.setModel(model);
-							refreshGUI();
-							guestList.repaint();
-							guestList.setSelectedIndex(library.importedPathList.size() - 1);
-							browser.refreshCollectionsMenu();
-						}
-						return;
-					}
-				}
-
-				warnNotFound(path);
+				doAdd();
 			}
 		});
-		removeButton = new JButton();
-		removeButton.setOpaque(false);
-		removeButton.setBorder(browser.buttonBorder);
-		removeButton.addActionListener(new ActionListener() {
+		removeButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				boolean isImports = tabbedPane.getSelectedComponent() == importsPanel;
-				JList<String> list = isImports ? guestList : collectionList;
-				ArrayList<String> paths = isImports ? library.importedPathList : library.pathList;
-				int i = list.getSelectedIndex();
-				String path = paths.get(i);
-				paths.remove(path);
-				if (isImports)
-					library.importedPathToLibraryMap.remove(path);
-				else
-					library.pathToNameMap.remove(path);
-				list.repaint();
-				if (i >= paths.size()) {
-					list.setSelectedIndex(paths.size() - 1);
-				}
-				browser.refreshCollectionsMenu();
-				refreshGUI();
-				browser.refreshGUI();
+				doRemove();
 			}
 		});
 		// create all and none buttons
-		allButton = new JButton();
-		allButton.setOpaque(false);
-		allButton.setBorder(browser.buttonBorder);
-		allButton.addActionListener(new ActionListener() {
+		allButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				for (SearchCheckBox next : checkboxes) {
-					next.setSelected(true);
-				}
+				doSelect(true);
 			}
 		});
-		noneButton = new JButton();
-		noneButton.setOpaque(false);
-		noneButton.setBorder(browser.buttonBorder);
-		noneButton.addActionListener(new ActionListener() {
+		noneButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				for (SearchCheckBox next : checkboxes) {
-					next.setSelected(false);
-				}
+				doSelect(false);
 			}
 		});
-
-		clearCacheButton = new JButton();
-		clearCacheButton.setOpaque(false);
-		clearCacheButton.setBorder(browser.buttonBorder);
-		clearCacheButton.addActionListener(new ActionListener() {
+		clearCacheButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LibraryBrowser.clearCache();
-				refreshCacheTab();
-				tabbedPane.repaint();
+				doClearCache();
 			}
 		});
-
-		setCacheButton = new JButton();
-		setCacheButton.setOpaque(false);
-		setCacheButton.setBorder(browser.buttonBorder);
-		setCacheButton.addActionListener(new ActionListener() {
+		setCacheButton = newJButton(null, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ResourceLoader.setOSPCache(ResourceLoader.chooseOSPCache(browser));
-				refreshCacheTab();
+				doSetCache();
 			}
 		});
 		Border emptyInside = BorderFactory.createEmptyBorder(1, 2, 1, 2);
@@ -572,6 +446,127 @@ public class LibraryManager extends JDialog {
 		JPanel south = new JPanel();
 		south.add(okButton);
 		contentPane.add(south, BorderLayout.SOUTH);
+	}
+
+	protected void doMove(boolean isUp) {
+		boolean isImports = tabbedPane.getSelectedComponent() == importsPanel;
+		JList<String> list = isImports ? guestList : collectionList;
+		ArrayList<String> paths = isImports ? library.importedPathList : library.pathList;
+		int i = list.getSelectedIndex();
+		String path = paths.get(i);
+		i += (isUp ? -1 : 1);
+		paths.remove(path);
+		paths.add(i, path);
+		list.setSelectedIndex(i);
+		browser.refreshCollectionsMenu();
+		browser.refreshGUI();
+	}
+
+	protected void doAdd() {
+		boolean imported = tabbedPane.getSelectedComponent() == importsPanel;
+		String message = imported ? ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Message") : //$NON-NLS-1$
+		ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Message"); //$NON-NLS-1$
+		String title = imported ? ToolsRes.getString("LibraryBrowser.Dialog.AddLibrary.Title") : //$NON-NLS-1$
+		ToolsRes.getString("LibraryBrowser.Dialog.AddCollection.Title"); //$NON-NLS-1$
+		String input = GUIUtils.showInputDialog(browser, message, title, JOptionPane.QUESTION_MESSAGE, null);
+		if (input == null || input.equals("")) { //$NON-NLS-1$
+			return;
+		}
+		String path = input;
+		path = XML.forwardSlash(path);
+		// BH 2020.11.12 presumes file not https here
+		path = ResourceLoader.getNonURIPath(path);
+
+		if (tabbedPane.getSelectedComponent() == collectionsPanel) {
+			boolean isResource = false;
+			if (!ResourceLoader.isHTTP(path) && new File(path).isDirectory()) {
+				isResource = true;
+			} else {
+				XMLControl control = new XMLControlElement(path);
+				if (!control.failedToRead() && control.getObjectClass() == LibraryCollection.class) {
+					isResource = true;
+				}
+			}
+			if (isResource) {
+				System.out.println("LM OK " + path);
+				browser.addToCollections(path);
+				ListModel<String> model = collectionList.getModel();
+				collectionList.setModel(model);
+				refreshGUI();
+				collectionList.repaint();
+				collectionList.setSelectedIndex(library.pathList.size() - 1);
+				browser.refreshCollectionsMenu();
+				return;
+			}
+		}
+		if (tabbedPane.getSelectedComponent() == importsPanel) {
+			boolean isLibrary = false;
+			XMLControl control = new XMLControlElement(path);
+			if (!control.failedToRead() && control.getObjectClass() == Library.class) {
+				isLibrary = true;
+			}
+			if (isLibrary) {
+				Library newLibrary = new Library();
+				newLibrary.browser = LibraryManager.this.browser;
+				control.loadObject(newLibrary);
+				if (library.importLibrary(path, newLibrary)) {
+					ListModel<String> model = guestList.getModel();
+					guestList.setModel(model);
+					refreshGUI();
+					guestList.repaint();
+					guestList.setSelectedIndex(library.importedPathList.size() - 1);
+					browser.refreshCollectionsMenu();
+				}
+				return;
+			}
+		}
+		warnNotFound(path);
+	}
+
+	protected void doRemove() {
+		boolean isImports = tabbedPane.getSelectedComponent() == importsPanel;
+		JList<String> list = isImports ? guestList : collectionList;
+		ArrayList<String> paths = isImports ? library.importedPathList : library.pathList;
+		int i = list.getSelectedIndex();
+		String path = paths.get(i);
+		paths.remove(path);
+		if (isImports)
+			library.importedPathToLibraryMap.remove(path);
+		else
+			library.pathToNameMap.remove(path);
+		list.repaint();
+		if (i >= paths.size()) {
+			list.setSelectedIndex(paths.size() - 1);
+		}
+		browser.refreshCollectionsMenu();
+		refreshGUI();
+		browser.refreshGUI();
+	}
+
+	protected void doSelect(boolean b) {
+		for (SearchCheckBox next : checkboxes) {
+			next.setSelected(b);
+		}
+	}
+
+	protected void doSetCache() {
+		ResourceLoader.setOSPCache(ResourceLoader.chooseOSPCache(browser));
+		refreshCacheTab();
+	}
+
+	private JButton newJButton(String text, ActionListener listener) {
+		JButton b = new JButton(text);
+		b.setOpaque(false);
+		b.setBorder(browser.getButtonBorder());
+		if (listener != null)
+			b.addActionListener(listener);
+		return b;
+	}
+
+	protected void doClearCache() {
+		LibraryBrowser.clearCache();
+		refreshCacheTab();
+		tabbedPane.repaint();
 	}
 
 	protected void warnNotFound(String path) {
@@ -699,8 +694,9 @@ public class LibraryManager extends JDialog {
 		checkboxes.clear();
 		ArrayList<JLabel> labels = new ArrayList<JLabel>();
 		Set<String> names = browser.getSearchPathMap().keySet();
+		TreeMap<String, String> map = browser.searchPathMap;
 		for (String name: names) {
-			String path = browser.searchPathMap.get(name);
+			String path = map.get(name);
 			JLabel label = new JLabel(name);
 			label.setToolTipText(path);
 			labels.add(label);
@@ -977,6 +973,29 @@ public class LibraryManager extends JDialog {
 			return getPreferredSize();
 		}
 
+	}
+
+	final static int SELECT_COLLECTIONS = 1;
+	final static int SELECT_SEARCH      = 2;
+	final static int SELECT_CACHE       = 3;
+	
+	public void selectPanel(int panel) {
+		JPanel p;
+		switch (panel) {
+		case SELECT_COLLECTIONS:
+			p = collectionsPanel;
+			break;
+		case SELECT_SEARCH:
+			p = searchPanel;
+			break;
+		case SELECT_CACHE:
+			p = cachePanel;
+			break;
+		default:
+			return;
+		}
+		tabbedPane.setSelectedComponent(p);
+		setVisible(true);
 	}
 
 }

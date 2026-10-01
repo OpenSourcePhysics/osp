@@ -198,6 +198,34 @@ public class LibraryCollection extends LibraryResource {
 		}
 	}
 
+	@Override
+	public int compareTo(LibraryResource resource) {
+		int c = super.compareTo(resource);
+		if (c != EQUAL || !(resource instanceof LibraryCollection))
+			return c;
+		LibraryResource[] children1 = ((LibraryCollection) this).getResources();
+		LibraryResource[] children2 = ((LibraryCollection) resource).getResources();
+		if (children1.length > children2.length)
+			return BEFORE;
+		if (children1.length < children2.length)
+			return AFTER;
+		for (int i = 0; i < children1.length; i++) {
+			int result = children1[i].compareTo(children2[i]);
+			if (result != EQUAL)
+				return result;
+		}
+		return EQUAL;
+	}
+
+	@Override
+	public int hashCode() {
+		int h = super.hashCode();
+			LibraryResource[] children = getResources();
+			for (int i = 0; i < children.length; i++) {
+				h |= children[i].hashCode();
+			}
+			return h;
+	}
 }
 
 /*

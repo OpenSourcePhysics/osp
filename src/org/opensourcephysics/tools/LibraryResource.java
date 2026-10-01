@@ -606,6 +606,10 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		return ToolsRes.getString("LibraryResource.Name.Default"); //$NON-NLS-1$
 	}
 
+	final static int BEFORE = -1;
+	final static int EQUAL = 0;
+	final static int AFTER = 1;
+
 	/**
 	 * Compares this to the specified resource.
 	 *
@@ -614,9 +618,6 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 */
 	@Override
 	public int compareTo(LibraryResource resource) {
-		int BEFORE = -1;
-		int EQUAL = 0;
-		int AFTER = 1;
 
 		if (this == resource)
 			return EQUAL;
@@ -641,51 +642,26 @@ public class LibraryResource implements Comparable<LibraryResource> {
 			return result;
 
 		// compare type
-		if ((result = getType().compareTo(resource.getType())) != EQUAL)
-			return result;
-
-//  	// compare metadata
-//		Set<Metadata> meta1 = this.getMetadata();
-//		Set<Metadata> meta2 = resource.getMetadata();
-//  	if (meta1!=null || meta2!=null) {
-//  		if (meta1==null) return AFTER;
-//  		if (meta2==null) return BEFORE;
-//  		if (meta1.size()>meta2.size()) return BEFORE;
-//  		if (meta1.size()<meta2.size()) return AFTER;
-//  		// both have metadata sets of same size
-//    	for (Metadata next1: meta1) {
-//    		if (meta2.contains(next1)) continue; // same metadata in both
-//    		String key = next1.getData()[0];
-//    		for (Metadata next2: meta2) {
-//    			// same key found
-//    			if (next2.getData()[0].equals(key)) {
-//    				return next1.getData()[1].compareTo(next2.getData()[1]);
-//    			}
-//    		}
-//    	} 		
-//  	}
-
-		// if collection, compare child resources
-		if (this instanceof LibraryCollection && resource instanceof LibraryCollection) {
-			LibraryResource[] children1 = ((LibraryCollection) this).getResources();
-			LibraryResource[] children2 = ((LibraryCollection) resource).getResources();
-			if (children1.length > children2.length)
-				return BEFORE;
-			if (children1.length < children2.length)
-				return AFTER;
-			for (int i = 0; i < children1.length; i++) {
-				result = children1[i].compareTo(children2[i]);
-				if (result != EQUAL)
-					return result;
-			}
-		}
-
-		return EQUAL;
+		return getType().compareTo(resource.getType());
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		return (obj instanceof LibraryResource && compareTo((LibraryResource) obj) == 0);
+	}
+
+	@Override
+	public int hashCode() {
+		int h = 0;
+		h |= getName().hashCode();
+		String tar = getAbsoluteTarget();
+		String html = getAbsoluteHTMLPath();
+		if (tar != null)
+			h |= tar.hashCode();
+		if (html != null)
+			h |= html.hashCode();
+		h |= getType().hashCode();
+		return h;
 	}
 
 	/**
