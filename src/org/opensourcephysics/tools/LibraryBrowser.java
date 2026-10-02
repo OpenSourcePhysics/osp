@@ -2133,14 +2133,7 @@ public class LibraryBrowser extends JPanel {
 
 		@Override
 		public LibraryTreeNode doInBackground() {
-			Set<LibraryResource> searchTargets = getSearchTargets();
-//			// skip targets in library no_search set
-//			for (Iterator<LibraryResource> it = searchTargets.iterator(); it.hasNext();) {
-//				LibraryResource next = it.next();
-//				if (library.noSearchSet.contains(next.collectionPath))
-//					it.remove();
-//			}
-			return searchFor(searchTerm.trim(), searchTargets);
+			return searchFor(searchTerm.trim(), getSearchTargets());
 		}
 
 		@Override
@@ -2783,10 +2776,6 @@ public class LibraryBrowser extends JPanel {
 	 * to the map it stays.
 	 */
 	private void loadSearchResourceMap() {
-//		if (!isSearchMapLoaded) {
-//			chooseSearchTargets();
-//		}
-
 		loadSearchPathMap();
 		// add local search cache files first when running in Java
 		/** j2sIgnore */
