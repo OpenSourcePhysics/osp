@@ -27,24 +27,28 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class Library {
 
-	protected String name; // name of the library
-	protected ArrayList<String> pathList = new ArrayList<String>();
-	protected HashMap<String, String> pathToNameMap = new HashMap<String, String>();
-	protected ArrayList<String> comPADREPathList = new ArrayList<String>();
-	protected HashMap<String, String> comPADREPathToNameMap = new HashMap<String, String>();
-	protected ArrayList<String> ospLibraryPathList = new ArrayList<String>();
-	protected HashMap<String, Library> ospPathToLibraryMap = new HashMap<String, Library>();
-	protected ArrayList<String> importedPathList = new ArrayList<String>();
-	protected HashMap<String, Library> importedPathToLibraryMap = new HashMap<String, Library>();
-	protected ArrayList<String> subPathList = new ArrayList<String>();
-	protected HashMap<String, Library> subPathToLibraryMap = new HashMap<String, Library>();
-	protected HashMap<String, String> allPathsToNameMap = new HashMap<String, String>();
-	protected Set<String> noSearchSet = new TreeSet<String>();
-	protected String[] openTabPaths;
+	private String name; // name of the library
+	private ArrayList<String> pathList = new ArrayList<String>();
+	private HashMap<String, String> pathToNameMap = new HashMap<String, String>();
+	private ArrayList<String> comPADREPathList = new ArrayList<String>();
+	private HashMap<String, String> comPADREPathToNameMap = new HashMap<String, String>();
+	private ArrayList<String> ospLibraryPathList = new ArrayList<String>();
+	private HashMap<String, Library> ospPathToLibraryMap = new HashMap<String, Library>();
+	private ArrayList<String> importedPathList = new ArrayList<String>();
+	private HashMap<String, Library> importedPathToLibraryMap = new HashMap<String, Library>();
+	private ArrayList<String> subPathList = new ArrayList<String>();
+	private HashMap<String, Library> subPathToLibraryMap = new HashMap<String, Library>();
+	private HashMap<String, String> allPathsToNameMap = new HashMap<String, String>();
+	private Set<String> noSearchSet = new TreeSet<String>();
+
+	private int maxRecentTabCount = 6;
+	private String chooserDir;
+	private String[] openTabPaths;
+
+	/**
+	 * used to synchronize by LibraryBrowser
+	 */
 	protected ArrayList<String> recentTabs = new ArrayList<String>();
-	protected int maxRecentTabCount = 6;
-	protected String chooserDir;
-	protected LibraryBrowser browser;
 
 	/**
 	 * Adds an OSP-sponsored library. OSP libraries are not under user control.
@@ -52,7 +56,7 @@ public class Library {
 	 * @param path the library path
 	 * @return true if successfully added
 	 */
-	public boolean addOSPLibrary(String path) {
+	protected boolean addOSPLibrary(String path) {
 		if (ospLibraryPathList.contains(path))
 			return false;
 		synchronized (ospLibraryPathList) {
@@ -62,7 +66,6 @@ public class Library {
 			}
 			Library library = new Library();
 			control.loadObject(library);
-			library.browser = this.browser;
 			ospLibraryPathList.add(path);
 			ospPathToLibraryMap.put(path, library);
 		}
@@ -75,14 +78,13 @@ public class Library {
 	 * @param path the library path
 	 * @return true if successfully imported
 	 */
-	public boolean importLibrary(String path) {
+	protected boolean importLibrary(String path) {
 		if (importedPathList.contains(path))
 			return false;
 		XMLControl control = new XMLControlElement(path);
 		if (control.failedToRead() || control.getObjectClass() != Library.class)
 			return false;
 		Library library = new Library();
-		library.browser = this.browser;
 		control.loadObject(library);
 		return importLibrary(path, library);
 	}
@@ -94,7 +96,7 @@ public class Library {
 	 * @param name the name of the collection
 	 * @return true if successfully added
 	 */
-	public boolean addComPADRECollection(String path, String name) {
+	protected boolean addComPADRECollection(String path, String name) {
 		path = path.trim();
 		// don't add duplicate paths
 		if (comPADREPathList.contains(path))
@@ -112,7 +114,7 @@ public class Library {
 	 * @param path the path to the sublibrary
 	 * @return true if successfully added
 	 */
-	public boolean addSubLibrary(String path) {
+	protected boolean addSubLibrary(String path) {
 		if (subPathList.contains(path))
 			return false;
 		synchronized (subPathList) {
@@ -120,7 +122,6 @@ public class Library {
 			if (control.failedToRead() || control.getObjectClass() != Library.class)
 				return false;
 			Library library = new Library();
-			library.browser = this.browser;
 			control.loadObject(library);
 			subPathList.add(path);
 			subPathToLibraryMap.put(path, library);
@@ -137,7 +138,6 @@ public class Library {
 	public String toString() {
 		return getName();
 	}
-
 
 //_____________________ protected and private methods _________________________
 
@@ -216,7 +216,8 @@ public class Library {
 		int n = path.indexOf(LibraryComPADRE.PRIMARY_ONLY);
 		if (n >= 0)
 			path = path.substring(0, n);
-		return pathList.contains(path) || (allLists && (comPADREPathList.contains(path) || ospLibraryPathList.contains(path)));
+		return pathList.contains(path)
+				|| (allLists && (comPADREPathList.contains(path) || ospLibraryPathList.contains(path)));
 	}
 
 	/**
@@ -225,7 +226,7 @@ public class Library {
 	 * @param path the path to the collection
 	 * @param name the menu item name for the collection
 	 */
-	public void addCollection(String path, String name) {
+	protected void addCollection(String path, String name) {
 		path = path.trim();
 		// don't add duplicate paths
 		if (pathList.contains(path))
@@ -255,7 +256,7 @@ public class Library {
 	 * 
 	 * @return array of paths
 	 */
-	public TreeSet<String> getAllPaths() {
+	protected TreeSet<String> getAllPaths() {
 		TreeSet<String> paths = new TreeSet<String>();
 		paths.addAll(pathList);
 		paths.addAll(comPADREPathList);
@@ -279,7 +280,7 @@ public class Library {
 	 * 
 	 * @return path-to-name map
 	 */
-	public HashMap<String, String> getNameMap() {
+	protected HashMap<String, String> getAllPathsToNameMap() {
 		return allPathsToNameMap;
 	}
 
@@ -424,7 +425,7 @@ public class Library {
 				control.setValue("recently_opened", paths); //$NON-NLS-1$
 				String[] names = new String[paths.length];
 				for (int i = 0; i < names.length; i++) {
-					names[i] = library.getNameMap().get(paths[i]);
+					names[i] = library.getAllPathsToNameMap().get(paths[i]);
 					if (names[i] == null)
 						names[i] = XML.getName(paths[i]);
 				}
@@ -495,7 +496,7 @@ public class Library {
 				}
 				if (names != null) {
 					for (int i = 0; i < names.length; i++) {
-						library.getNameMap().put(paths[i], names[i]);
+						library.getAllPathsToNameMap().put(paths[i], names[i]);
 					}
 				}
 			}
@@ -514,4 +515,69 @@ public class Library {
 			return obj;
 		}
 	}
+
+	protected String getChooserDir() {
+		return chooserDir;
+	}
+
+	protected void setChooserDir(String path) {
+		chooserDir = path;
+	}
+
+	protected Set<String> getNoSearchSet() {
+		return noSearchSet;
+	}
+
+	protected HashMap<String, Library> getImportedPathToLibraryMap() {
+		return importedPathToLibraryMap;
+	}
+
+	protected ArrayList<String> getImportedPathList() {
+		return importedPathList;
+	}
+
+	protected HashMap<String, String> getPathToNameMap() {
+		return pathToNameMap;
+	}
+
+	protected ArrayList<String> getPathList() {
+		return pathList;
+	}
+
+	protected String getNameFromPathIndex(int i) {
+		return pathToNameMap.get(pathList.get(i));
+	}
+
+	protected ArrayList<String> getComPADREPathList() {
+		return comPADREPathList;
+	}
+
+	protected HashMap<String, String> getComPADREPathToNameMap() {
+		return comPADREPathToNameMap;
+	}
+
+	protected ArrayList<String> getOSPLibraryPathList() {
+		return ospLibraryPathList;
+	}
+
+	protected HashMap<String, Library> getOSPPathToLibraryMap() {
+		return ospPathToLibraryMap;
+	}
+
+	protected ArrayList<String> getSubPathList() {
+		return subPathList;
+	}
+
+	protected HashMap<String, Library> getSubPathToLibraryMap() {
+		return subPathToLibraryMap;
+	}
+
+	public void setOpenTabPaths(String[] paths) {
+		openTabPaths = paths;
+	}
+
+	public String[] getOpenTabPaths() {
+		return openTabPaths;
+	}
+
 }

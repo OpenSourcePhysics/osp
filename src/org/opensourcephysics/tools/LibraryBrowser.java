@@ -147,20 +147,8 @@ public class LibraryBrowser extends JPanel {
 	 */
 	private static LibraryBrowser browser;
 
-	protected Library library = new Library();
-	protected boolean isResourcePathXML;
-
-	protected ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon;
-	protected Timer searchTimer;
-	protected JButton openButton, refreshButton;
-	protected JTextField commandField, searchField;
-
-	/**
-	 * either frame or externalDialog; never null
-	 */
-	protected Window window;
+	protected final Library library = new Library();
 	
-	protected boolean haveMetadataLoaderListener;
 	
 	/**
 	 * A JFrame was supplied or made here
@@ -171,6 +159,11 @@ public class LibraryBrowser extends JPanel {
 	 */
 	private JDialog externalDialog;
 
+	/**
+	 * either frame or externalDialog; never null
+	 */
+	private Window window;
+	
 	private LibraryManager libraryManager;
 
 	private FilesAndFoldersFilter filesAndFoldersFilter = new FilesAndFoldersFilter();
@@ -188,12 +181,17 @@ public class LibraryBrowser extends JPanel {
 	private boolean exitOnClose;
 	private boolean keyPressed, textChanged;
 	private boolean checkedWebConnection = OSPRuntime.isJS;
-
+	private boolean isResourcePathXML;
+	private boolean haveMetadataLoaderListener;
+	
 	private Action commandAction, searchAction, openRecentAction, downloadAction;
 	private PropertyChangeListener treePanelListener; 
 	private ActionListener loadCollectionAction;
 	private PropertyChangeListener metadataLoaderListener;
 
+	private Timer searchTimer;
+	private JTextField commandField, searchField;
+	private JButton openButton, refreshButton;
 	private Border buttonBorder;
 	private TextFrame helpFrame;
 	private JEditorPane htmlAboutPane;
@@ -207,6 +205,7 @@ public class LibraryBrowser extends JPanel {
 			searchItem, cacheItem, aboutItem, logItem, helpItem
 	// , deleteItem
 	;
+	private ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon;
 	private JButton messageButton;
 	private JLabel commandLabel, searchLabel;
 	private JButton editButton, downloadButton, searchTargetButton;
@@ -249,6 +248,7 @@ public class LibraryBrowser extends JPanel {
 	 */
 	public static LibraryBrowser getBrowser(Window window) {
 		if (browser == null) {
+			// e.g. AppData/Local/OSP/my_library.xml
 			String libraryPath = readLibraryXMLFile();
 			browser = new LibraryBrowser(libraryPath, window);
 			LibraryTreePanel treePanel = browser.getSelectedTreePanel();
@@ -392,13 +392,15 @@ public class LibraryBrowser extends JPanel {
 	synchronized public void refreshCollectionsMenu() {
 		JMenu menu = collectionsMenu;
 		menu.removeAll();
+		ArrayList<String> list;
 		/** @j2sIgnore */
 		{
 			JMenu myLibraryMenu = new JMenu(ToolsRes.getString("Library.Name.Local")); //$NON-NLS-1$
 			menu.add(myLibraryMenu);
-			if (!library.pathList.isEmpty()) {
-				for (String path : library.pathList) {
-					String name = library.pathToNameMap.get(path);
+			list = library.getPathList();
+			if (!list.isEmpty()) {
+				for (String path : list) {
+					String name = library.getPathToNameMap().get(path);
 					JMenuItem item = new JMenuItem(name);
 					myLibraryMenu.add(item);
 					item.addActionListener(loadCollectionAction);
@@ -407,43 +409,48 @@ public class LibraryBrowser extends JPanel {
 				}
 			}
 		}
-		if (!library.comPADREPathList.isEmpty()) {
+		list = library.getComPADREPathList();
+		if (!list.isEmpty()) {
 			JMenu submenu = new JMenu(ToolsRes.getString("Library.Name.ComPADRE")); //$NON-NLS-1$
 			menu.add(submenu);
-			for (String path : library.comPADREPathList) {
-				String name = library.comPADREPathToNameMap.get(path);
+			HashMap<String, String> map = library.getAllPathsToNameMap();
+			for (String path : list) {
+				String name = library.getComPADREPathToNameMap().get(path);
 				JMenuItem item = new JMenuItem(name);
 				submenu.add(item);
 				item.addActionListener(loadCollectionAction);
-//	  		if (LibraryComPADRE.primary_only)
-//	  			path += LibraryComPADRE.PRIMARY_ONLY;
 				item.setToolTipText(path);
 				item.setActionCommand(path);
-				library.allPathsToNameMap.put(path, name);
+				map.put(path, name);
 			}
 		}
-		if (!library.ospLibraryPathList.isEmpty()) {
-			for (String path : library.ospLibraryPathList) {
-				Library lib = library.ospPathToLibraryMap.get(path);
+		list = library.getOSPLibraryPathList();
+		if (!list.isEmpty()) {
+			HashMap<String, Library> map = library.getOSPPathToLibraryMap();
+			for (String path : list) {
+				Library lib = map.get(path);
 				JMenu submenu = new JMenu(lib.getName());
 				menu.add(submenu);
 				populateSubMenu(submenu, lib);
 			}
 		}
-		if (!library.importedPathList.isEmpty()) {
+		list = library.getImportedPathList();
+		if (!list.isEmpty()) {
 			menu.addSeparator();
-			for (String path : library.importedPathList) {
-				Library lib = library.importedPathToLibraryMap.get(path);
+			HashMap<String, Library> map = library.getImportedPathToLibraryMap();
+			for (String path : list) {
+				Library lib = map.get(path);
 				JMenu submenu = new JMenu(lib.getName());
 				menu.add(submenu);
-				for (String next : lib.pathList) {
-					String name = lib.pathToNameMap.get(next);
+				ArrayList<String> plist = lib.getPathList();
+				for (String next : plist) {
+					String name = lib.getPathToNameMap().get(next);
 					JMenuItem item = new JMenuItem(name);
 					submenu.add(item);
 					item.addActionListener(loadCollectionAction);
 					item.setToolTipText(next);
 					item.setActionCommand(next);
-					library.allPathsToNameMap.put(next, name);
+					library.getAllPathsToNameMap().put(next, name);
 				}
 			}
 		}
@@ -458,20 +465,26 @@ public class LibraryBrowser extends JPanel {
 	 * @param lib  the library with collections for the submenu
 	 */
 	private void populateSubMenu(JMenu menu, Library lib) {
-		for (String next : lib.pathList) {
-			String name = lib.pathToNameMap.get(next);
+		ArrayList<String> list = lib.getPathList();
+		HashMap<String, String> map = lib.getPathToNameMap();
+		HashMap<String, String> all = library.getAllPathsToNameMap();
+
+		for (String next : list) {
+			String name = map.get(next);
 			JMenuItem item = new JMenuItem(name);
 			menu.add(item);
 			item.addActionListener(loadCollectionAction);
 			item.setToolTipText(next);
 			item.setActionCommand(next);
-			library.allPathsToNameMap.put(next, name);
+			all.put(next, name);
 		}
-		if (!lib.subPathList.isEmpty()) {
-			for (String path : lib.subPathList) {
-				if (library.ospLibraryPathList.contains(path))
+		list = lib.getSubPathList();
+		if (!list.isEmpty()) {
+			HashMap<String, Library> subMap = lib.getSubPathToLibraryMap();
+			for (String path : list) {
+				if (library.getOSPLibraryPathList().contains(path))
 					continue;
-				Library sublib = lib.subPathToLibraryMap.get(path);
+				Library sublib = subMap.get(path);
 				JMenu submenu = new JMenu(sublib.getName());
 				menu.add(submenu);
 				populateSubMenu(submenu, sublib);
@@ -529,15 +542,6 @@ public class LibraryBrowser extends JPanel {
 				});
 			}
 		}
-//		if (externalDialog != null) {
-//			externalDialog.setVisible(vis);
-//			if (vis)
-//				externalDialog.toFront();
-//		} else {
-//			frame.setVisible(vis);
-//			if (vis)
-//				frame.toFront();
-//		}
 	}
 
 	/**
@@ -551,7 +555,7 @@ public class LibraryBrowser extends JPanel {
 		if (selected != null)
 			selected.refreshEntryFields();
 		String recentCollectionPath = (OSPRuntime.isJS ? null
-				: LibraryBrowser.getOSPPath() + LibraryBrowser.RECENT_COLLECTION_NAME);
+				: getOSPPath() + RECENT_COLLECTION_NAME);
 		for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 			LibraryTreePanel treePanel = getTreePanel(i);
 			if (!treePanel.saveChanges(getTabTitle(i)))
@@ -569,10 +573,12 @@ public class LibraryBrowser extends JPanel {
 				continue;
 			tabsToSave.add(path);
 		}
-		library.openTabPaths = tabsToSave.isEmpty() ? null : tabsToSave.toArray(new String[tabsToSave.size()]);
 		// save library if previously loaded
-		if (localLibraryLoaded)
+		if (localLibraryLoaded) {
+			library.setOpenTabPaths(tabsToSave.isEmpty() ? null : tabsToSave.toArray(new String[tabsToSave.size()]));
 			library.save(libraryPath);
+			library.setOpenTabPaths(null);
+		}
 
 		if (exitOnClose) {
 			System.exit(0);
@@ -611,7 +617,6 @@ public class LibraryBrowser extends JPanel {
 		setFields();
 		setWindow(parent, true);
 		this.libraryPath = libraryPath;
-		library.browser = this;
 		createGUI();
 		refreshGUI(true);
 		editButton.requestFocusInWindow();
@@ -725,18 +730,18 @@ public class LibraryBrowser extends JPanel {
 		window.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				browser.exit();
+				exit();
 			}
 		});
 		if (newFrame) {
 			// if isJS, reduce the browser preferred height
 			// this will only be done once
 			if (OSPRuntime.isJS) {
-				int dh = frame.getHeight() - browser.getHeight();
+				int dh = frame.getHeight() - getHeight();
 				double factor = 1 + (FontSizer.getFactor() - 1) * 0.5;
 				int w = (int) (factor * width);
 				int h = (int) (factor * hight);
-				browser.setPreferredSize(new Dimension(w, h - dh));
+				setPreferredSize(new Dimension(w, h - dh));
 				frame.pack();
 			}
 			// center on screen
@@ -747,6 +752,10 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
+	protected Library getLibrary() {
+		return library;
+	}
+	
 	/**
 	 * Gets the library manager for this browser.
 	 * 
@@ -759,10 +768,10 @@ public class LibraryBrowser extends JPanel {
 			else
 				libraryManager = new LibraryManager(this, frame);
 		}
-		if (library.pathList.size() > 0 && libraryManager.collectionList.getSelectedIndex() == -1) {
+		if (library.getPathList().size() > 0 && libraryManager.collectionList.getSelectedIndex() == -1) {
 			libraryManager.collectionList.setSelectedIndex(0);
 		}
-		if (library.importedPathList.size() > 0 && libraryManager.guestList.getSelectedIndex() == -1) {
+		if (library.getImportedPathList().size() > 0 && libraryManager.guestList.getSelectedIndex() == -1) {
 			libraryManager.guestList.setSelectedIndex(0);
 		}
 		libraryManager.setFontLevel(FontSizer.getLevel());
@@ -1746,7 +1755,7 @@ public class LibraryBrowser extends JPanel {
 		if (n == -1)
 			return;
 
-		String title = library.getNameMap().get(path);
+		String title = library.getAllPathsToNameMap().get(path);
 		if (title == null)
 			title = collection.getTitle(path);
 
@@ -1763,7 +1772,7 @@ public class LibraryBrowser extends JPanel {
 		}
 		boolean changed = getTreePanel(n).isChanged();
 		tabbedPane.setTitleAt(n, changed ? title + "*" : title); //$NON-NLS-1$
-		library.getNameMap().put(path, title);
+		library.getAllPathsToNameMap().put(path, title);
 		if (n == tabbedPane.getSelectedIndex()) {
 			String tabname = " '" + title + "'"; //$NON-NLS-1$ //$NON-NLS-2$
 			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab") + tabname); //$NON-NLS-1$
@@ -1868,17 +1877,21 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	protected void flashOpen() {
-		openButton.setForeground(Color.yellow);
+		flash(true);
 		Timer t = new Timer(500, new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openButton.setForeground(Color.black);
+				flash(false);
 			}
 
 		});
 		t.setRepeats(false);
 		t.start();
+	}
+
+	protected void flash(boolean b) {
+		openButton.setForeground(b ? Color.yellow : Color.black);
 	}
 
 	/**
@@ -2135,24 +2148,7 @@ public class LibraryBrowser extends JPanel {
 			try {
 				LibraryTreeNode resultsTreeNode = get();
 				if (resultsTreeNode == null) {
-					Toolkit.getDefaultToolkit().beep();
-					OSPLog.finer(searchTerm + "not found");
-					// give visual cue, too
-					Color color = searchField.getForeground();
-					searchField.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
-					searchField.setForeground(Color.RED);
-					searchField.setBackground(Color.white);
-					if (searchTimer == null) {
-						searchTimer = OSPRuntime.trigger(1000, (e) -> {
-							searchField.setText(searchTerm);
-							searchField.setForeground(color);
-							searchField.selectAll();
-							searchField.setBackground(Color.white);
-						});
-					} else {
-						searchTimer.restart();
-					}
-
+					notifySearchNotFound(searchTerm);
 					return;
 				}
 				LibraryTreePanel treePanel = getSearchResultsTreePanel();
@@ -2199,6 +2195,28 @@ public class LibraryBrowser extends JPanel {
 					}
 					return null;
 				});
+	}
+
+	protected void notifySearchNotFound(String searchTerm) {
+		Toolkit.getDefaultToolkit().beep();
+		OSPLog.finer(searchTerm + "not found");
+		// give visual cue, too
+		JTextField f = searchField;
+		Color color = f.getForeground();
+		f.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
+		f.setForeground(Color.RED);
+		f.setBackground(Color.white);
+		if (searchTimer == null) {
+			searchTimer = OSPRuntime.trigger(1000, (e) -> {
+				f.setText(searchTerm);
+				f.setForeground(color);
+				f.selectAll();
+				f.setBackground(Color.white);
+			});
+		} else {
+			searchTimer.restart();
+		}
+
 	}
 
 	private String getDownloadName(String name, LibraryResource record) {
@@ -2440,7 +2458,7 @@ public class LibraryBrowser extends JPanel {
 			recentMenu.removeAll();
 			recentMenu.setEnabled(!library.recentTabs.isEmpty());
 			for (String next : library.recentTabs) {
-				String text = library.getNameMap().get(next);
+				String text = library.getAllPathsToNameMap().get(next);
 				if (text == null)
 					text = XML.getName(next);
 				if (text.contains("temp_"))
@@ -2527,6 +2545,39 @@ public class LibraryBrowser extends JPanel {
 	 */
 	public int getTabCount() {
 		return tabbedPane.getTabCount();
+	}
+
+	public void setCommandField(String path, boolean isRoot, boolean available) {
+		commandField.setText(path);
+		commandField.setForeground(available ? LibraryTreePanel.defaultForeground : LibraryTreePanel.darkRed);
+		commandField.setCaretPosition(0);
+		if (isRoot)
+			openButton.setEnabled(false);
+		else if (available) {
+			flashOpen();
+		}
+	}
+
+	protected boolean isPath(String path) {
+		return commandField.getText().equals(path);
+	}
+
+	protected void setMessageForNode(String message, boolean isRoot) {
+		setMessage(message, null);
+		setRefreshToolTip(isRoot);
+	}
+
+	protected void setRefreshForNode(boolean selected, boolean isRoot) {
+		refreshButton.setEnabled(selected);
+		setRefreshToolTip(isRoot);
+	}
+
+	private void setRefreshToolTip(boolean isRoot) {
+		refreshButton.setToolTipText(ToolsRes.getString(isRoot ? "LibraryBrowser.Tooltip.Reload" : "LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
+	}
+
+	public Window getWindow() {
+		return window;
 	}
 
 	/**
@@ -2651,7 +2702,7 @@ public class LibraryBrowser extends JPanel {
 			if (path.contains("EJS") || !ResourceLoader.isHTTP(path))
 				continue;
 
-			String name = library.getNameMap().get(path);
+			String name = library.getAllPathsToNameMap().get(path);
 			if (LibraryComPADRE.isComPADREPath(path))
 				name = "ComPADRE " + name;
 			searchPathMap.put(name, path);
@@ -2684,7 +2735,7 @@ public class LibraryBrowser extends JPanel {
 			if (OSPRuntime.isJS) {
 				// search current tabs and ComPADRE targets by default
 				if (getTabIndexFromPath(path) > -1 || name.startsWith("ComPADRE")) {
-					library.noSearchSet.remove(path);
+					library.getNoSearchSet().remove(path);
 				}
 			}
 		}
@@ -2699,11 +2750,13 @@ public class LibraryBrowser extends JPanel {
 		if (firstTime) {
 			searchTargetChooser = new ListChooser(ToolsRes.getString("LibraryManager.Title.Search"),
 					ToolsRes.getString("LibraryBrowser.Dialog.SearchTargets.Text") + ":", null, (e) -> {
-						library.noSearchSet.clear();
+						Set<String> set = 
+						library.getNoSearchSet();
+						set.clear();
 						for (int i = 0; i < searchTargetNames.size(); i++) {
 							String path = searchPathMap.get(searchTargetNames.get(i));
 							if (!searchTargetPaths.contains(path)) {
-								library.noSearchSet.add(path);
+								set.add(path);
 							}
 						}
 					});
@@ -2714,10 +2767,11 @@ public class LibraryBrowser extends JPanel {
 		searchTargetPaths.clear();
 		boolean[] selected = new boolean[searchPathMap.size()];
 		int i = 0;
+		Set<String> set = library.getNoSearchSet();
 		for (String name : searchPathMap.keySet()) {
 			String path = searchPathMap.get(name);
 			searchTargetPaths.add(path);
-			selected[i] = !library.noSearchSet.contains(path);
+			selected[i] = !set.contains(path);
 			i++;
 		}
 		searchTargetChooser.choose(searchTargetPaths, searchTargetNames, null, null, selected, null);
@@ -2740,7 +2794,7 @@ public class LibraryBrowser extends JPanel {
 			List<File> cacheFiles = ResourceLoader.getSearchFileList();
 			for (String nextPath : searchPathMap.values()) {
 				File cacheFile = ResourceLoader.getSearchCacheFile(nextPath);
-				if (cacheFiles.contains(cacheFile) && !library.noSearchSet.contains(nextPath)
+				if (cacheFiles.contains(cacheFile) && !library.getNoSearchSet().contains(nextPath)
 						&& (searchResourceMap == null || !searchResourceMap.keySet().contains(nextPath))) {
 					// cache file should be included in searchResourceMap but is not
 					XMLControl control = new XMLControlElement(cacheFile);
@@ -2755,10 +2809,10 @@ public class LibraryBrowser extends JPanel {
 		// add searchable web files for both Java and JS
 		TreeSet<String> paths = library.getAllPaths();
 		XMLControl control;
+		Set<String> set = library.getNoSearchSet();
 		for (String path : paths) {
-			if (library.noSearchSet.contains(path) || !ResourceLoader.isHTTP(path))
+			if (!ResourceLoader.isHTTP(path) || set.contains(path))
 				continue;
-
 			if (searchResourceMap == null || !searchResourceMap.keySet().contains(path)) {
 				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
 				File f = ResourceLoader.getSearchCacheFile(path);
@@ -2782,12 +2836,12 @@ public class LibraryBrowser extends JPanel {
 	protected Set<LibraryResource> getSearchTargets() {
 		loadSearchResourceMap();
 		Set<LibraryResource> searchTargets = new TreeSet<LibraryResource>();
-
+		Set<String> set = library.getNoSearchSet();
 		if (searchResourceMap != null) {
 			for (LibraryResource r : searchResourceMap.values()) {
 				LibraryResource rc = r.getClone();
 				String path = rc.collectionPath;
-				if (path != null && !library.noSearchSet.contains(path)) {
+				if (path != null && !set.contains(path)) {
 					searchTargets.add(rc);
 				}
 			}
@@ -2800,7 +2854,7 @@ public class LibraryBrowser extends JPanel {
 					LibraryResource resource = (LibraryResource) control.loadObject(null);
 					resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
 					String path = resource.collectionPath;
-					if (path != null && !library.noSearchSet.contains(path)) {
+					if (path != null && !set.contains(path)) {
 						searchTargets.add(resource);
 					}
 				}
@@ -3406,47 +3460,7 @@ public class LibraryBrowser extends JPanel {
 			};
 			if (!ResourceLoader.isHTTP(libraryPath)) {
 				// load library
-				library.load(libraryPath);
-				localLibraryLoaded = true;
-				// add previously open tabs that are available
-				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
-				if (!haveMetadataLoaderListener && library.openTabPaths != null) {
-					ArrayList<String> unopenedTabs = new ArrayList<String>();
-					ArrayList<String> openedTabs = new ArrayList<String>();
-					String[] paths = library.openTabPaths;
-					for (String path : paths) {
-						// is path already open?
-						int k = getTabIndexFromPath(path);
-						if (k > -1 || openedTabs.contains(path)) {
-							continue;
-						}
-						// first check cache
-
-						File cachedFile = ResourceLoader.getSearchCacheFile(path); //
-						if (cachedFile.exists()) {
-							addTabAndExecute(path, null, null);
-							openedTabs.add(path);
-						} else {
-							unopenedTabs.add(path);
-						}
-					}
-					if (!unopenedTabs.isEmpty()) {
-						paths = unopenedTabs.toArray(new String[unopenedTabs.size()]);
-						unopenedTabs.clear();
-						for (String path : paths) {
-							// check for local resource
-							Resource res = ResourceLoader.getResource(path);
-							if (res != null && !ResourceLoader.isHTTP(path)) {
-								addTabAndExecute(path, null, null);
-							} else {
-								unopenedTabs.add(path);
-							}
-						}
-					}
-					boolean done = unopenedTabs.isEmpty();
-					// save web-based tabs for done() method
-					library.openTabPaths = done ? null : unopenedTabs.toArray(new String[unopenedTabs.size()]);
-				}
+				loadTheLibrary();
 				webChecker.run();
 			} else {
 				webChecker.run(); // check web connection first
@@ -3463,8 +3477,9 @@ public class LibraryBrowser extends JPanel {
 				Library library = get();
 				// add previously open tabs not available for loading in doInBackground method
 				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
-				if (!haveMetadataLoaderListener && library.openTabPaths != null) {
-					for (String path : library.openTabPaths) {
+				String[] paths = library.getOpenTabPaths();
+				if (!haveMetadataLoaderListener && paths != null) {
+					for (String path : paths) {
 						boolean available = isWebConnected(null) && ResourceLoader.isHTTP(path);
 						if (available) {
 							addTabAndExecute(path, null, null);
@@ -3636,36 +3651,54 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
-//______________________________ static methods and classes ____________________________
+	public void loadTheLibrary() {
+		library.load(libraryPath);
+		localLibraryLoaded = true;
+		// add previously open tabs that are available
+		// but NOT when refreshing DL search data (non-null metadataLoaderListener)
+		String[] paths = library.getOpenTabPaths();
+		if (paths != null && !haveMetadataLoaderListener) {
+			ArrayList<String> unopenedTabs = new ArrayList<String>();
+			ArrayList<String> openedTabs = new ArrayList<String>();
+			for (String path : paths) {
+				// is path already open?
+				int k = getTabIndexFromPath(path);
+				if (k > -1 || openedTabs.contains(path)) {
+					continue;
+				}
+				// first check cache
 
-	/**
-	 * Entry point when run as an independent application.
-	 * 
-	 * @param args String[] ignored
-	 */
-	public static void main(String[] args) {
-		LibraryBrowser browser = LibraryBrowser.getBrowser();
-		browser.addOSPLibrary(TRACKER_LIBRARY);
-		browser.addOSPLibrary(SHARED_LIBRARY);
-		browser.addComPADRECollection(LibraryComPADRE.EJS_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
-		browser.addComPADRECollection(LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
-		if ((args != null) && (args.length > 0) && (args[0] != null)) {
-			browser.open(args[0]);
+				File cachedFile = ResourceLoader.getSearchCacheFile(path); //
+				if (cachedFile.exists()) {
+					addTabAndExecute(path, null, null);
+					openedTabs.add(path);
+				} else {
+					unopenedTabs.add(path);
+				}
+			}
+			if (!unopenedTabs.isEmpty()) {
+				paths = unopenedTabs.toArray(new String[unopenedTabs.size()]);
+				unopenedTabs.clear();
+				for (String path : paths) {
+					// check for local resource
+					Resource res = ResourceLoader.getResource(path);
+					if (res != null && !ResourceLoader.isHTTP(path)) {
+						addTabAndExecute(path, null, null);
+					} else {
+						unopenedTabs.add(path);
+					}
+				}
+			}
+			boolean done = unopenedTabs.isEmpty();
+			// save web-based tabs for done() method
+			library.setOpenTabPaths(done ? null : unopenedTabs.toArray(new String[unopenedTabs.size()]));
 		}
-		browser.exitOnClose = true;
-		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		int x = (dim.width - browser.getBounds().width) / 2;
-		int y = (dim.height - browser.getBounds().height) / 2;
-		browser.setLocation(x, y);
-		browser.setVisible(true);
+
 	}
 
 	public void warnNotLoaded(String path) {
 		String s = ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Message") + ":\n" + path; //$NON-NLS-1$
 		System.out.println("WARN - LibraryBrowser " + s);
-//		JOptionPane.showMessageDialog(LibraryBrowser.this, s, //$NON-NLS-1$
-//				ToolsRes.getString("LibraryBrowser.Dialog.CollectionNotFound.Title"), //$NON-NLS-1$
-//				JOptionPane.WARNING_MESSAGE);
 	}
 
 	/**
@@ -3954,6 +3987,28 @@ public class LibraryBrowser extends JPanel {
 			}
 		}
 
+	}
+
+	/**
+	 * Entry point when run as an independent application.
+	 * 
+	 * @param args String[] ignored
+	 */
+	public static void main(String[] args) {
+		LibraryBrowser browser = LibraryBrowser.getBrowser();
+		browser.addOSPLibrary(TRACKER_LIBRARY);
+		browser.addOSPLibrary(SHARED_LIBRARY);
+		browser.addComPADRECollection(LibraryComPADRE.EJS_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
+		browser.addComPADRECollection(LibraryComPADRE.TRACKER_SERVER_TREE + LibraryComPADRE.PRIMARY_ONLY);
+		if ((args != null) && (args.length > 0) && (args[0] != null)) {
+			browser.open(args[0]);
+		}
+		browser.exitOnClose = true;
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		int x = (dim.width - browser.getBounds().width) / 2;
+		int y = (dim.height - browser.getBounds().height) / 2;
+		browser.setLocation(x, y);
+		browser.setVisible(true);
 	}
 
 }

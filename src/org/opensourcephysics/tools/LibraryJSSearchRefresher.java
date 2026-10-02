@@ -94,7 +94,7 @@ public class LibraryJSSearchRefresher implements PropertyChangeListener {
 			XMLControl control = new XMLControlElement(libraryPaths[i]);
 			Library lib = new Library();
 			control.loadObject(lib);
-			HashMap<String, String> map = lib.getNameMap();
+			HashMap<String, String> map = lib.getAllPathsToNameMap();
 			TreeSet<String> paths = lib.getAllPaths();
 			for (String path : paths) {
 				nameToPathMap.put(map.get(path), path);

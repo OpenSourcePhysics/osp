@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -97,7 +98,7 @@ public class LibraryManager extends JDialog {
 
 	private void init(LibraryBrowser browser) {
 		this.browser = browser;
-		library = browser.library;
+		library = browser.getLibrary();
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		createGUI();
 		Dimension dim = new Dimension(defaultSize);
@@ -131,10 +132,11 @@ public class LibraryManager extends JDialog {
 			refreshSearchTab();
 			refreshCacheTab();
 		} else {
-			library.noSearchSet.clear();
+			Set<String>set = library.getNoSearchSet();
+			set.clear();
 			for (SearchCheckBox next : checkboxes) {
 				if (!next.isSelected())
-					library.noSearchSet.add(next.urlPath);
+					set.add(next.urlPath);
 			}
 		}
 		super.setVisible(vis);
@@ -152,13 +154,12 @@ public class LibraryManager extends JDialog {
 		ListModel<String> collectionListModel = new AbstractListModel<String>() {
 			@Override
 			public int getSize() {
-				return library.pathList.size();
+				return library.getPathList().size();
 			}
 
 			@Override
 			public String getElementAt(int i) {
-				String path = library.pathList.get(i);
-				return library.pathToNameMap.get(path);
+				return library.getNameFromPathIndex(i);
 			}
 		};
 		collectionList = new JList<String>(collectionListModel);
@@ -176,13 +177,13 @@ public class LibraryManager extends JDialog {
 		ListModel<String> importListModel = new AbstractListModel<String>() {
 			@Override
 			public int getSize() {
-				return library.importedPathList.size();
+				return library.getImportedPathList().size();
 			}
 
 			@Override
 			public String getElementAt(int i) {
-				String path = library.importedPathList.get(i);
-				return library.importedPathToLibraryMap.get(path).getName();
+				String path = library.getImportedPathList().get(i);
+				return library.getImportedPathToLibraryMap().get(path).getName();
 			}
 		};
 		guestList = new JList<String>(importListModel);
@@ -201,7 +202,7 @@ public class LibraryManager extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String path = pathField.getText();
-				String prev = library.pathToNameMap.get(path);
+				String prev = library.getPathToNameMap().get(path);
 				String input = nameField.getText().trim();
 				if (input == null || input.equals("") || input.equals(prev)) { //$NON-NLS-1$
 					return;
@@ -236,14 +237,14 @@ public class LibraryManager extends JDialog {
 //		pathAction = new ActionListener() {
 //      public void actionPerformed(ActionEvent e) {
 //	    	int i = collectionList.getSelectedIndex();
-//      	String path = library.pathList.get(i);
+//      	String path = library.getPathList().get(i);
 //  			String name = library.pathToNameMap.get(path);
 //      	String input = pathField.getText().trim();
 //        if(input==null || input.equals("") || input.equals(path)) { //$NON-NLS-1$
 //          return;
 //        }
-//        library.pathList.remove(i);
-//        library.pathList.add(i, input);
+//        library.getPathList().remove(i);
+//        library.getPathList().add(i, input);
 //        library.pathToNameMap.remove(path);
 //        library.pathToNameMap.put(input, name);
 //
@@ -451,7 +452,7 @@ public class LibraryManager extends JDialog {
 	protected void doMove(boolean isUp) {
 		boolean isImports = tabbedPane.getSelectedComponent() == importsPanel;
 		JList<String> list = isImports ? guestList : collectionList;
-		ArrayList<String> paths = isImports ? library.importedPathList : library.pathList;
+		ArrayList<String> paths = isImports ? library.getImportedPathList() : library.getPathList();
 		int i = list.getSelectedIndex();
 		String path = paths.get(i);
 		i += (isUp ? -1 : 1);
@@ -494,7 +495,7 @@ public class LibraryManager extends JDialog {
 				collectionList.setModel(model);
 				refreshGUI();
 				collectionList.repaint();
-				collectionList.setSelectedIndex(library.pathList.size() - 1);
+				collectionList.setSelectedIndex(library.getPathList().size() - 1);
 				browser.refreshCollectionsMenu();
 				return;
 			}
@@ -507,14 +508,13 @@ public class LibraryManager extends JDialog {
 			}
 			if (isLibrary) {
 				Library newLibrary = new Library();
-				newLibrary.browser = LibraryManager.this.browser;
 				control.loadObject(newLibrary);
 				if (library.importLibrary(path, newLibrary)) {
 					ListModel<String> model = guestList.getModel();
 					guestList.setModel(model);
 					refreshGUI();
 					guestList.repaint();
-					guestList.setSelectedIndex(library.importedPathList.size() - 1);
+					guestList.setSelectedIndex(library.getImportedPathList().size() - 1);
 					browser.refreshCollectionsMenu();
 				}
 				return;
@@ -526,14 +526,14 @@ public class LibraryManager extends JDialog {
 	protected void doRemove() {
 		boolean isImports = tabbedPane.getSelectedComponent() == importsPanel;
 		JList<String> list = isImports ? guestList : collectionList;
-		ArrayList<String> paths = isImports ? library.importedPathList : library.pathList;
+		ArrayList<String> paths = isImports ? library.getImportedPathList() : library.getPathList();
 		int i = list.getSelectedIndex();
 		String path = paths.get(i);
 		paths.remove(path);
 		if (isImports)
-			library.importedPathToLibraryMap.remove(path);
+			library.getImportedPathToLibraryMap().remove(path);
 		else
-			library.pathToNameMap.remove(path);
+			library.getPathToNameMap().remove(path);
 		list.repaint();
 		if (i >= paths.size()) {
 			list.setSelectedIndex(paths.size() - 1);
@@ -637,14 +637,16 @@ public class LibraryManager extends JDialog {
 		if (tabbedPane.getSelectedComponent() == collectionsPanel) {
 			nameField.setEditable(true);
 			int i = collectionList.getSelectedIndex();
-			moveDownButton.setEnabled(i < library.pathList.size() - 1);
+			ArrayList<String> paths = library.getPathList();
+			moveDownButton.setEnabled(i < library.getPathList().size() - 1);
 			moveUpButton.setEnabled(i > 0);
-			if (i > -1 && library.pathList.size() > i) {
+			HashMap<String, String> map = library.getPathToNameMap();
+			if (i > -1 && i < paths.size()) {
 				removeButton.setEnabled(true);
-				String path = library.pathList.get(i);
+				String path = paths.get(i);
 				pathField.setText(path);
 				pathField.setCaretPosition(0);
-				String name = library.pathToNameMap.get(path);
+				String name = map.get(path);
 				nameField.setText(name);
 				boolean unavailable = ResourceLoader.isHTTP(path) && !browser.isWebConnected(null);
 				Resource res = unavailable ? null : ResourceLoader.getResourceZipURLsOK(path);
@@ -662,14 +664,14 @@ public class LibraryManager extends JDialog {
 		} else if (tabbedPane.getSelectedComponent() == importsPanel) {
 			nameField.setEditable(false);
 			int i = guestList.getSelectedIndex();
-			moveDownButton.setEnabled(i < library.importedPathList.size() - 1);
+			moveDownButton.setEnabled(i < library.getImportedPathList().size() - 1);
 			moveUpButton.setEnabled(i > 0);
-			if (i > -1 && library.importedPathList.size() > i) {
+			if (i > -1 && library.getImportedPathList().size() > i) {
 				removeButton.setEnabled(true);
-				String path = library.importedPathList.get(i);
+				String path = library.getImportedPathList().get(i);
 				pathField.setText(path);
 				pathField.setCaretPosition(0);
-				String name = library.importedPathToLibraryMap.get(path).getName();
+				String name = library.getImportedPathToLibraryMap().get(path).getName();
 				nameField.setText(name);
 				boolean unavailable = ResourceLoader.isHTTP(path) && !browser.isWebConnected(null);
 				Resource res = unavailable ? null : ResourceLoader.getResourceZipURLsOK(path);
@@ -693,8 +695,8 @@ public class LibraryManager extends JDialog {
 		searchBox.removeAll();
 		checkboxes.clear();
 		ArrayList<JLabel> labels = new ArrayList<JLabel>();
-		Set<String> names = browser.getSearchPathMap().keySet();
-		TreeMap<String, String> map = browser.searchPathMap;
+		TreeMap<String, String> map = browser.getSearchPathMap();
+		Set<String> names = map.keySet();
 		for (String name: names) {
 			String path = map.get(name);
 			JLabel label = new JLabel(name);
@@ -860,7 +862,7 @@ public class LibraryManager extends JDialog {
 			urlPath = path;
 			setText(ToolsRes.getString("LibraryManager.Checkbox.Search")); //$NON-NLS-1$
 			setFont(sharedFont);
-			setSelected(!library.noSearchSet.contains(path));
+			setSelected(!library.getNoSearchSet().contains(path));
 			setOpaque(false);
 			int space = 20 + FontSizer.getLevel() * 5;
 			setBorder(BorderFactory.createEmptyBorder(0, 0, 0, space));

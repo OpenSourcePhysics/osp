@@ -380,7 +380,7 @@ public class LibraryTreePanel extends JPanel {
 		LibraryTreePanel selected = browser.getSelectedTreePanel();
 		showHTMLPane(node);
 
-		if (selected == this && !browser.commandField.getText().equals(path)) {
+		if (selected == this && !browser.isPath(path)) {
 			setCommandField(node, path, isCollection);
 		}
 		// show editor data if editing
@@ -418,7 +418,6 @@ public class LibraryTreePanel extends JPanel {
 	}
 
 	private void setCommandField(LibraryTreeNode node, String path, boolean isCollection) {
-		browser.commandField.setText(path);
 		// if not the root, check to see if resource is available
 		boolean available = node.isRoot();
 		if (path != null && !available) {
@@ -434,13 +433,7 @@ public class LibraryTreePanel extends JPanel {
 				available = ResourceLoader.getResourceZipURLsOK(ResourceLoader.getURIPath(path)) != null;
 			}
 		}
-		browser.commandField.setForeground(available ? defaultForeground : darkRed);
-		browser.commandField.setCaretPosition(0);
-		if (node.isRoot())
-			browser.openButton.setEnabled(false);
-		else if (available) {
-				browser.flashOpen();
-		}
+		browser.setCommandField(path, node.isRoot(), available);
 	}
 
 	private void showEditorData(LibraryTreeNode node, boolean isCollection) {
@@ -807,7 +800,7 @@ public class LibraryTreePanel extends JPanel {
 					@Override
 					public void run() {
 						if (launchLater) {
-							javajs.async.AsyncDialog.showYesNoAsync(browser.window,
+							javajs.async.AsyncDialog.showYesNoAsync(browser.getWindow(),
 									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Message")
 									+ " \"" + node.getName() + "\"?", 
 									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Title"), 
@@ -957,27 +950,7 @@ public class LibraryTreePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
-					int result = JFileChooser.CANCEL_OPTION;
-					JFileChooser chooser = getFileChooser();
-					chooser.setDialogTitle(null);
-					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-					chooser.setAcceptAllFileFilterUsed(true);
-					chooser.addChoosableFileFilter(htmlFilter);
-					result = chooser.showOpenDialog(LibraryTreePanel.this);
-					File file = chooser.getSelectedFile();
-					chooser.removeChoosableFileFilter(htmlFilter);
-					chooser.setSelectedFile(new File("")); //$NON-NLS-1$
-					if (result == JFileChooser.APPROVE_OPTION) {
-						browser.library.chooserDir = chooser.getCurrentDirectory().toString();
-						if (file != null) {
-							String path = XML.forwardSlash(file.getAbsolutePath());
-							String base = node.getBasePath();
-							if (!"".equals(base)) { //$NON-NLS-1$
-								path = XML.getPathRelativeTo(path, base);
-							}
-							node.setHTMLPath(path);
-						}
-					}
+					doOpen(node);
 				}
 			}
 		});
@@ -1047,7 +1020,7 @@ public class LibraryTreePanel extends JPanel {
 					chooser.removeChoosableFileFilter(folderFilter);
 					chooser.setSelectedFile(new File("")); //$NON-NLS-1$
 					if (result == JFileChooser.APPROVE_OPTION) {
-						browser.library.chooserDir = chooser.getCurrentDirectory().toString();
+						browser.getLibrary().setChooserDir(chooser.getCurrentDirectory().toString());
 						if (file != null) {
 							htmlPanesByNode.remove(node);
 							LibraryTreeNode parent = (LibraryTreeNode) node.getParent();
@@ -1083,25 +1056,9 @@ public class LibraryTreePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
-					int result = JFileChooser.CANCEL_OPTION;
-					JFileChooser chooser = getFileChooser();
-					chooser.setDialogTitle(null);
-					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-					chooser.setAcceptAllFileFilterUsed(true);
-					result = chooser.showOpenDialog(LibraryTreePanel.this);
-					File file = chooser.getSelectedFile();
-					chooser.setSelectedFile(new File("")); //$NON-NLS-1$
-					if (result == JFileChooser.APPROVE_OPTION) {
-						browser.library.chooserDir = chooser.getCurrentDirectory().toString();
-						if (file != null) {
-							String path = XML.forwardSlash(file.getAbsolutePath());
-							String base = node.getBasePath();
-							if (!"".equals(base)) { //$NON-NLS-1$
-								path = XML.getPathRelativeTo(path, base);
-							}
-							node.setTarget(path);
-						}
-					}
+					String path = doOpen(node.getBasePath());
+					if (path != null)
+						node.setTarget(path);
 				}
 			}
 		});
@@ -1262,6 +1219,53 @@ public class LibraryTreePanel extends JPanel {
 		metadataBox.add(metadataDropdown);
 	}
 
+	protected String doOpen(String basePath) {
+		int result = JFileChooser.CANCEL_OPTION;
+		JFileChooser chooser = getFileChooser();
+		chooser.setDialogTitle(null);
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.setAcceptAllFileFilterUsed(true);
+		result = chooser.showOpenDialog(LibraryTreePanel.this);
+		File file = chooser.getSelectedFile();
+		chooser.setSelectedFile(new File("")); //$NON-NLS-1$
+		if (result == JFileChooser.APPROVE_OPTION) {
+			browser.getLibrary().setChooserDir(chooser.getCurrentDirectory().toString());
+			if (file != null) {
+				String path = XML.forwardSlash(file.getAbsolutePath());
+				String base = basePath;
+				if (!"".equals(base)) { //$NON-NLS-1$
+					path = XML.getPathRelativeTo(path, base);
+				}
+				return path;
+			}
+		}
+		return null;
+	}
+
+	protected void doOpen(LibraryTreeNode node) {
+		int result = JFileChooser.CANCEL_OPTION;
+		JFileChooser chooser = getFileChooser();
+		chooser.setDialogTitle(null);
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.setAcceptAllFileFilterUsed(true);
+		chooser.addChoosableFileFilter(htmlFilter);
+		result = chooser.showOpenDialog(LibraryTreePanel.this);
+		File file = chooser.getSelectedFile();
+		chooser.removeChoosableFileFilter(htmlFilter);
+		chooser.setSelectedFile(new File("")); //$NON-NLS-1$
+		if (result == JFileChooser.APPROVE_OPTION) {
+			browser.getLibrary().setChooserDir(chooser.getCurrentDirectory().toString());
+			if (file != null) {
+				String path = XML.forwardSlash(file.getAbsolutePath());
+				String base = node.getBasePath();
+				if (!"".equals(base)) { //$NON-NLS-1$
+					path = XML.getPathRelativeTo(path, base);
+				}
+				node.setHTMLPath(path);
+			}
+		}
+	}
+
 	private JButton newJButton(Action a) {
 		JButton b = new JButton();
 		b.setAction(a);
@@ -1340,12 +1344,7 @@ public class LibraryTreePanel extends JPanel {
 			keywordsLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Keywords")); //$NON-NLS-1$
 			metadataLabel.setText(ToolsRes.getString("LibraryTreePanel.Label.Metadata")); //$NON-NLS-1$
 		}
-		browser.refreshButton.setEnabled(getSelectedNode() != null);
-		if (getSelectedNode() == rootNode) {
-			browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
-		} else
-			browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
-
+		browser.setRefreshForNode(getSelectedNode() != null, getSelectedNode() == rootNode);
 		// adjust size of labels so they right-align
 		int w = 0, h = 0;
 		Font font = nameLabel.getFont();
@@ -2567,11 +2566,7 @@ public class LibraryTreePanel extends JPanel {
 			SwingUtilities.invokeLater(() -> {
 				if (htmlPane != null && node == getSelectedNode()) {
 					htmlScroller.setViewportView(htmlPane);
-					browser.setMessage(node.getToolTip(), null);
-					if (node == rootNode) {
-						browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Reload")); //$NON-NLS-1$
-					} else
-						browser.refreshButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Tooltip.Refresh")); //$NON-NLS-1$
+					browser.setMessageForNode(node.getToolTip(), node == rootNode);
 				}
 			});
 
@@ -2775,9 +2770,9 @@ public class LibraryTreePanel extends JPanel {
 	 * 
 	 * @return the file chooser
 	 */
-	protected static JFileChooser getFileChooser() {
+	protected JFileChooser getFileChooser() {
 		if (chooser == null) {
-			String chooserDir = LibraryBrowser.getBrowser().library.chooserDir;
+			String chooserDir = browser.getLibrary().getChooserDir();
 			chooser = (chooserDir == null) ? new JFileChooser() : new JFileChooser(new File(chooserDir));
 			htmlFilter = new FileFilter() {
 				// accept directories and html files
