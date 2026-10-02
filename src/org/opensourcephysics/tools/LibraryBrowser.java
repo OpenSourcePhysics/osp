@@ -141,14 +141,15 @@ public class LibraryBrowser extends JPanel {
 	private static final int width = 900, hight = 560;
 	
 	private static final TrackerDLFilter TRACKER_FILTER = new TrackerDLFilter();
-	
+
 	/**
 	 * the only static variable field
 	 */
 	private static LibraryBrowser browser;
 
 	protected final Library library = new Library();
-	
+
+	protected final LibraryHistory history = new LibraryHistory();
 	
 	/**
 	 * A JFrame was supplied or made here
@@ -170,24 +171,9 @@ public class LibraryBrowser extends JPanel {
 
 	private JMenuBar menubar;
 
-	private ResizableIcon refreshIcon, downloadIcon, downloadDisabledIcon;
-	private ResizableIcon searchTargetIcon;
-
-	private String libraryPath;
-
-	private boolean fireHelpEvent;
-	private boolean webConnected = OSPRuntime.isJS;
-	private boolean localLibraryLoaded;
-	private boolean exitOnClose;
-	private boolean keyPressed, textChanged;
-	private boolean checkedWebConnection = OSPRuntime.isJS;
-	private boolean isResourcePathXML;
-	private boolean haveMetadataLoaderListener;
-	
 	private Action commandAction, searchAction, openRecentAction, downloadAction;
 	private PropertyChangeListener treePanelListener; 
 	private ActionListener loadCollectionAction;
-	private PropertyChangeListener metadataLoaderListener;
 
 	private Timer searchTimer;
 	private JTextField commandField, searchField;
@@ -202,10 +188,11 @@ public class LibraryBrowser extends JPanel {
 	private JToolBar toolbar;
 	private JMenu fileMenu, recentMenu, collectionsMenu, manageMenu, helpMenu;
 	private JMenuItem newItem, openItem, saveItem, saveAsItem, closeItem, closeAllItem, exitItem, collectionsItem,
-			searchItem, cacheItem, aboutItem, logItem, helpItem
-	// , deleteItem
-	;
+			searchItem, cacheItem, aboutItem, logItem, helpItem;
 	private ResizableIcon expandIcon, contractIcon, heavyExpandIcon, heavyContractIcon;
+	private ResizableIcon refreshIcon, downloadIcon, downloadDisabledIcon;
+	private ResizableIcon searchTargetIcon;
+
 	private JButton messageButton;
 	private JLabel commandLabel, searchLabel;
 	private JButton editButton, downloadButton, searchTargetButton;
@@ -215,6 +202,18 @@ public class LibraryBrowser extends JPanel {
 
 	private int myFontLevel;
 
+	private boolean exitOnClose;
+	private boolean fireHelpEvent;
+	private boolean isResourcePathXML;
+	private boolean keyPressed;
+	private boolean textChanged;
+	private boolean webConnected = OSPRuntime.isJS;
+	private boolean checkedWebConnection = OSPRuntime.isJS;
+	
+
+	private final Object lock = new Object();
+	
+	
 	/**
 	 * Common entrance point. 
 	 * 
@@ -227,6 +226,10 @@ public class LibraryBrowser extends JPanel {
 	 */
 	public static LibraryBrowser getBrowser() {
 		return (browser == null ? browser = getBrowser(null) : browser);
+	}
+
+	public static LibraryHistory getHistory() {
+		return (browser == null ? null : browser.history);
 	}
 
 	/**
@@ -249,7 +252,7 @@ public class LibraryBrowser extends JPanel {
 	public static LibraryBrowser getBrowser(Window window) {
 		if (browser == null) {
 			// e.g. AppData/Local/OSP/my_library.xml
-			String libraryPath = readLibraryXMLFile();
+			String libraryPath = getMyLibraryXMLPath();
 			browser = new LibraryBrowser(libraryPath, window);
 			LibraryTreePanel treePanel = browser.getSelectedTreePanel();
 			if (treePanel != null) {
@@ -264,11 +267,16 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	/**
-	 * read any locally stored libary XML file
+	 * Java only
 	 * 
-	 * @return
+	 * get the libraryPath, and if the my_library.xml file does not exist, create it.
+	 * In addition, if my_collection.xml does not exist, then 
+	 * create it as well, and add it to my_library.xml.
+	 * 
+	 * 
+	 * @return the path to the my_library.xml
 	 */
-	private static String readLibraryXMLFile() {
+	private static String getMyLibraryXMLPath() {
 		String libraryPath = null;
 		/** @j2sIgnore */
 		{
@@ -293,6 +301,7 @@ public class LibraryBrowser extends JPanel {
 				Library library = new Library();
 				String name = ToolsRes.getString("LibraryCollection.Name.Local"); //$NON-NLS-1$
 				library.addCollection(collectionPath, name);
+				// history will not be enabled here
 				library.save(libraryPath);
 			}
 		}
@@ -574,10 +583,11 @@ public class LibraryBrowser extends JPanel {
 			tabsToSave.add(path);
 		}
 		// save library if previously loaded
-		if (localLibraryLoaded) {
-			library.setOpenTabPaths(tabsToSave.isEmpty() ? null : tabsToSave.toArray(new String[tabsToSave.size()]));
-			library.save(libraryPath);
-			library.setOpenTabPaths(null);
+		if (history.localLibraryLoaded && history.libraryPath != null) {
+			history.setOpenTabPaths(tabsToSave.isEmpty() ? null : tabsToSave.toArray(new String[tabsToSave.size()]));
+			history.setEnabled(true);
+			library.save(history.libraryPath);
+			history.setEnabled(false);
 		}
 
 		if (exitOnClose) {
@@ -614,9 +624,9 @@ public class LibraryBrowser extends JPanel {
 	 */
 	private LibraryBrowser(String libraryPath, Window parent) {
 		super(new BorderLayout());
+		history.libraryPath = libraryPath;
 		setFields();
 		setWindow(parent, true);
-		this.libraryPath = libraryPath;
 		createGUI();
 		refreshGUI(true);
 		editButton.requestFocusInWindow();
@@ -1453,7 +1463,7 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String path = saveAs();
-				library.addRecent(path, false);
+				history.addRecent(path, false);
 				refreshRecentMenu();
 			}
 		});
@@ -1577,7 +1587,7 @@ public class LibraryBrowser extends JPanel {
 		if (path == null)
 			return;
 		path = XML.forwardSlash(path);
-		library.addRecent(path, false);
+		history.addRecent(path, false);
 		refreshRecentMenu();
 		// select tab and treePath if path is already loaded
 		int i = getTabIndexFromPath(path);
@@ -1638,7 +1648,7 @@ public class LibraryBrowser extends JPanel {
 		if (path == null)
 			return false;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
-		boolean isCachePath = (!haveMetadataLoaderListener && cachedFile.exists());
+		boolean isCachePath = (!history.haveMetadataLoaderListener && cachedFile.exists());
 		boolean[] isDialogShown = new boolean[] { false };
 		if (!isCachePath && ResourceLoader.isHTTP(path) && !isWebConnected(isDialogShown)
 				&& !ResourceLoader.ignoreMissingWebConnection) {
@@ -2123,6 +2133,123 @@ public class LibraryBrowser extends JPanel {
 		new Searcher(searchTerm).execute();
 	}
 
+	protected String getChooserDir() {
+		return history.getChooserDir();
+	}
+
+	protected void setChooserDir(File file) {
+		history.setChooserDir(file.isDirectory() ? file.toString() : file.getParent());
+	}
+	
+	/**
+	 * 
+	 * LibraryHistory collects the three special library fields that are really "browser"
+	 * fields -- chooserDir, openTabPaths, and recentTabs --
+	 * which were formerly fields of Library.  
+	 * 
+	 * These three fields are only written to XML if enabled == true. Which means 
+	 * only from the exit() method.
+	 * 
+	 * The class is static and protected (package-limited). 
+	 * 
+	 *
+	 * 
+	 */
+	protected static class LibraryHistory {
+		
+		/**
+		 * only set true upon exit; checked in Library.save()
+		 */
+		private boolean enabled;
+		
+		private String chooserDir;
+		private String[] openTabPaths;
+		private final ArrayList<String> recentTabs = new ArrayList<String>();
+		private final static int maxRecentTabCount = 6;
+
+		protected String libraryPath;
+		protected PropertyChangeListener webMetadataLoaderListener;
+		protected boolean haveMetadataLoaderListener;
+		protected boolean localLibraryLoaded;
+
+		public boolean isEnabled() {
+			return enabled;
+		}
+
+		protected void setEnabled(boolean b) {
+			enabled = b;
+		}
+		
+		protected void setOpenTabPaths(String[] paths) {
+				openTabPaths = paths;
+		}
+
+		protected String[] getOpenTabPaths() {
+			return openTabPaths;
+		}
+
+		protected void setChooserDir(String path) {
+				chooserDir = path;
+		}
+
+		protected String getChooserDir() {
+			return chooserDir;
+		}
+
+		protected ArrayList<String> getRecentTabs() {
+			return recentTabs;
+		}
+
+		/**
+		 * Adds a path to the list of recently opened tabs.
+		 * 
+		 * @param filename the absolute path to a recently opened or saved file.
+		 * @param atEnd    true to add at end of the list
+		 */
+		protected void addRecent(String filename, boolean atEnd) {
+			if (filename == null)
+				return;
+			synchronized (recentTabs) {
+				while (recentTabs.contains(filename))
+					recentTabs.remove(filename);
+				if (atEnd)
+					recentTabs.add(filename);
+				else
+					recentTabs.add(0, filename);
+				while (recentTabs.size() > maxRecentTabCount) {
+					recentTabs.remove(recentTabs.size() - 1);
+				}
+			}
+		}
+
+		/**
+		 * Removes a path from the list of recently opened tabs.
+		 * 
+		 * @param filename the path to remove.
+		 */
+		protected void removeRecent(String filename) {
+			if (filename == null)
+				return;
+			synchronized (recentTabs) {
+				while (recentTabs.contains(filename))
+					recentTabs.remove(filename);
+			}
+		}
+
+		protected void setOSPFileChooserDir() {
+			if (chooserDir != null) {
+				try {
+					File f = new File(chooserDir);
+					if (f.exists() && f.isDirectory())
+						OSPRuntime.getChooser().setCurrentDirectory(f);
+				} catch (Exception e) {
+					// nevermind...
+				}
+			}
+		}
+
+	}
+	
 	// do actual search in separate swingworker thread
 	class Searcher extends SwingWorker<LibraryTreeNode, Object> {
 		private String searchTerm;
@@ -2421,15 +2548,15 @@ public class LibraryBrowser extends JPanel {
 	 * @param menu the menu to refresh
 	 */
 	public void refreshRecentMenu() {
-		synchronized (library.recentTabs) {
+		synchronized (lock) {
 			recentMenu.setText(ToolsRes.getString("LibraryBrowser.Menu.OpenRecent")); //$NON-NLS-1$
-			recentMenu.setEnabled(!library.recentTabs.isEmpty());
+			recentMenu.setEnabled(!history.getRecentTabs().isEmpty());
 			if (openRecentAction == null) {
 				openRecentAction = new AbstractAction() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						String path = e.getActionCommand();
-						library.addRecent(path, false);
+						history.addRecent(path, false);
 						// select tab if path is already loaded
 						int i = getTabIndexFromPath(path);
 						if (i > -1) {
@@ -2437,7 +2564,7 @@ public class LibraryBrowser extends JPanel {
 							return;
 						}
 						if (!loadTabAndListen(path, null, "OpenRecent")) {
-							library.recentTabs.remove(path);
+							history.removeRecent(path);
 							refreshRecentMenu();
 							JOptionPane.showMessageDialog(LibraryBrowser.this,
 									ToolsRes.getString("LibraryBrowser.Dialog.FileNotFound.Message") //$NON-NLS-1$
@@ -2449,8 +2576,8 @@ public class LibraryBrowser extends JPanel {
 				};
 			}
 			recentMenu.removeAll();
-			recentMenu.setEnabled(!library.recentTabs.isEmpty());
-			for (String next : library.recentTabs) {
+			recentMenu.setEnabled(!history.recentTabs.isEmpty());
+			for (String next : history.recentTabs) {
 				String text = library.getAllPathsToNameMap().get(next);
 				if (text == null)
 					text = XML.getName(next);
@@ -2485,10 +2612,12 @@ public class LibraryBrowser extends JPanel {
 		fileChooser.showOpenDialog(this, new Runnable() {
 
 			@Override
-			public void run() {
+			public void run() {				
 				File file = fileChooser.getSelectedFile();
-				if (file != null)
+				if (file != null) {
+					setChooserDir(file);
 					open(file.getAbsolutePath());
+				}
 			}
 
 		}, null);
@@ -2591,7 +2720,7 @@ public class LibraryBrowser extends JPanel {
 			if (path != null && tempPath != null) {
 				File tempFile = new File(tempPath);
 				tempFile.delete();
-				library.addRecent(path, false);
+				history.addRecent(path, false);
 				refreshRecentMenu();
 			}
 		} else {
@@ -2612,6 +2741,7 @@ public class LibraryBrowser extends JPanel {
 		String title = ToolsRes.getString("LibraryBrowser.FileChooser.Title.SaveAs"); //$NON-NLS-1$
 		String path = getChooserSavePath(title);
 		if (path != null) {
+			setChooserDir(new File(path));
 			path = XML.forwardSlash(path);
 			LibraryTreePanel treePanel = getSelectedTreePanel();
 			if (treePanel == null)
@@ -3430,7 +3560,7 @@ public class LibraryBrowser extends JPanel {
 
 		@Override
 		public Library doInBackground() {
-			if (libraryPath == null)
+			if (history.libraryPath == null)
 				return library;
 
 			Runnable webChecker = new Runnable() {
@@ -3447,14 +3577,14 @@ public class LibraryBrowser extends JPanel {
 					}
 				}
 			};
-			if (!ResourceLoader.isHTTP(libraryPath)) {
+			if (!ResourceLoader.isHTTP(history.libraryPath)) {
 				// load library
-				loadTheLibrary();
+				loadMyLocalLibrary();
 				webChecker.run();
 			} else {
 				webChecker.run(); // check web connection first
 				if (isWebConnected(null)) {
-					library.load(libraryPath);
+					library.load(history.libraryPath);
 				}
 			}
 			return library;
@@ -3463,11 +3593,11 @@ public class LibraryBrowser extends JPanel {
 		@Override
 		protected void done() {
 			try {
-				Library library = get();
+//				Library library = get();
 				// add previously open tabs not available for loading in doInBackground method
 				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
-				String[] paths = library.getOpenTabPaths();
-				if (!haveMetadataLoaderListener && paths != null) {
+				String[] paths = history.getOpenTabPaths();
+				if (!history.haveMetadataLoaderListener && paths != null) {
 					for (String path : paths) {
 						boolean available = isWebConnected(null) && ResourceLoader.isHTTP(path);
 						if (available) {
@@ -3504,7 +3634,7 @@ public class LibraryBrowser extends JPanel {
 			File cachedFile = ResourceLoader.getSearchCacheFile(path);
 			// ALWAYS open web collections if metadataLoaderListener is non-null
 			// since it is non-null only when refreshing metadata for JS
-			if (metadataLoaderListener == null && cachedFile.exists() && ResourceLoader.isHTTP(path)) {
+			if (history.webMetadataLoaderListener == null && cachedFile.exists() && ResourceLoader.isHTTP(path)) {
 				realPath = cachedFile.getAbsolutePath();
 			}
 			// BH 2020.04.14 added to speed up zip file checking
@@ -3630,7 +3760,7 @@ public class LibraryBrowser extends JPanel {
 					setProgress(index);
 				} else {
 					warnNotLoaded(path);
-					library.removeRecent(path);
+					history.removeRecent(path);
 					refreshRecentMenu();
 					setProgress(-1);
 				}
@@ -3640,13 +3770,14 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
-	public void loadTheLibrary() {
-		library.load(libraryPath);
-		localLibraryLoaded = true;
+	public void loadMyLocalLibrary() {
+		library.load(history.libraryPath);
+		history.localLibraryLoaded = true;
+		history.setOSPFileChooserDir();
 		// add previously open tabs that are available
 		// but NOT when refreshing DL search data (non-null metadataLoaderListener)
-		String[] paths = library.getOpenTabPaths();
-		if (paths != null && !haveMetadataLoaderListener) {
+		String[] paths = history.getOpenTabPaths();
+		if (paths != null && !history.haveMetadataLoaderListener) {
 			ArrayList<String> unopenedTabs = new ArrayList<String>();
 			ArrayList<String> openedTabs = new ArrayList<String>();
 			for (String path : paths) {
@@ -3656,7 +3787,6 @@ public class LibraryBrowser extends JPanel {
 					continue;
 				}
 				// first check cache
-
 				File cachedFile = ResourceLoader.getSearchCacheFile(path); //
 				if (cachedFile.exists()) {
 					addTabAndExecute(path, null, null);
@@ -3680,9 +3810,8 @@ public class LibraryBrowser extends JPanel {
 			}
 			boolean done = unopenedTabs.isEmpty();
 			// save web-based tabs for done() method
-			library.setOpenTabPaths(done ? null : unopenedTabs.toArray(new String[unopenedTabs.size()]));
+			history.setOpenTabPaths(done ? null : unopenedTabs.toArray(new String[unopenedTabs.size()]));
 		}
-
 	}
 
 	public void warnNotLoaded(String path) {
@@ -3777,12 +3906,12 @@ public class LibraryBrowser extends JPanel {
 	 * @param listener will be LibraryJSSearchRefresher
 	 */
 	void setMetadataLoaderListener(PropertyChangeListener listener) {
-		metadataLoaderListener = listener;
+		history.webMetadataLoaderListener = listener;
 	}
 	
 	void fireTreePanelPropertyChange(String pathToRoot, File cacheFile) {
-		if (metadataLoaderListener != null) {
-			metadataLoaderListener.propertyChange(new PropertyChangeEvent(this, "cacheFile", null, cacheFile));
+		if (history.webMetadataLoaderListener != null) {
+			history.webMetadataLoaderListener.propertyChange(new PropertyChangeEvent(this, "cacheFile", null, cacheFile));
 		}
 	}
 

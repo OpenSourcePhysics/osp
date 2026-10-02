@@ -950,7 +950,7 @@ public class LibraryTreePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
-					doOpen(node);
+					doOpenHTML(node);
 				}
 			}
 		});
@@ -1008,8 +1008,17 @@ public class LibraryTreePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
+					String basePath = basePathField.getText();
+					File f = null;
+					if (basePath.length() > 0) {
+						f = new File(basePath);
+						if (f.exists() && f.isDirectory())
+							browser.setChooserDir(f);
+					}
 					int result = JFileChooser.CANCEL_OPTION;
 					JFileChooser chooser = getFileChooser();
+					if (f != null)
+						chooser.setCurrentDirectory(f);
 					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					chooser.setAcceptAllFileFilterUsed(false);
 					chooser.addChoosableFileFilter(folderFilter);
@@ -1020,8 +1029,8 @@ public class LibraryTreePanel extends JPanel {
 					chooser.removeChoosableFileFilter(folderFilter);
 					chooser.setSelectedFile(new File("")); //$NON-NLS-1$
 					if (result == JFileChooser.APPROVE_OPTION) {
-						browser.getLibrary().setChooserDir(chooser.getCurrentDirectory().toString());
 						if (file != null) {
+							setChooserDir(file);
 							htmlPanesByNode.remove(node);
 							LibraryTreeNode parent = (LibraryTreeNode) node.getParent();
 							if (parent != null)
@@ -1056,7 +1065,7 @@ public class LibraryTreePanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				LibraryTreeNode node = getSelectedNode();
 				if (node != null) {
-					String path = doOpen(node.getBasePath());
+					String path = doOpenFile(node.getBasePath());
 					if (path != null)
 						node.setTarget(path);
 				}
@@ -1219,7 +1228,7 @@ public class LibraryTreePanel extends JPanel {
 		metadataBox.add(metadataDropdown);
 	}
 
-	protected String doOpen(String basePath) {
+	protected String doOpenFile(String basePath) {
 		int result = JFileChooser.CANCEL_OPTION;
 		JFileChooser chooser = getFileChooser();
 		chooser.setDialogTitle(null);
@@ -1229,8 +1238,8 @@ public class LibraryTreePanel extends JPanel {
 		File file = chooser.getSelectedFile();
 		chooser.setSelectedFile(new File("")); //$NON-NLS-1$
 		if (result == JFileChooser.APPROVE_OPTION) {
-			browser.getLibrary().setChooserDir(chooser.getCurrentDirectory().toString());
 			if (file != null) {
+				browser.setChooserDir(file);
 				String path = XML.forwardSlash(file.getAbsolutePath());
 				String base = basePath;
 				if (!"".equals(base)) { //$NON-NLS-1$
@@ -1242,7 +1251,7 @@ public class LibraryTreePanel extends JPanel {
 		return null;
 	}
 
-	protected void doOpen(LibraryTreeNode node) {
+	protected void doOpenHTML(LibraryTreeNode node) {
 		int result = JFileChooser.CANCEL_OPTION;
 		JFileChooser chooser = getFileChooser();
 		chooser.setDialogTitle(null);
@@ -1254,8 +1263,8 @@ public class LibraryTreePanel extends JPanel {
 		chooser.removeChoosableFileFilter(htmlFilter);
 		chooser.setSelectedFile(new File("")); //$NON-NLS-1$
 		if (result == JFileChooser.APPROVE_OPTION) {
-			browser.getLibrary().setChooserDir(chooser.getCurrentDirectory().toString());
 			if (file != null) {
+				setChooserDir(file);
 				String path = XML.forwardSlash(file.getAbsolutePath());
 				String base = node.getBasePath();
 				if (!"".equals(base)) { //$NON-NLS-1$
@@ -1264,6 +1273,10 @@ public class LibraryTreePanel extends JPanel {
 				node.setHTMLPath(path);
 			}
 		}
+	}
+
+	private void setChooserDir(File file) {
+		browser.setChooserDir(file);
 	}
 
 	private JButton newJButton(Action a) {
@@ -2772,7 +2785,7 @@ public class LibraryTreePanel extends JPanel {
 	 */
 	protected JFileChooser getFileChooser() {
 		if (chooser == null) {
-			String chooserDir = browser.getLibrary().getChooserDir();
+			String chooserDir = browser.getChooserDir();
 			chooser = (chooserDir == null) ? new JFileChooser() : new JFileChooser(new File(chooserDir));
 			htmlFilter = new FileFilter() {
 				// accept directories and html files

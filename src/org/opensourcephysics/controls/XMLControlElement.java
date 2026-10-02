@@ -1999,7 +1999,6 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 * @return the array
 	 */
 	private static Object arrayValue(String s, Class<?> componentType) {
-		System.out.println(s);
 		if (!(s.startsWith("{") && s.endsWith("}"))) { //$NON-NLS-1$ //$NON-NLS-2$
 			return null;
 		}

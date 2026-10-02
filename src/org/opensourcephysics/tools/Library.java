@@ -18,6 +18,7 @@ import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
 import org.opensourcephysics.controls.XMLControlElement;
 import org.opensourcephysics.display.OSPRuntime;
+import org.opensourcephysics.tools.LibraryBrowser.LibraryHistory;
 
 /**
  * A Library for a LibraryBrowser. Maintains lists of collection paths and
@@ -40,15 +41,6 @@ public class Library {
 	private HashMap<String, Library> subPathToLibraryMap = new HashMap<String, Library>();
 	private HashMap<String, String> allPathsToNameMap = new HashMap<String, String>();
 	private Set<String> noSearchSet = new TreeSet<String>();
-
-	private int maxRecentTabCount = 6;
-	private String chooserDir;
-	private String[] openTabPaths;
-
-	/**
-	 * used to synchronize by LibraryBrowser
-	 */
-	protected ArrayList<String> recentTabs = new ArrayList<String>();
 
 	/**
 	 * Adds an OSP-sponsored library. OSP libraries are not under user control.
@@ -172,8 +164,10 @@ public class Library {
 	 * @param path the path to the saved file
 	 */
 	protected void save(String path) {
-		if (path != null)
+		if (path != null) {
+			System.out.println("Library save to " + path);
 			new XMLControlElement(this).write(path);
+		}
 	}
 
 	/**
@@ -313,42 +307,6 @@ public class Library {
 	}
 
 	/**
-	 * Adds a path to the list of recently opened tabs.
-	 * 
-	 * @param filename the absolute path to a recently opened or saved file.
-	 * @param atEnd    true to add at end of the list
-	 */
-	protected void addRecent(String filename, boolean atEnd) {
-		if (filename == null)
-			return;
-		synchronized (recentTabs) {
-			while (recentTabs.contains(filename))
-				recentTabs.remove(filename);
-			if (atEnd)
-				recentTabs.add(filename);
-			else
-				recentTabs.add(0, filename);
-			while (recentTabs.size() > maxRecentTabCount) {
-				recentTabs.remove(recentTabs.size() - 1);
-			}
-		}
-	}
-
-	/**
-	 * Removes a path from the list of recently opened tabs.
-	 * 
-	 * @param filename the path to remove.
-	 */
-	protected void removeRecent(String filename) {
-		if (filename == null)
-			return;
-		synchronized (recentTabs) {
-			while (recentTabs.contains(filename))
-				recentTabs.remove(filename);
-		}
-	}
-
-	/**
 	 * Returns an ObjectLoader to save and load data for this class.
 	 *
 	 * @return the object loader
@@ -371,6 +329,7 @@ public class Library {
 		@Override
 		public void saveObject(XMLControl control, Object obj) {
 			Library library = (Library) obj;
+			LibraryHistory history = LibraryBrowser.getHistory();
 			control.setValue("name", library.getName()); //$NON-NLS-1$
 			if (!library.pathList.isEmpty()) {
 				String[] paths = library.pathList.toArray(new String[0]);
@@ -389,27 +348,38 @@ public class Library {
 				String[] paths = library.importedPathList.toArray(new String[0]);
 				control.setValue("imported_library_paths", paths); //$NON-NLS-1$
 			}
-			control.setValue("open_tabs", library.openTabPaths); //$NON-NLS-1$
-			control.setValue("chooser_directory", library.chooserDir); //$NON-NLS-1$
-			if (!library.recentTabs.isEmpty()) {
-				String[] paths = library.recentTabs.toArray(new String[0]);
-				control.setValue("recently_opened", paths); //$NON-NLS-1$
-				String[] names = new String[paths.length];
-				for (int i = 0; i < names.length; i++) {
-					names[i] = library.getAllPathsToNameMap().get(paths[i]);
-					if (names[i] == null)
-						names[i] = XML.getName(paths[i]);
+
+			String[] paths;
+			if (history != null && history.isEnabled()) {
+				paths = history.getOpenTabPaths();
+				if (paths != null)
+					control.setValue("open_tabs", paths); //$NON-NLS-1$
+				String dir = history.getChooserDir();
+				if (dir != null)
+					control.setValue("chooser_directory", XML.forwardSlash(dir)); //$NON-NLS-1$
+
+				ArrayList<String> tabs = history.getRecentTabs();
+				if (tabs != null && !tabs.isEmpty()) {
+					paths = tabs.toArray(new String[0]);
+					control.setValue("recently_opened", paths); //$NON-NLS-1$
+					String[] names = new String[paths.length];
+					for (int i = 0; i < names.length; i++) {
+						names[i] = library.getAllPathsToNameMap().get(paths[i]);
+						if (names[i] == null)
+							names[i] = XML.getName(paths[i]);
+					}
+					control.setValue("recently_opened_names", names); //$NON-NLS-1$
 				}
-				control.setValue("recently_opened_names", names); //$NON-NLS-1$
 			}
 			if (!library.noSearchSet.isEmpty()) {
-				String[] paths = library.noSearchSet.toArray(new String[0]);
+				paths = library.noSearchSet.toArray(new String[0]);
 				control.setValue("no_search_paths", paths); //$NON-NLS-1$
 			}
 			File cache = ResourceLoader.getOSPCache();
 			if (cache != null) {
 				control.setValue("cache", cache.getPath()); //$NON-NLS-1$
 			}
+			System.out.println("Library.Loader.saveObject\n" + control);
 		}
 
 		/**
@@ -432,7 +402,9 @@ public class Library {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			final Library library = (Library) obj;
+			System.out.println(control);
+			Library library = (Library) obj;
+			LibraryHistory history = LibraryBrowser.getHistory();
 			library.setName(control.getString("name")); //$NON-NLS-1$
 			String[] paths = (String[]) control.getObject("collection_paths"); //$NON-NLS-1$
 			if (paths != null) {
@@ -463,7 +435,7 @@ public class Library {
 			String[] names = (String[]) control.getObject("recently_opened_names"); //$NON-NLS-1$
 			if (paths != null) {
 				for (String path : paths) {
-					library.addRecent(path, true); // add at end
+					history.addRecent(path, true); // add at end
 				}
 				if (names != null) {
 					for (int i = 0; i < names.length; i++) {
@@ -477,22 +449,16 @@ public class Library {
 					library.noSearchSet.add(path);
 				}
 			}
-			library.openTabPaths = (String[]) control.getObject("open_tabs"); //$NON-NLS-1$
-			library.chooserDir = control.getString("chooser_directory"); //$NON-NLS-1$
+			history.setOpenTabPaths((String[]) control.getObject("open_tabs")); //$NON-NLS-1$
+			String dir = control.getString("chooser_directory");
+			if (dir != null)
+				history.setChooserDir(dir); //$NON-NLS-1$
 			// set cache only if it has not yet been set
 			if (ResourceLoader.getOSPCache() == null) {
 				ResourceLoader.setOSPCache(control.getString("cache")); //$NON-NLS-1$
 			}
 			return obj;
 		}
-	}
-
-	protected String getChooserDir() {
-		return chooserDir;
-	}
-
-	protected void setChooserDir(String path) {
-		chooserDir = path;
 	}
 
 	protected Set<String> getNoSearchSet() {
@@ -541,14 +507,6 @@ public class Library {
 
 	protected HashMap<String, Library> getSubPathToLibraryMap() {
 		return subPathToLibraryMap;
-	}
-
-	public void setOpenTabPaths(String[] paths) {
-		openTabPaths = paths;
-	}
-
-	public String[] getOpenTabPaths() {
-		return openTabPaths;
 	}
 
 }
