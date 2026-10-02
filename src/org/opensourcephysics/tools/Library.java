@@ -260,7 +260,6 @@ public class Library {
 		TreeSet<String> paths = new TreeSet<String>();
 		paths.addAll(pathList);
 		paths.addAll(comPADREPathList);
-//		paths.addAll(ospPathList);
 
 		if (!subPathList.isEmpty()) {
 			for (String path : subPathList) {
@@ -284,34 +283,6 @@ public class Library {
 		return allPathsToNameMap;
 	}
 
-//	/**
-//	 * Returns a Map of path-to-tabname for this and all sub-libraries.
-//	 * 
-//	 * @return path-to-name map
-//	 */
-//	public HashMap<String, String> getNamesMap() {
-//		if (!subPathList.isEmpty()) {
-//			for (String path : subPathList) {
-//				Library library = subPathToLibraryMap.get(path);
-//				HashMap<String, String> map = library.getNameMap();
-//				for (String nextPath: library.getAllPaths()) {
-//					String name = map.get(nextPath);
-//					allPathsToNameMap.put(nextPath, name);
-//				}
-//			}
-//		}
-//		for (String path : ospPathList) {
-//			Library library = ospPathToLibraryMap.get(path);
-//			HashMap<String, String> map = library.getNameMap();
-//			for (String nextPath: library.getAllPaths()) {
-//				String name = map.get(nextPath);
-//				allPathsToNameMap.put(nextPath, name);
-//			}
-//		}
-//
-//		return allPathsToNameMap;
-//	}
-//
 	/**
 	 * Gets a clone of this library that is suitable for exporting. The exported
 	 * library has no OSP libraries, ComPADRE collections or imported libraries.
