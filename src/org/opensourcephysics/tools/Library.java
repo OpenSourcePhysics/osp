@@ -165,7 +165,7 @@ public class Library {
 	 */
 	protected void save(String path) {
 		if (path != null) {
-			System.out.println("Library save to " + path);
+			//System.out.println("Library save to " + path);
 			new XMLControlElement(this).write(path);
 		}
 	}
@@ -379,7 +379,7 @@ public class Library {
 			if (cache != null) {
 				control.setValue("cache", cache.getPath()); //$NON-NLS-1$
 			}
-			System.out.println("Library.Loader.saveObject\n" + control);
+			//System.out.println("Library.Loader.saveObject\n" + control);
 		}
 
 		/**
