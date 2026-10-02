@@ -402,7 +402,7 @@ public class Library {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			System.out.println(control);
+			//System.out.println(control);
 			Library library = (Library) obj;
 			LibraryHistory history = LibraryBrowser.getHistory();
 			library.setName(control.getString("name")); //$NON-NLS-1$
