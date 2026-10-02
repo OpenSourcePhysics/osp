@@ -24,7 +24,6 @@ import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
