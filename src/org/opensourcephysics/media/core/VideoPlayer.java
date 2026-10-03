@@ -688,6 +688,22 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 	public void refresh() {
 		if (readoutType == null)
 			return;
+		// add components to toolbar
+		boolean mobile = OSPRuntime.isMobile();
+		toolbar.removeAll();
+		toolbar.add(readout);
+		if (!mobile) toolbar.add(rateSpinner);
+		toolbar.add(resetButton);
+		toolbar.add(playButton);
+		toolbar.add(slider);
+		toolbar.add(backButton);
+		toolbar.add(stepSizeButton);
+		toolbar.add(stepButton);
+		if (!mobile) toolbar.add(loopButton);
+		if (inspectorButtonVisible && !mobile) {
+			toolbar.add(inspectorButton);
+		}
+
 		stepButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.StepForward.ToolTip")); //$NON-NLS-1$
 		backButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.StepBack.ToolTip")); //$NON-NLS-1$
 		resetButton.setToolTipText(MediaRes.getString("VideoPlayer.Button.Reset.ToolTip")); //$NON-NLS-1$
@@ -1054,19 +1070,6 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			}
 
 		});
-		// add components to toolbar
-		toolbar.add(readout);
-		toolbar.add(rateSpinner);
-		toolbar.add(resetButton);
-		toolbar.add(playButton);
-		toolbar.add(slider);
-		toolbar.add(backButton);
-		toolbar.add(stepSizeButton);
-		toolbar.add(stepButton);
-		toolbar.add(loopButton);
-		if (inspectorButtonVisible) {
-			toolbar.add(inspectorButton);
-		}
 		
 		slowRateTimer = new javax.swing.Timer(1000, new ActionListener() {
 			@Override
@@ -1080,6 +1083,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		slowRateTimer.setRepeats(false);
 
 	}
+	
+	
 
 	protected void doSliderKey(int keyCode) {
 		if (disabled)

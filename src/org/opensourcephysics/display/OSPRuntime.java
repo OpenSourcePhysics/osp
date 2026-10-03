@@ -96,8 +96,8 @@ import javajs.async.SwingJSUtils.Timeout;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.3.5.260929"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "29 Sep 2026"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.5.261002"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "2 Oct 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -481,8 +481,8 @@ public class OSPRuntime {
 			return false;
 		if (preferMobile)
 			return true;
-		// DB--we could check screen/window size here
-		Dimension dim = getHTMLPageSize();
+		if (isSmallScreen())
+			return true;
 		return cssCursor;
 	}
 	
@@ -674,7 +674,26 @@ public class OSPRuntime {
 		}
 		return Toolkit.getDefaultToolkit().getScreenSize();
 	}
+	
+	/** 
+	 * Determines if running in a "small" screen: according to AI:
+	 * Small (Mobile Portrait): 320px to 479px
+	 * Examples: iPhone SE (375px), iPhone 13/14/15/16 (390px to 393px), iPhone Pro Max (430px), and mainstream Android devices.
+	 * Medium (Mobile Landscape / Small Tablets): 480px to 767px
+	 * Examples: iPhones rotated sideways, older or very small Android tablets.
+	 * Large (Tablets / iPads): 768px to 1024px
+	 * 
+	 * @return true if small
+	 */	
+	public static boolean isSmallScreen() {		
+    Dimension size = getHTMLPageSize();
+    // Check if logical width or height is under the "smallScreen" threshold
+    boolean small = size.width > 0 && size.height > 0 
+    		&& (size.width < smallScreen || size.height < smallScreen);
+    return small;
+	}
 		
+	private static int smallScreen = 480;
 	public static final char DECIMAL_SEPARATOR_COMMA = ',';
 	public static final char DECIMAL_SEPARATOR_PERIOD = '.';
 
