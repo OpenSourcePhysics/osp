@@ -98,10 +98,12 @@ import org.opensourcephysics.tools.LibraryResource.Metadata;
  * If the resource is a LibraryCollection, the tree is populated with its child
  * resources.
  *
+ * package-private
+ *
  * @author Douglas Brown
  */
 @SuppressWarnings("serial")
-public class LibraryTreePanel extends JPanel {
+class LibraryTreePanel extends JPanel {
 
 	// static constants
 	protected final String AND = " AND "; //$NON-NLS-1$
@@ -2783,7 +2785,7 @@ public class LibraryTreePanel extends JPanel {
 	 * 
 	 * @return the file chooser
 	 */
-	protected JFileChooser getFileChooser() {
+	private JFileChooser getFileChooser() {
 		if (chooser == null) {
 			String chooserDir = browser.getChooserDir();
 			chooser = (chooserDir == null) ? new JFileChooser() : new JFileChooser(new File(chooserDir));

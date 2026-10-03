@@ -23,10 +23,12 @@ import org.opensourcephysics.tools.LibraryBrowser.LibraryHistory;
 /**
  * A Library for a LibraryBrowser. Maintains lists of collection paths and
  * imported sub-libraries.
+ * 
+ * package-private
  *
  * @author Douglas Brown
  */
-public class Library {
+class Library {
 
 	/**
 	 * A class that combines an ArrayList with a matching HashMap. 

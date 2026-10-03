@@ -328,7 +328,7 @@ public class LibraryComPADRE {
 					continue;
 
 				// check to see that the target is the one desired
-				String downloadURL = processURL(attachment.url);
+				String downloadURL = processURL(attachment.getUrl());
 				if (!downloadURL.equals(record.getTarget()))
 					continue;
 
@@ -348,11 +348,11 @@ public class LibraryComPADRE {
 			LibraryTreeNode treeNode) {
 		try {
 			// get the node data and create the HTML code
-			String downloadURL = processURL(attachment.url);
+			String downloadURL = processURL(attachment.getUrl());
 			record.setTarget(downloadURL);
 			String name = getChildValue(node, "title"); //$NON-NLS-1$
 			record.setName(name);
-			record.setProperty("download_filename", attachment.filename); //$NON-NLS-1$
+			record.setProperty("download_filename", attachment.getFilename()); //$NON-NLS-1$
 			String type = getChildValue(node, "osp-type"); //$NON-NLS-1$
 			if (isDesiredOSPType(node)) {
 				if (LibraryResource.EJS_TYPE.equals(desiredOSPType) && !isTrackerType(node)) { //$NON-NLS-1$

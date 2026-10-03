@@ -113,31 +113,32 @@ public class LibraryBrowser extends JPanel {
 	 */
 	private static final boolean useOnlineOnly = true;
 
-	
 	public static final String TRACKER_LIBRARY = "https://opensourcephysics.github.io/resources/CAB/tracker_library.xml"; //$NON-NLS-1$
 	public static final String SHARED_LIBRARY = "https://opensourcephysics.github.io/resources/CAB/shared_library.xml"; //$NON-NLS-1$
 	public static final String HINT_LOAD_RESOURCE = "LOAD";
 	public static final String HINT_DOWNLOAD_RESOURCE = "DOWNLOAD";
 	public static final String PROPERTY_LIBRARY_TARGET = "target";
-	protected static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
-	protected static final String AND = " AND "; //$NON-NLS-1$
-	protected static final String OR = " OR "; //$NON-NLS-1$
-	protected static final String OPENING = "("; //$NON-NLS-1$
-	protected static final String CLOSING = ")"; //$NON-NLS-1$
-	protected static final String MY_LIBRARY_NAME = "my_library.xml"; //$NON-NLS-1$
-	protected static final String MY_COLLECTION_NAME = "my_collection.xml"; //$NON-NLS-1$
-	protected static final String RECENT_COLLECTION_NAME = "recent_collection.xml"; //$NON-NLS-1$
-	protected static final String LIBRARY_HELP_NAME = "library_browser_help.html"; //$NON-NLS-1$
-	protected static final String LIBRARY_HELP_ONLINE = "https://opensourcephysics.github.io/tracker-website/help/library_browser.html"; //$NON-NLS-1$
-	protected static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
-	protected static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
-//	protected static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
-	protected static final String WEB_SEARCH_BASE_PATH = "https://opensourcephysics.github.io/resources/Search/";
-	protected static final String WEB_EJS = "https://www.um.es/fem/wikis/runwebejs/?url=";
-	protected static final String TRACKER_ONLINE = "https://opensourcephysics.github.io/tracker-online/?j2sargs=";
-	protected static final String DATATOOL_ONLINE = "https://opensourcephysics.github.io/tracker-online/DataTool.html?j2sargs=";
 
-	protected static final int maxRecentCollectionSize = 18;
+	protected static final String PROPERTY_LIBRARY_EDITED = "collection_edit";
+
+	private static final String AND = " AND "; //$NON-NLS-1$
+	private static final String OR = " OR "; //$NON-NLS-1$
+	private static final String OPENING = "("; //$NON-NLS-1$
+	private static final String CLOSING = ")"; //$NON-NLS-1$
+	private static final String MY_LIBRARY_NAME = "my_library.xml"; //$NON-NLS-1$
+	private static final String MY_COLLECTION_NAME = "my_collection.xml"; //$NON-NLS-1$
+	private static final String RECENT_COLLECTION_NAME = "recent_collection.xml"; //$NON-NLS-1$
+	private static final String LIBRARY_HELP_NAME = "library_browser_help.html"; //$NON-NLS-1$
+	private static final String LIBRARY_HELP_ONLINE = "https://opensourcephysics.github.io/tracker-website/help/library_browser.html"; //$NON-NLS-1$
+	private static final String WINDOWS_OSP_DIRECTORY = "/My Documents/OSP/"; //$NON-NLS-1$
+	private static final String OSP_DIRECTORY = "/Documents/OSP/"; //$NON-NLS-1$
+//	private static final String WEB_SEARCH_BASE_PATH = "https://physlets.org/tracker/library/Search/";
+	private static final String WEB_SEARCH_BASE_PATH = "https://opensourcephysics.github.io/resources/Search/";
+	private static final String WEB_EJS = "https://www.um.es/fem/wikis/runwebejs/?url=";
+	private static final String TRACKER_ONLINE = "https://opensourcephysics.github.io/tracker-online/?j2sargs=";
+	private static final String DATATOOL_ONLINE = "https://opensourcephysics.github.io/tracker-online/DataTool.html?j2sargs=";
+
+	private static final int maxRecentCollectionSize = 18;
 
 	private static final int width = 900, hight = 560;
 	
@@ -147,9 +148,12 @@ public class LibraryBrowser extends JPanel {
 	 * the only static variable field
 	 */
 	private static LibraryBrowser browser;
+	
+	private static String ospPath;
+
+	
 
 	protected final Library library = new Library();
-
 	protected final LibraryHistory history = new LibraryHistory();
 	
 	/**
@@ -777,14 +781,7 @@ public class LibraryBrowser extends JPanel {
 			else
 				libraryManager = new LibraryManager(this, frame);
 		}
-		if (library.getPathToNameMap().size() > 0 && libraryManager.collectionList.getSelectedIndex() == -1) {
-			libraryManager.collectionList.setSelectedIndex(0);
-		}
-		if (library.getImportedPathToLibraryMap().size() > 0 && libraryManager.guestList.getSelectedIndex() == -1) {
-			libraryManager.guestList.setSelectedIndex(0);
-		}
-		libraryManager.setFontLevel(FontSizer.getLevel());
-		return libraryManager;
+		return libraryManager.update();
 	}
 
 	/**
@@ -1346,42 +1343,7 @@ public class LibraryBrowser extends JPanel {
 		editButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				LibraryTreePanel treePanel = getSelectedTreePanel();
-				if (treePanel == null)
-					return;
-				if (!treePanel.isEditing()) {
-					treePanel.setEditing(true);
-					refreshGUI();
-				} else if (!treePanel.isChanged()) {
-					treePanel.setEditing(false);
-					refreshGUI();
-				} else {
-					JPopupMenu popup = new JPopupMenu();
-					JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.SaveEdits")); //$NON-NLS-1$
-					popup.add(item);
-					item.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							String path = save();
-							if (path == null)
-								return;
-							treePanel.setEditing(false);
-							refreshGUI();
-						}
-					});
-					item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.Discard")); //$NON-NLS-1$
-					popup.add(item);
-					item.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							treePanel.setEditing(false);
-							treePanel.revert();
-							refreshGUI();
-						}
-					});
-					FontSizer.setFonts(popup, FontSizer.getLevel());
-					popup.show(editButton, 0, editButton.getHeight());
-				}
+				doEdit();
 			}
 		});
 
@@ -1572,6 +1534,82 @@ public class LibraryBrowser extends JPanel {
 		});
 
 		setMessage(null, null);
+	}
+
+	private void doEdit() {
+		LibraryTreePanel treePanel = getSelectedTreePanel();
+		if (treePanel == null)
+			return;
+		if (!treePanel.isEditing()) {
+			treePanel.setEditing(true);
+			refreshGUI();
+		} else if (!treePanel.isChanged()) {
+			treePanel.setEditing(false);
+			refreshGUI();
+		} else {
+			JPopupMenu popup = new JPopupMenu();
+			JMenuItem item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.SaveEdits")); //$NON-NLS-1$
+			popup.add(item);
+			item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String path = save();
+					if (path == null)
+						return;
+					treePanel.setEditing(false);
+					refreshGUI();
+				}
+			});
+			item = new JMenuItem(ToolsRes.getString("LibraryBrowser.MenuItem.Discard")); //$NON-NLS-1$
+			popup.add(item);
+			item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					treePanel.setEditing(false);
+					treePanel.revert();
+					refreshGUI();
+				}
+			});
+			FontSizer.setFonts(popup, FontSizer.getLevel());
+			popup.show(editButton, 0, editButton.getHeight());
+		}
+	}
+
+	protected void doDownload() {
+		String urlPath = commandField.getText().trim();
+		if (urlPath == null || "".equals(urlPath))
+			return;
+		String uriPath = ResourceLoader.getURIPath(urlPath);
+
+		// special handling for ComPADRE
+		LibraryTreePanel treePanel = getSelectedTreePanel();
+		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
+		LibraryResource record = node == null ? null : node.record;
+		String name = getDownloadName(urlPath, record);
+
+		// choose file and save resource
+		VideoIO.getChooserFilesAsync("save resource " + name, //$NON-NLS-1$
+				(files) -> {
+					if (VideoIO.getChooser().getSelectedOption() == AsyncFileChooser.APPROVE_OPTION && files != null) {
+						File file = ResourceLoader.downloadResourceFromDialog(uriPath, files[0]);
+						if (file != null) {
+							LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE,
+									file);
+						}
+					}
+					return null;
+				});
+	}
+
+	private String getDownloadName(String name, LibraryResource record) {
+		String target = (record == null ? name : record.getAbsoluteTarget());
+		if (target.indexOf("document/ServeFile.cfm?") >= 0) { //$NON-NLS-1$
+			target = (record == null ? null : record.getProperty("download_filename")); //$NON-NLS-1$
+			if (target != null)
+				return target;
+			name = name + ".zip";
+		}
+		return XML.getName(ResourceLoader.getNonURIPath(name));
 	}
 
 	/**
@@ -2265,55 +2303,30 @@ public class LibraryBrowser extends JPanel {
 		@Override
 		protected void done() {
 			try {
-				LibraryTreeNode resultsTreeNode = get();
-				if (resultsTreeNode == null) {
-					notifySearchNotFound(searchTerm);
-					return;
-				}
-				LibraryTreePanel treePanel = getSearchResultsTreePanel();
-				String title = treePanel.getCollection().getName();
-				int i = getTabIndexFromTitle(title);
-				synchronized (tabbedPane) {
-					if (i == -1)
-						tabbedPane.addTab(title, treePanel);
-					tabbedPane.setSelectedComponent(treePanel);
-				}
-				LibraryTreePanel.htmlPanesByNode.remove(resultsTreeNode);
-				treePanel.showInfo(resultsTreeNode, "LibraryBrowser.Searcher.done");
-
-				refreshGUI();
+				searchDone(searchTerm, get());
 			} catch (Exception e) {
 				Toolkit.getDefaultToolkit().beep();
 			}
 		}
 	}
 
-	protected void doDownload() {
-		String urlPath = commandField.getText().trim();
-//		if (urlPath == null || !ResourceLoader.isHTTP(urlPath))
-//			return;
-		if (urlPath == null || "".equals(urlPath))
+	protected void searchDone(String searchTerm, LibraryTreeNode resultsTreeNode) {
+		if (resultsTreeNode == null) {
+			notifySearchNotFound(searchTerm);
 			return;
-		String uriPath = ResourceLoader.getURIPath(urlPath);
+		}
+		LibraryTreePanel treePanel = getSearchResultsTreePanel();
+		String title = treePanel.getCollection().getName();
+		int i = getTabIndexFromTitle(title);
+		synchronized (tabbedPane) {
+			if (i == -1)
+				tabbedPane.addTab(title, treePanel);
+			tabbedPane.setSelectedComponent(treePanel);
+		}
+		LibraryTreePanel.htmlPanesByNode.remove(resultsTreeNode);
+		treePanel.showInfo(resultsTreeNode, "LibraryBrowser.Searcher.done");
 
-		// special handling for ComPADRE
-		LibraryTreePanel treePanel = getSelectedTreePanel();
-		LibraryTreeNode node = (treePanel == null ? null : treePanel.getSelectedNode());
-		LibraryResource record = node == null ? null : node.record;
-		String name = getDownloadName(urlPath, record);
-
-		// choose file and save resource
-		VideoIO.getChooserFilesAsync("save resource " + name, //$NON-NLS-1$
-				(files) -> {
-					if (VideoIO.getChooser().getSelectedOption() == AsyncFileChooser.APPROVE_OPTION && files != null) {
-						File file = ResourceLoader.downloadResourceFromDialog(uriPath, files[0]);
-						if (file != null) {
-							LibraryBrowser.this.firePropertyChange(PROPERTY_LIBRARY_TARGET, HINT_DOWNLOAD_RESOURCE,
-									file);
-						}
-					}
-					return null;
-				});
+		refreshGUI();
 	}
 
 	protected void notifySearchNotFound(String searchTerm) {
@@ -2336,17 +2349,6 @@ public class LibraryBrowser extends JPanel {
 			searchTimer.restart();
 		}
 
-	}
-
-	private String getDownloadName(String name, LibraryResource record) {
-		String target = (record == null ? name : record.getAbsoluteTarget());
-		if (target.indexOf("document/ServeFile.cfm?") >= 0) { //$NON-NLS-1$
-			target = (record == null ? null : record.getProperty("download_filename")); //$NON-NLS-1$
-			if (target != null)
-				return target;
-			name = name + ".zip";
-		}
-		return XML.getName(ResourceLoader.getNonURIPath(name));
 	}
 
 	protected void doCommand() {
@@ -3914,10 +3916,6 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
-
-
-	private static String ospPath;
-
 	/**
 	 * Gets the path to the local OSP folder.
 	 * 
@@ -4126,6 +4124,18 @@ public class LibraryBrowser extends JPanel {
 		int y = (dim.height - browser.getBounds().height) / 2;
 		browser.setLocation(x, y);
 		browser.setVisible(true);
+	}
+
+	/**
+	 * Used by Tracker
+	 */
+	public void refreshSelectedNode() {
+		OSPRuntime.trigger(1000, (e) -> {
+			LibraryTreePanel treePanel = getSelectedTreePanel();
+			if (treePanel != null) {
+				treePanel.refreshSelectedNode();
+			}
+		});
 	}
 
 }

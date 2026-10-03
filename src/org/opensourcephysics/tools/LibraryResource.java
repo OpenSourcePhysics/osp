@@ -34,6 +34,9 @@ import org.w3c.dom.Node;
 
 /**
  * This represents a library resource.
+ * 
+ * Along with LibraryBrowser, and LibraryCollection, 
+ * the three public classes relating to Library
  *
  * @author Douglas Brown
  * @version 1.0
@@ -41,11 +44,11 @@ import org.w3c.dom.Node;
 public class LibraryResource implements Comparable<LibraryResource> {
 	
 	static class Attachment {
-		Node node;
-		String type;
-		String url;
-		String filename;
-		int size;
+		private Node node;
+		private String type;
+		private String url;
+		private String filename;
+		private int size;
 		
 		Attachment(Node node, String type, String url, String filename, int size) {
 			this.node = node;
@@ -63,6 +66,15 @@ public class LibraryResource implements Comparable<LibraryResource> {
 					filename + " " + 
 					size + "]";
 		}
+
+		protected String getFilename() {
+			return filename;
+		}
+		
+		protected String getUrl() {
+			return url;
+		}
+
 	}
 
 
@@ -773,6 +785,7 @@ public class LibraryResource implements Comparable<LibraryResource> {
 	 *
 	 * @return the html path
 	 */
+	@SuppressWarnings("unused")
 	protected static String getHTMLBody(String title, String resourceType, String thumbnailPath, String description,
 			String authors, String contact, String moreInfoURL, Attachment attachment) {
 		StringBuffer buffer = new StringBuffer();

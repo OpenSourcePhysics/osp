@@ -14,6 +14,8 @@ import org.opensourcephysics.controls.XMLControl;
 
 /**
  * This represents a collection of library resources.
+ * 
+ * One of the three public Libary* files, with LibraryResource and LibraryBrowser
  *
  * @author Douglas Brown
  * @version 1.0
@@ -63,7 +65,6 @@ public class LibraryCollection extends LibraryResource {
 		path = (path == null ? "" : path.trim()); //$NON-NLS-1$
 		if (path.equals(target))
 			return false;
-		//OSPLog.debug("LibraryCollection.setTarget " + getName() + " " + target + ">" + path);
 		target = path;
 		return true;
 	}
@@ -78,10 +79,6 @@ public class LibraryCollection extends LibraryResource {
 			return;
 		resources.add(resource);
 		resource.parent = this;
-//		if (!resources.contains(resource)) {
-//			resources.add(resource);
-//			resource.parent = this;
-//		}
 	}
 
 	/**
@@ -154,9 +151,6 @@ public class LibraryCollection extends LibraryResource {
 			if (!collection.resources.isEmpty()) {
 				control.setValue("resources", collection.getResources()); //$NON-NLS-1$
 			}
-//			else if (collection.getTarget() != null) {
-//				control.setValue(COLLECTION_TYPE);
-//			}
 		}
 
 		/**
@@ -193,7 +187,6 @@ public class LibraryCollection extends LibraryResource {
 				String target = control.getString("target");
 				collection.setTarget(target);
 			}
-//			LibraryBrowser.addSearchMapResource(collection);
 			return collection;
 		}
 	}

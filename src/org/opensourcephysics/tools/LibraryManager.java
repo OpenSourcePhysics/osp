@@ -61,29 +61,36 @@ import org.opensourcephysics.tools.Library.ListMap;
 /**
  * A GUI for managing My Library, search targets, and the OSP cache.
  *
+ * package-private
+ *
  * @author Douglas Brown
  */
 @SuppressWarnings("serial")
-public class LibraryManager extends JDialog {
+class LibraryManager extends JDialog {
 
+	protected final static int SELECT_COLLECTIONS = 1;
+	protected final static int SELECT_SEARCH      = 2;
+	protected final static int SELECT_CACHE       = 3;
+	
 	private LibraryBrowser browser;
-	Library library;
-	JTabbedPane tabbedPane;
-	JPanel collectionsPanel, importsPanel, searchPanel, cachePanel, recentPanel;
-	JList<String> collectionList;
-	JList<String> guestList;
-	JTextField nameField, pathField;
-	JButton okButton, setCacheButton;
-	JButton moveUpButton, moveDownButton, addButton, removeButton; // for collections and imports tabs
-	JButton allButton, noneButton, clearCacheButton; // for search and cache tabs
-	JToolBar libraryButtonbar;
-	Box nameBox, pathBox, libraryEditBox, searchBox, cacheBox;
-	JLabel nameLabel, pathLabel;
-	Font sharedFont;
-	TitledBorder collectionsTitleBorder, importsTitleBorder, searchTitleBorder, cacheTitleBorder;
-	ArrayList<SearchCheckBox> checkboxes = new ArrayList<SearchCheckBox>();
-	Dimension defaultSize = new Dimension(400, 300);
-	Border listButtonBorder;
+	private Library library;
+	private JTabbedPane tabbedPane;
+	private JPanel collectionsPanel, importsPanel, searchPanel, cachePanel;
+	//, recentPanel;
+	private JList<String> collectionList;
+	private JList<String> guestList;
+	private JTextField nameField, pathField;
+	private JButton okButton, setCacheButton;
+	private JButton moveUpButton, moveDownButton, addButton, removeButton; // for collections and imports tabs
+	private JButton allButton, noneButton, clearCacheButton; // for search and cache tabs
+	private JToolBar libraryButtonbar;
+	private Box nameBox, pathBox, libraryEditBox, searchBox, cacheBox;
+	private JLabel nameLabel, pathLabel;
+	private Font sharedFont;
+	private TitledBorder collectionsTitleBorder, importsTitleBorder, searchTitleBorder, cacheTitleBorder;
+	private ArrayList<SearchCheckBox> checkboxes = new ArrayList<SearchCheckBox>();
+	private Dimension defaultSize = new Dimension(400, 300);
+	private Border listButtonBorder;
 
 	/**
 	 * Constructor for a frame
@@ -947,10 +954,6 @@ public class LibraryManager extends JDialog {
 
 	}
 
-	final static int SELECT_COLLECTIONS = 1;
-	final static int SELECT_SEARCH      = 2;
-	final static int SELECT_CACHE       = 3;
-	
 	public void selectPanel(int panel) {
 		JPanel p;
 		switch (panel) {
@@ -968,6 +971,17 @@ public class LibraryManager extends JDialog {
 		}
 		tabbedPane.setSelectedComponent(p);
 		setVisible(true);
+	}
+
+	protected LibraryManager update() {
+		if (library.getPathToNameMap().size() > 0 && collectionList.getSelectedIndex() == -1) {
+			collectionList.setSelectedIndex(0);
+		}
+		if (library.getImportedPathToLibraryMap().size() > 0 && guestList.getSelectedIndex() == -1) {
+			guestList.setSelectedIndex(0);
+		}
+		setFontLevel(FontSizer.getLevel());
+		return this;
 	}
 
 }
