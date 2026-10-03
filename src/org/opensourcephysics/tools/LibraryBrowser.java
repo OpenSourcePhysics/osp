@@ -2331,7 +2331,7 @@ public class LibraryBrowser extends JPanel {
 
 	protected void notifySearchNotFound(String searchTerm) {
 		Toolkit.getDefaultToolkit().beep();
-		OSPLog.finer(searchTerm + "not found");
+		OSPLog.finer(searchTerm + " not found");
 		// give visual cue, too
 		JTextField f = searchField;
 		Color color = f.getForeground();
