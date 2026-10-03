@@ -28,65 +28,65 @@ import org.opensourcephysics.tools.LibraryBrowser.LibraryHistory;
  *
  * @author Douglas Brown
  */
-class Library {
+public class Library {
 
 	/**
-	 * A class that combines an ArrayList with a matching HashMap. 
-	 * Sort of like a LinkedHashMap with a .get(i) method.
+	 * A class that combines an ArrayList with a matching HashMap. Sort of like a
+	 * LinkedHashMap with a .get(i) method.
 	 * 
-	 * The class can be of TYPE_LIB(1) or TYPE_NAME(2). The first
-	 * maps a path to a Library object; the second just to a name.
+	 * The class can be of TYPE_LIB(1) or TYPE_NAME(2). The first maps a path to a
+	 * Library object; the second just to a name.
 	 * 
 	 * @author hanso
 	 *
 	 */
 	public static class ListMap extends ArrayList<String> {
-		
+
 		private final static int TYPE_LIB = 1;
 		private final static int TYPE_NAME = 2;
-		
+
 		HashMap<String, Library> libMap;
 		HashMap<String, String> nameMap;
-	
+
 		int type;
-		
+
 		protected ListMap(int type) {
 			this.type = type;
 		}
-		
-	    @Override
-		public void clear() {
-	    	super.clear();
-	    	if (libMap != null)
-	    		libMap.clear();
-	    	if (nameMap != null)
-	    		nameMap.clear();
-	    }
 
-	    @Override 
-	    public String get(int i){
-	    	return super.get(i);
-	    }
-	    
-	    private boolean addItem(String path) {
-	    	return super.add(path);
-	    }
+		@Override
+		public void clear() {
+			super.clear();
+			if (libMap != null)
+				libMap.clear();
+			if (nameMap != null)
+				nameMap.clear();
+		}
+
+		@Override
+		public String get(int i) {
+			return super.get(i);
+		}
+
+		private boolean addItem(String path) {
+			return super.add(path);
+		}
+
 		@Override
 		@Deprecated
 		public boolean add(String path) {
-			throw new RuntimeException("LibraryMap can't use add");				
+			throw new RuntimeException("LibraryMap can't use add");
 		}
-		
 
 		public Library getLibrary(String path) {
 			return (libMap == null ? null : libMap.get(path));
 		}
-		
+
 		public String getLibraryName(String path) {
 			Library lib = getLibrary(path);
 			return (lib == null ? null : lib.getName());
 		}
-		
+
 		public String getMappedName(String path) {
 			return (nameMap == null ? null : nameMap.get(path));
 		}
@@ -94,21 +94,21 @@ class Library {
 		public String getPath(int i) {
 			return get(i);
 		}
+
 		public String getMappedName(int i) {
 			return getMappedName(get(i));
 		}
 
 		public boolean addName(String path, String name) {
-		    ensure(TYPE_NAME);
+			ensure(TYPE_NAME);
 			path = path.trim();
 			// don't add duplicate paths
 			if (contains(path))
 				return false;
 			addItem(path);
-			nameMap.put(path,  name.trim());
+			nameMap.put(path, name.trim());
 			return true;
 		}
-
 
 		private void ensure(int requiredType) {
 			if (requiredType != type)
@@ -129,9 +129,9 @@ class Library {
 			ensure(TYPE_NAME);
 			return nameMap.values();
 		}
-		
+
 		private boolean addLibrary(String path, Library library) {
-		    ensure(TYPE_LIB);
+			ensure(TYPE_LIB);
 			if (contains(path))
 				return false;
 			addItem(path);
@@ -140,7 +140,7 @@ class Library {
 		}
 
 		private static boolean addAndCreateLibrary(String path, ListMap listMap) {
-		    listMap.ensure(TYPE_LIB);
+			listMap.ensure(TYPE_LIB);
 			if (listMap.contains(path))
 				return false;
 			synchronized (listMap) {
@@ -163,19 +163,19 @@ class Library {
 	}
 
 	private String name; // name of the library
-	
+
 	ListMap pathNameMap = new ListMap(ListMap.TYPE_NAME);
 	ListMap comPADREMap = new ListMap(ListMap.TYPE_NAME);
 	ListMap ospLibMap = new ListMap(ListMap.TYPE_LIB);
 	ListMap importedLibMap = new ListMap(ListMap.TYPE_LIB);
 	ListMap subpathLibMap = new ListMap(ListMap.TYPE_LIB);
-	
+
 	private HashMap<String, String> allPathsToNameMap = new HashMap<String, String>();
-	
+
 	private Set<String> noSearchSet = new TreeSet<String>();
 
 	/**
-	 * Adds and creates an OSP-sponsored library. 
+	 * Adds and creates an OSP-sponsored library.
 	 * 
 	 * OSP libraries are not under user control.
 	 * 
@@ -187,7 +187,7 @@ class Library {
 	}
 
 	/**
-	 * Imports and creates a library. 
+	 * Imports and creates a library.
 	 * 
 	 * Imported libraries are managed by the user.
 	 * 
@@ -208,7 +208,6 @@ class Library {
 	protected boolean importLibrary(String path, Library library) {
 		return importedLibMap.addLibrary(path, library);
 	}
-
 
 	/**
 	 * Adds a sublibrary. Sublibraries are shown as submenus in a Library's
@@ -262,8 +261,7 @@ class Library {
 		int n = path.indexOf(LibraryComPADRE.PRIMARY_ONLY);
 		if (n >= 0)
 			path = path.substring(0, n);
-		return pathNameMap.contains(path)
-				|| (allLists && (comPADREMap.contains(path) || ospLibMap.contains(path)));
+		return pathNameMap.contains(path) || (allLists && (comPADREMap.contains(path) || ospLibMap.contains(path)));
 	}
 
 	/**
@@ -373,7 +371,7 @@ class Library {
 	 */
 	protected void save(String path) {
 		if (path != null) {
-			//System.out.println("Library save to " + path);
+			// System.out.println("Library save to " + path);
 			new XMLControlElement(this).write(path);
 		}
 	}
@@ -474,7 +472,7 @@ class Library {
 			if (cache != null) {
 				control.setValue("cache", cache.getPath()); //$NON-NLS-1$
 			}
-			//System.out.println("Library.Loader.saveObject\n" + control);
+			// System.out.println("Library.Loader.saveObject\n" + control);
 		}
 
 		/**
@@ -497,7 +495,7 @@ class Library {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			//System.out.println(control);
+			// System.out.println(control);
 			Library library = (Library) obj;
 			LibraryHistory history = LibraryBrowser.getHistory();
 			library.setName(control.getString("name")); //$NON-NLS-1$
@@ -545,7 +543,7 @@ class Library {
 			history.setOpenTabPaths((String[]) control.getObject("open_tabs")); //$NON-NLS-1$
 			String dir = control.getString("chooser_directory");
 			if (dir != null)
-				history.setChooserDir(dir); //$NON-NLS-1$
+				history.setChooserDir(dir); // $NON-NLS-1$
 			// set cache only if it has not yet been set
 			if (ResourceLoader.getOSPCache() == null) {
 				ResourceLoader.setOSPCache(control.getString("cache")); //$NON-NLS-1$
