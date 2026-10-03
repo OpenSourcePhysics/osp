@@ -440,7 +440,7 @@ public class LibraryBrowser extends JPanel {
 		}
 		libMap = library.getOSPPathToLibraryMap();
 		if (!libMap.isEmpty()) {
-			ListMap map = library.getOSPPathToLibraryMap();
+			ListMap map = libMap;
 			for (String path : libMap) {
 				Library lib = map.getLibrary(path);
 				JMenu submenu = new JMenu(lib.getName());
@@ -2670,8 +2670,12 @@ public class LibraryBrowser extends JPanel {
 		return tabbedPane.getTabCount();
 	}
 
-	public void setCommandField(String path, boolean isRoot, boolean available) {
+	public void setCommandFieldText(String path) {
 		commandField.setText(path);
+	}
+
+	public void setCommandField(String path, boolean isRoot, boolean available) {
+//		commandField.setText(path);
 		commandField.setForeground(available ? LibraryTreePanel.defaultForeground : LibraryTreePanel.darkRed);
 		commandField.setCaretPosition(0);
 		if (isRoot)

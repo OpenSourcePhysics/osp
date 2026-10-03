@@ -421,6 +421,7 @@ class LibraryTreePanel extends JPanel {
 
 	private void setCommandField(LibraryTreeNode node, String path, boolean isCollection) {
 		// if not the root, check to see if resource is available
+		browser.setCommandFieldText(path);
 		boolean available = node.isRoot();
 		if (path != null && !available) {
 			if (ResourceLoader.isHTTP(path)) {
