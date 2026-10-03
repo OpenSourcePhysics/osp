@@ -28,57 +28,195 @@ import org.opensourcephysics.tools.LibraryBrowser.LibraryHistory;
  */
 public class Library {
 
+	/**
+	 * A class that combines an ArrayList with a matching HashMap. 
+	 * Sort of like a LinkedHashMap with a .get(i) method.
+	 * 
+	 * The class can be of TYPE_LIB(1) or TYPE_NAME(2). The first
+	 * maps a path to a Library object; the second just to a name.
+	 * 
+	 * @author hanso
+	 *
+	 */
+	public static class ListMap extends ArrayList<String> {
+		
+		private final static int TYPE_LIB = 1;
+		private final static int TYPE_NAME = 2;
+		
+		HashMap<String, Library> libMap;
+		HashMap<String, String> nameMap;
+	
+		int type;
+		
+		protected ListMap(int type) {
+			this.type = type;
+		}
+		
+	    @Override
+		public void clear() {
+	    	super.clear();
+	    	if (libMap != null)
+	    		libMap.clear();
+	    	if (nameMap != null)
+	    		nameMap.clear();
+	    }
+
+	    @Override 
+	    public String get(int i){
+	    	return super.get(i);
+	    }
+	    
+	    private boolean addItem(String path) {
+	    	return super.add(path);
+	    }
+		@Override
+		@Deprecated
+		public boolean add(String path) {
+			throw new RuntimeException("LibraryMap can't use add");				
+		}
+		
+
+		public Library getLibrary(String path) {
+			return (libMap == null ? null : libMap.get(path));
+		}
+		
+		public String getLibraryName(String path) {
+			Library lib = getLibrary(path);
+			return (lib == null ? null : lib.getName());
+		}
+		
+		public String getMappedName(String path) {
+			return (nameMap == null ? null : nameMap.get(path));
+		}
+
+		public String getPath(int i) {
+			return get(i);
+		}
+		public String getMappedName(int i) {
+			return getMappedName(get(i));
+		}
+
+		public boolean addName(String path, String name) {
+		    ensure(TYPE_NAME);
+			path = path.trim();
+			// don't add duplicate paths
+			if (contains(path))
+				return false;
+			addItem(path);
+			nameMap.put(path,  name.trim());
+			return true;
+		}
+
+
+		private void ensure(int requiredType) {
+			if (requiredType != type)
+				throw new RuntimeException("invalid entry to LibraryMap");
+			switch (type) {
+			case TYPE_NAME:
+				if (nameMap == null)
+					nameMap = new HashMap<>();
+				break;
+			case TYPE_LIB:
+				if (libMap == null)
+					libMap = new HashMap<>();
+				break;
+			}
+		}
+
+		public Collection<String> getNames() {
+			ensure(TYPE_NAME);
+			return nameMap.values();
+		}
+		
+		private boolean addLibrary(String path, Library library) {
+		    ensure(TYPE_LIB);
+			if (contains(path))
+				return false;
+			addItem(path);
+			libMap.put(path, library);
+			return true;
+		}
+
+		private static boolean addAndCreateLibrary(String path, ListMap listMap) {
+		    listMap.ensure(TYPE_LIB);
+			if (listMap.contains(path))
+				return false;
+			synchronized (listMap) {
+				XMLControl control = new XMLControlElement(path);
+				if (control.failedToRead() || control.getObjectClass() != Library.class) {
+					return false;
+				}
+				Library library = new Library();
+				control.loadObject(library);
+				listMap.addItem(path);
+				listMap.libMap.put(path, library);
+			}
+			return true;
+		}
+
+		public String[] toStringArray() {
+			return toArray(new String[size()]);
+		}
+
+	}
+
 	private String name; // name of the library
-	private ArrayList<String> pathList = new ArrayList<String>();
-	private HashMap<String, String> pathToNameMap = new HashMap<String, String>();
-	private ArrayList<String> comPADREPathList = new ArrayList<String>();
-	private HashMap<String, String> comPADREPathToNameMap = new HashMap<String, String>();
-	private ArrayList<String> ospLibraryPathList = new ArrayList<String>();
-	private HashMap<String, Library> ospPathToLibraryMap = new HashMap<String, Library>();
-	private ArrayList<String> importedPathList = new ArrayList<String>();
-	private HashMap<String, Library> importedPathToLibraryMap = new HashMap<String, Library>();
-	private ArrayList<String> subPathList = new ArrayList<String>();
-	private HashMap<String, Library> subPathToLibraryMap = new HashMap<String, Library>();
+	
+	ListMap pathNameMap = new ListMap(ListMap.TYPE_NAME);
+	ListMap comPADREMap = new ListMap(ListMap.TYPE_NAME);
+	ListMap ospLibMap = new ListMap(ListMap.TYPE_LIB);
+	ListMap importedLibMap = new ListMap(ListMap.TYPE_LIB);
+	ListMap subpathLibMap = new ListMap(ListMap.TYPE_LIB);
+	
 	private HashMap<String, String> allPathsToNameMap = new HashMap<String, String>();
+	
 	private Set<String> noSearchSet = new TreeSet<String>();
 
 	/**
-	 * Adds an OSP-sponsored library. OSP libraries are not under user control.
+	 * Adds and creates an OSP-sponsored library. 
+	 * 
+	 * OSP libraries are not under user control.
 	 * 
 	 * @param path the library path
 	 * @return true if successfully added
 	 */
 	protected boolean addOSPLibrary(String path) {
-		if (ospLibraryPathList.contains(path))
-			return false;
-		synchronized (ospLibraryPathList) {
-			XMLControl control = new XMLControlElement(path);
-			if (control.failedToRead() || control.getObjectClass() != Library.class) {
-				return false;
-			}
-			Library library = new Library();
-			control.loadObject(library);
-			ospLibraryPathList.add(path);
-			ospPathToLibraryMap.put(path, library);
-		}
-		return true;
+		return ListMap.addAndCreateLibrary(path, ospLibMap);
 	}
 
 	/**
-	 * Imports a library. Imported libraries are managed by the user.
+	 * Imports and creates a library. 
+	 * 
+	 * Imported libraries are managed by the user.
 	 * 
 	 * @param path the library path
 	 * @return true if successfully imported
 	 */
 	protected boolean importLibrary(String path) {
-		if (importedPathList.contains(path))
-			return false;
-		XMLControl control = new XMLControlElement(path);
-		if (control.failedToRead() || control.getObjectClass() != Library.class)
-			return false;
-		Library library = new Library();
-		control.loadObject(library);
-		return importLibrary(path, library);
+		return ListMap.addAndCreateLibrary(path, importedLibMap);
+	}
+
+	/**
+	 * Imports a Library if not already imported.
+	 * 
+	 * @param path    the path to the library
+	 * @param library the library
+	 * @return true if imported
+	 */
+	protected boolean importLibrary(String path, Library library) {
+		return importedLibMap.addLibrary(path, library);
+	}
+
+
+	/**
+	 * Adds a sublibrary. Sublibraries are shown as submenus in a Library's
+	 * Collections menu. Sublibraries are not under user control.
+	 * 
+	 * @param path the path to the sublibrary
+	 * @return true if successfully added
+	 */
+	protected boolean addSubLibrary(String path) {
+		return ListMap.addAndCreateLibrary(path, subpathLibMap);
 	}
 
 	/**
@@ -89,36 +227,104 @@ public class Library {
 	 * @return true if successfully added
 	 */
 	protected boolean addComPADRECollection(String path, String name) {
-		path = path.trim();
-		// don't add duplicate paths
-		if (comPADREPathList.contains(path))
-			return false;
-		comPADREPathList.add(path);
-		comPADREPathToNameMap.put(path, name.trim());
-//		allPathsToNameMap.put(path, name.trim());
-		return true;
+		return comPADREMap.addName(path, name);
 	}
 
 	/**
-	 * Adds a sublibrary. Sublibraries are shown as submenus in a Library's
-	 * Collections menu. Sublibraries are not under user control.
+	 * Gets the names of all collections maintained by this library.
 	 * 
-	 * @param path the path to the sublibrary
-	 * @return true if successfully added
+	 * @return a collection of names
 	 */
-	protected boolean addSubLibrary(String path) {
-		if (subPathList.contains(path))
-			return false;
-		synchronized (subPathList) {
-			XMLControl control = new XMLControlElement(path);
-			if (control.failedToRead() || control.getObjectClass() != Library.class)
-				return false;
-			Library library = new Library();
-			control.loadObject(library);
-			subPathList.add(path);
-			subPathToLibraryMap.put(path, library);
+	protected Collection<String> getNames() {
+		return pathNameMap.getNames();
+	}
+
+	/**
+	 * Returns true if this library has no collections.
+	 * 
+	 * @return true if empty
+	 */
+	protected boolean isEmpty() {
+		return pathNameMap.isEmpty();
+	}
+
+	/**
+	 * Returns true if this library contains a collection path.
+	 * 
+	 * @param path     the collection path
+	 * @param allLists true to search in all collection lists
+	 * @return true if this contains the path
+	 */
+	protected boolean containsPath(String path, boolean allLists) {
+		path = path.trim();
+		int n = path.indexOf(LibraryComPADRE.PRIMARY_ONLY);
+		if (n >= 0)
+			path = path.substring(0, n);
+		return pathNameMap.contains(path)
+				|| (allLists && (comPADREMap.contains(path) || ospLibMap.contains(path)));
+	}
+
+	/**
+	 * Adds a collection to this library.
+	 * 
+	 * @param path the path to the collection
+	 * @param name the menu item name for the collection
+	 */
+	protected void addCollection(String path, String name) {
+		path = path.trim();
+		if (pathNameMap.contains(path))
+			return;
+		name = name.trim();
+		pathNameMap.addName(path, name);
+		allPathsToNameMap.put(path, name);
+	}
+
+	/**
+	 * Renames a collection.
+	 * 
+	 * @param path    the path to the collection
+	 * @param newName the new name
+	 */
+	protected void renameCollection(String path, String newName) {
+		path = path.trim();
+		// change only paths that have already been added
+		if (!pathNameMap.contains(path))
+			return;
+		newName = newName.trim();
+		pathNameMap.addName(path, newName);
+		allPathsToNameMap.put(path, newName);
+	}
+
+	/**
+	 * Returns all collection paths in this Library and sub-libraries.
+	 * 
+	 * @return array of paths
+	 */
+	protected TreeSet<String> getAllPaths() {
+		TreeSet<String> paths = new TreeSet<String>();
+		paths.addAll(pathNameMap);
+		paths.addAll(comPADREMap);
+
+		if (!subpathLibMap.isEmpty()) {
+			for (String path : subpathLibMap) {
+				Library library = subpathLibMap.getLibrary(path);
+				paths.addAll(library.getAllPaths());
+			}
 		}
-		return true;
+		for (String path : ospLibMap) {
+			Library library = ospLibMap.getLibrary(path);
+			paths.addAll(library.getAllPaths());
+		}
+		return paths;
+	}
+
+	/**
+	 * Returns a Map of path-to-tabname.
+	 * 
+	 * @return path-to-name map
+	 */
+	protected HashMap<String, String> getAllPathsToNameMap() {
+		return allPathsToNameMap;
 	}
 
 	/**
@@ -181,103 +387,6 @@ public class Library {
 	}
 
 	/**
-	 * Gets the names of all collections maintained by this library.
-	 * 
-	 * @return a collection of names
-	 */
-	protected Collection<String> getNames() {
-		return pathToNameMap.values();
-	}
-
-	/**
-	 * Returns true if this library has no collections.
-	 * 
-	 * @return true if empty
-	 */
-	protected boolean isEmpty() {
-		return pathList.isEmpty();
-	}
-
-	/**
-	 * Returns true if this library contains a collection path.
-	 * 
-	 * @param path     the collection path
-	 * @param allLists true to search in all collection lists
-	 * @return true if this contains the path
-	 */
-	protected boolean containsPath(String path, boolean allLists) {
-		path = path.trim();
-		int n = path.indexOf(LibraryComPADRE.PRIMARY_ONLY);
-		if (n >= 0)
-			path = path.substring(0, n);
-		return pathList.contains(path)
-				|| (allLists && (comPADREPathList.contains(path) || ospLibraryPathList.contains(path)));
-	}
-
-	/**
-	 * Adds a collection to this library.
-	 * 
-	 * @param path the path to the collection
-	 * @param name the menu item name for the collection
-	 */
-	protected void addCollection(String path, String name) {
-		path = path.trim();
-		// don't add duplicate paths
-		if (pathList.contains(path))
-			return;
-		pathList.add(path);
-		pathToNameMap.put(path, name.trim());
-		allPathsToNameMap.put(path, name.trim());
-	}
-
-	/**
-	 * Renames a collection.
-	 * 
-	 * @param path    the path to the collection
-	 * @param newName the new name
-	 */
-	protected void renameCollection(String path, String newName) {
-		path = path.trim();
-		// change only paths that have already been added
-		if (!pathList.contains(path))
-			return;
-		pathToNameMap.put(path, newName.trim());
-		allPathsToNameMap.put(path, newName.trim());
-	}
-
-	/**
-	 * Returns all collection paths in this Library and sub-libraries.
-	 * 
-	 * @return array of paths
-	 */
-	protected TreeSet<String> getAllPaths() {
-		TreeSet<String> paths = new TreeSet<String>();
-		paths.addAll(pathList);
-		paths.addAll(comPADREPathList);
-
-		if (!subPathList.isEmpty()) {
-			for (String path : subPathList) {
-				Library library = subPathToLibraryMap.get(path);
-				paths.addAll(library.getAllPaths());
-			}
-		}
-		for (String path : ospLibraryPathList) {
-			Library library = ospPathToLibraryMap.get(path);
-			paths.addAll(library.getAllPaths());
-		}
-		return paths;
-	}
-
-	/**
-	 * Returns a Map of path-to-tabname.
-	 * 
-	 * @return path-to-name map
-	 */
-	protected HashMap<String, String> getAllPathsToNameMap() {
-		return allPathsToNameMap;
-	}
-
-	/**
 	 * Gets a clone of this library that is suitable for exporting. The exported
 	 * library has no OSP libraries, ComPADRE collections or imported libraries.
 	 * 
@@ -285,25 +394,9 @@ public class Library {
 	 */
 	protected Library getCloneForExport() {
 		Library lib = new Library();
-		lib.pathList = pathList;
-		lib.pathToNameMap = pathToNameMap;
+		lib.pathNameMap = pathNameMap;
 		lib.name = name;
 		return lib;
-	}
-
-	/**
-	 * Imports a Library if not already imported.
-	 * 
-	 * @param path    the path to the library
-	 * @param library the library
-	 * @return true if imported
-	 */
-	protected boolean importLibrary(String path, Library library) {
-		if (importedPathList.contains(path))
-			return false;
-		importedPathList.add(path);
-		importedPathToLibraryMap.put(path, library);
-		return true;
 	}
 
 	/**
@@ -331,21 +424,21 @@ public class Library {
 			Library library = (Library) obj;
 			LibraryHistory history = LibraryBrowser.getHistory();
 			control.setValue("name", library.getName()); //$NON-NLS-1$
-			if (!library.pathList.isEmpty()) {
-				String[] paths = library.pathList.toArray(new String[0]);
+			if (!library.pathNameMap.isEmpty()) {
+				String[] paths = library.pathNameMap.toStringArray();
 				control.setValue("collection_paths", paths); //$NON-NLS-1$
 				String[] names = new String[paths.length];
 				for (int i = 0; i < paths.length; i++) {
-					names[i] = library.pathToNameMap.get(paths[i]);
+					names[i] = library.pathNameMap.getMappedName(paths[i]);
 				}
 				control.setValue("collection_names", names); //$NON-NLS-1$
 			}
-			if (!library.subPathList.isEmpty()) {
-				String[] paths = library.subPathList.toArray(new String[0]);
+			if (!library.subpathLibMap.isEmpty()) {
+				String[] paths = library.subpathLibMap.toStringArray();
 				control.setValue("sublibrary_paths", paths); //$NON-NLS-1$
 			}
-			if (!library.importedPathList.isEmpty()) {
-				String[] paths = library.importedPathList.toArray(new String[0]);
+			if (!library.importedLibMap.isEmpty()) {
+				String[] paths = library.importedLibMap.toStringArray();
 				control.setValue("imported_library_paths", paths); //$NON-NLS-1$
 			}
 
@@ -409,13 +502,11 @@ public class Library {
 			String[] paths = (String[]) control.getObject("collection_paths"); //$NON-NLS-1$
 			if (paths != null) {
 				String[] names = (String[]) control.getObject("collection_names"); //$NON-NLS-1$
-				library.pathList.clear();
-				library.pathToNameMap.clear();
+				library.pathNameMap.clear();
 				for (int i = 0; i < paths.length; i++) {
 					if (paths[i] == null || names[i] == null)
 						continue;
-					library.pathList.add(paths[i]);
-					library.pathToNameMap.put(paths[i], names[i]);
+					library.pathNameMap.addName(paths[i], names[i]);
 					library.allPathsToNameMap.put(paths[i], names[i]);
 				}
 			}
@@ -465,48 +556,24 @@ public class Library {
 		return noSearchSet;
 	}
 
-	protected HashMap<String, Library> getImportedPathToLibraryMap() {
-		return importedPathToLibraryMap;
+	protected ListMap getImportedPathToLibraryMap() {
+		return importedLibMap;
 	}
 
-	protected ArrayList<String> getImportedPathList() {
-		return importedPathList;
+	protected ListMap getPathToNameMap() {
+		return pathNameMap;
 	}
 
-	protected HashMap<String, String> getPathToNameMap() {
-		return pathToNameMap;
+	protected ListMap getComPADREPathToNameMap() {
+		return comPADREMap;
 	}
 
-	protected ArrayList<String> getPathList() {
-		return pathList;
+	protected ListMap getOSPPathToLibraryMap() {
+		return ospLibMap;
 	}
 
-	protected String getNameFromPathIndex(int i) {
-		return pathToNameMap.get(pathList.get(i));
-	}
-
-	protected ArrayList<String> getComPADREPathList() {
-		return comPADREPathList;
-	}
-
-	protected HashMap<String, String> getComPADREPathToNameMap() {
-		return comPADREPathToNameMap;
-	}
-
-	protected ArrayList<String> getOSPLibraryPathList() {
-		return ospLibraryPathList;
-	}
-
-	protected HashMap<String, Library> getOSPPathToLibraryMap() {
-		return ospPathToLibraryMap;
-	}
-
-	protected ArrayList<String> getSubPathList() {
-		return subPathList;
-	}
-
-	protected HashMap<String, Library> getSubPathToLibraryMap() {
-		return subPathToLibraryMap;
+	protected ListMap getSubPathToLibraryMap() {
+		return subpathLibMap;
 	}
 
 }

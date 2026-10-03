@@ -92,6 +92,7 @@ import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
 import org.opensourcephysics.media.core.VideoIO;
+import org.opensourcephysics.tools.Library.ListMap;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
 
 import javajs.async.AsyncDialog;
@@ -401,15 +402,15 @@ public class LibraryBrowser extends JPanel {
 	synchronized public void refreshCollectionsMenu() {
 		JMenu menu = collectionsMenu;
 		menu.removeAll();
-		ArrayList<String> list;
+		ListMap libMap;
 		/** @j2sIgnore */
 		{
 			JMenu myLibraryMenu = new JMenu(ToolsRes.getString("Library.Name.Local")); //$NON-NLS-1$
 			menu.add(myLibraryMenu);
-			list = library.getPathList();
-			if (!list.isEmpty()) {
-				for (String path : list) {
-					String name = library.getPathToNameMap().get(path);
+			libMap = library.getPathToNameMap();
+			if (!libMap.isEmpty()) {
+				for (String path : libMap) {
+					String name = libMap.getMappedName(path);
 					JMenuItem item = new JMenuItem(name);
 					myLibraryMenu.add(item);
 					item.addActionListener(loadCollectionAction);
@@ -418,13 +419,13 @@ public class LibraryBrowser extends JPanel {
 				}
 			}
 		}
-		list = library.getComPADREPathList();
-		if (!list.isEmpty()) {
+		libMap = library.getComPADREPathToNameMap();
+		if (!libMap.isEmpty()) {
 			JMenu submenu = new JMenu(ToolsRes.getString("Library.Name.ComPADRE")); //$NON-NLS-1$
 			menu.add(submenu);
 			HashMap<String, String> map = library.getAllPathsToNameMap();
-			for (String path : list) {
-				String name = library.getComPADREPathToNameMap().get(path);
+			for (String path : libMap) {
+				String name = libMap.getMappedName(path);
 				JMenuItem item = new JMenuItem(name);
 				submenu.add(item);
 				item.addActionListener(loadCollectionAction);
@@ -433,27 +434,27 @@ public class LibraryBrowser extends JPanel {
 				map.put(path, name);
 			}
 		}
-		list = library.getOSPLibraryPathList();
-		if (!list.isEmpty()) {
-			HashMap<String, Library> map = library.getOSPPathToLibraryMap();
-			for (String path : list) {
-				Library lib = map.get(path);
+		libMap = library.getOSPPathToLibraryMap();
+		if (!libMap.isEmpty()) {
+			ListMap map = library.getOSPPathToLibraryMap();
+			for (String path : libMap) {
+				Library lib = map.getLibrary(path);
 				JMenu submenu = new JMenu(lib.getName());
 				menu.add(submenu);
 				populateSubMenu(submenu, lib);
 			}
 		}
-		list = library.getImportedPathList();
-		if (!list.isEmpty()) {
+		libMap = library.getImportedPathToLibraryMap();
+		if (!libMap.isEmpty()) {
 			menu.addSeparator();
-			HashMap<String, Library> map = library.getImportedPathToLibraryMap();
-			for (String path : list) {
-				Library lib = map.get(path);
+			ListMap map = library.getImportedPathToLibraryMap();
+			for (String path : libMap) {
+				Library lib = map.getLibrary(path);
 				JMenu submenu = new JMenu(lib.getName());
 				menu.add(submenu);
-				ArrayList<String> plist = lib.getPathList();
+				ListMap plist = lib.getPathToNameMap();
 				for (String next : plist) {
-					String name = lib.getPathToNameMap().get(next);
+					String name = plist.getMappedName(next);
 					JMenuItem item = new JMenuItem(name);
 					submenu.add(item);
 					item.addActionListener(loadCollectionAction);
@@ -474,12 +475,11 @@ public class LibraryBrowser extends JPanel {
 	 * @param lib  the library with collections for the submenu
 	 */
 	private void populateSubMenu(JMenu menu, Library lib) {
-		ArrayList<String> list = lib.getPathList();
-		HashMap<String, String> map = lib.getPathToNameMap();
+		ListMap list = lib.getPathToNameMap();
 		HashMap<String, String> all = library.getAllPathsToNameMap();
 
 		for (String next : list) {
-			String name = map.get(next);
+			String name = list.getMappedName(next);
 			JMenuItem item = new JMenuItem(name);
 			menu.add(item);
 			item.addActionListener(loadCollectionAction);
@@ -487,13 +487,12 @@ public class LibraryBrowser extends JPanel {
 			item.setActionCommand(next);
 			all.put(next, name);
 		}
-		list = lib.getSubPathList();
+		list = lib.getSubPathToLibraryMap();
 		if (!list.isEmpty()) {
-			HashMap<String, Library> subMap = lib.getSubPathToLibraryMap();
 			for (String path : list) {
-				if (library.getOSPLibraryPathList().contains(path))
+				if (library.getOSPPathToLibraryMap().contains(path))
 					continue;
-				Library sublib = subMap.get(path);
+				Library sublib = list.getLibrary(path);
 				JMenu submenu = new JMenu(sublib.getName());
 				menu.add(submenu);
 				populateSubMenu(submenu, sublib);
@@ -778,10 +777,10 @@ public class LibraryBrowser extends JPanel {
 			else
 				libraryManager = new LibraryManager(this, frame);
 		}
-		if (library.getPathList().size() > 0 && libraryManager.collectionList.getSelectedIndex() == -1) {
+		if (library.getPathToNameMap().size() > 0 && libraryManager.collectionList.getSelectedIndex() == -1) {
 			libraryManager.collectionList.setSelectedIndex(0);
 		}
-		if (library.getImportedPathList().size() > 0 && libraryManager.guestList.getSelectedIndex() == -1) {
+		if (library.getImportedPathToLibraryMap().size() > 0 && libraryManager.guestList.getSelectedIndex() == -1) {
 			libraryManager.guestList.setSelectedIndex(0);
 		}
 		libraryManager.setFontLevel(FontSizer.getLevel());
