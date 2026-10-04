@@ -2324,8 +2324,7 @@ public class LibraryBrowser extends JPanel {
 			tabbedPane.setSelectedComponent(treePanel);
 		}
 		LibraryTreePanel.htmlPanesByNode.remove(resultsTreeNode);
-		treePanel.showInfo(resultsTreeNode, "LibraryBrowser.Searcher.done");
-
+		treePanel.refreshModel(resultsTreeNode);		
 		refreshGUI();
 	}
 

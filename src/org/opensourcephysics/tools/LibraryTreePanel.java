@@ -2849,6 +2849,17 @@ class LibraryTreePanel extends JPanel {
 		htmlPanesByURL.clear();
 		htmlPanesByNode.clear();
 	}
+	
+	public void refreshModel(LibraryTreeNode node) {
+		DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+		model.reload();
+		if (node != null) {
+			setSelectedNode(node);
+			showInfo(node, "LibraryTreePanel.refreshModel");				
+		}
+	}
+
+
 
 }
 
