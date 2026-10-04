@@ -35,6 +35,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -2517,6 +2519,17 @@ public class OSPRuntime {
 		JDialog dialog = JColorChooser.createDialog(null, title, true, chooser, okListener, cancelListener);
 		FontSizer.setFonts(dialog, FontSizer.getLevel());
 		dialog.setVisible(true);
+	}
+
+	/**
+	 * Using URI.toASCIIString() 
+	 * @param target
+	 * @return
+	 */
+	public static String encodeURIComponent(String target) {
+			URI uri = URI.create("https://XX/X?" + target);
+			String s = uri.toASCIIString();
+			return s.substring(s.indexOf("?") + 1);
 	}
 
 
