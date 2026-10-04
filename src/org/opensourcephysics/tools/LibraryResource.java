@@ -1094,6 +1094,10 @@ public class LibraryResource implements Comparable<LibraryResource> {
 		}
 	}
 
+	public ArrayList<LibraryResource> getResources() {
+		return null;
+	}
+
 }
 
 /*

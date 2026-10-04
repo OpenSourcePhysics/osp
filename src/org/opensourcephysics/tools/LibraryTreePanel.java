@@ -79,6 +79,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.StyleSheet;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -106,95 +107,78 @@ import org.opensourcephysics.tools.LibraryResource.Metadata;
 class LibraryTreePanel extends JPanel {
 
 	// static constants
-	protected final String AND = " AND "; //$NON-NLS-1$
-	protected final String OR = " OR "; //$NON-NLS-1$
-	protected final String OPENING = "("; //$NON-NLS-1$
-	protected final String CLOSING = ")"; //$NON-NLS-1$
+	private final String AND = " AND "; //$NON-NLS-1$
+	private final String OR = " OR "; //$NON-NLS-1$
+	private final String OPENING = "("; //$NON-NLS-1$
+	private final String CLOSING = ")"; //$NON-NLS-1$
 
 	// static fields
-	protected static int keyFieldWidth = 100;
-	protected static Color lightRed = new Color(255, 180, 200);
-	protected static Color darkRed = new Color(220, 0, 0);
-	protected static Color lightGreen = new Color(100, 200, 100);
-	protected static Color defaultForeground;
-	protected static Icon openFileIcon;
-	protected static HyperlinkListener hyperlinkListener;
-	protected static JFileChooser chooser;
-	protected static FileFilter htmlFilter, folderFilter;
-	protected static HashMap<URL, HTMLPane> htmlPanesByURL = new HashMap<URL, HTMLPane>();
-	protected static HashMap<LibraryTreeNode, HTMLPane> htmlPanesByNode = new HashMap<LibraryTreeNode, HTMLPane>();
+	private final static int keyFieldWidth = 100;
+	//private final static Color lightRed = new Color(255, 180, 200);
+	protected final static Color darkRed = new Color(220, 0, 0);
+	private final static Color lightGreen = new Color(100, 200, 100);
+	private final static Icon openFileIcon = ResourceLoader.getImageIcon("resources/tools/images/open.gif");
 
-	static {
-		openFileIcon = ResourceLoader.getImageIcon("resources/tools/images/open.gif");
-		hyperlinkListener = new HyperlinkListener() {
-			@Override
-			public void hyperlinkUpdate(HyperlinkEvent e) {
-				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-					OSPDesktop.displayURL(e.getURL().toString());
-//
-//					try {
-//						// try the preferred way
-//						if (!org.opensourcephysics.desktop.OSPDesktop.browse(e.getURL().toURI())) {
-//							// try the old way
-//							org.opensourcephysics.desktop.ostermiller.Browser.init();
-//							org.opensourcephysics.desktop.ostermiller.Browser.displayURL(e.getURL().toString());
-//						}
-//					} catch (Exception ex) {
-//					}
-				}
-			}
-		};
-	}
+	private static Color defaultForeground = Color.BLACK;
+	private static JFileChooser chooser;
+	private static FileFilter htmlFilter, folderFilter;
+	
+	
+	private final static HashMap<URL, HTMLPane> htmlPanesByURL = new HashMap<URL, HTMLPane>();
+	private final static HashMap<LibraryTreeNode, HTMLPane> htmlPanesByNode = new HashMap<LibraryTreeNode, HTMLPane>();
 
+	
 	// instance fields
-	protected LibraryBrowser browser;
+	private LibraryBrowser browser;
 	protected LibraryResource rootResource; // the root resource or collection displayed by this panel
 	protected String pathToRoot;
 	protected LibraryTreeNode rootNode;
-	protected DefaultTreeModel treeModel;
-	protected LibraryTreeNodeRenderer treeNodeRenderer;
+	private DefaultTreeModel treeModel;
+	private LibraryTreeNodeRenderer treeNodeRenderer;
 	protected JTree tree;
-	protected JScrollPane treeScroller = new JScrollPane();
+	private JScrollPane treeScroller = new JScrollPane();
 	protected JScrollPane htmlScroller = new JScrollPane();
-	protected JToolBar editorbar;
-	protected Action cutAction, copyAction, pasteAction;
-	protected Action addCollectionAction, addResourceAction;
-	protected Action moveUpAction, moveDownAction, metadataAction;
-	protected JButton cutButton, copyButton, pasteButton;
-	protected JButton addCollectionButton, addResourceButton;
-	protected JButton moveUpButton, moveDownButton, metadataButton;
-	protected Box editorPanel, fileBox;
-	protected JPanel displayPanel;
-	protected HTMLPane emptyHTMLPane;
-	protected JSplitPane splitPane;
-	protected EntryField nameField, htmlField, basePathField, targetField;
-	protected JLabel nameLabel, htmlLabel, basePathLabel, targetLabel;
+	private JToolBar editorbar;
+	private Action cutAction, copyAction, pasteAction;
+	private Action addCollectionAction, addResourceAction;
+	private Action moveUpAction, moveDownAction, metadataAction;
+	private JButton cutButton, copyButton, pasteButton;
+	private JButton addCollectionButton, addResourceButton;
+	private JButton moveUpButton, moveDownButton, metadataButton;
+	private Box editorPanel, fileBox;
+	private JPanel displayPanel;
+	private HTMLPane emptyHTMLPane;
+	private JSplitPane splitPane;
+	private EntryField nameField, htmlField, basePathField, targetField;
+	private JLabel nameLabel, htmlLabel, basePathLabel, targetLabel;
 	// metadata items
-	protected ActionListener metadataFieldListener;
-	protected EntryField authorField, contactField, keywordsField;
-	protected JLabel authorLabel, contactLabel, keywordsLabel, metadataLabel;
-	protected Box authorBox, contactBox, keywordsBox, metadataBox;
-	protected MetadataComboBoxModel metadataModel;
-	protected JComboBox<Metadata> metadataDropdown;
-	protected MetadataEditField keyEditField, valueEditField;
-	protected JLabel typeLabel, typeField;
-	protected JButton openHTMLButton, openBasePathButton, openFileButton;
-	protected ArrayList<JLabel> labels = new ArrayList<JLabel>();
+	private ActionListener metadataFieldListener;
+	private EntryField authorField, contactField, keywordsField;
+	private JLabel authorLabel, contactLabel, keywordsLabel, metadataLabel;
+	private Box authorBox, contactBox, keywordsBox, metadataBox;
+	private MetadataComboBoxModel metadataModel;
+	private JComboBox<Metadata> metadataDropdown;
+	private MetadataEditField keyEditField, valueEditField;
+	private JLabel typeLabel, typeField;
+	private JButton openHTMLButton, openBasePathButton, openFileButton;
+	private ArrayList<JLabel> labels = new ArrayList<JLabel>();
 
-	protected JPopupMenu popup;
+	private JPopupMenu popup;
 
 	
-	protected MouseAdapter treeMouseListener, convertPathMouseListener;
-	protected TreeSelectionListener treeSelectionListener;
-	protected XMLControl pasteControl;
-	protected boolean isEditing, isChanged, isXMLPath, ignoreChanges, launchLater;
-	protected XMLControl revertControl;
-	protected int typeFieldWidth;
+	private MouseAdapter treeMouseListener, convertPathMouseListener;
+	private TreeSelectionListener treeSelectionListener;
+	//private XMLControl pasteControl;
+	private boolean isEditing, isChanged, isXMLPath, ignoreChanges, launchLater;
+	private XMLControl revertControl;
+	private int typeFieldWidth;
 	protected String command;
-	protected TreePath prevTreePath;
-	protected Metadata emptyMetadata = new Metadata();
-	protected MetadataLoader metadataLoader;
-	protected Set<EntryField> entryFields = new HashSet<EntryField>();
+	private TreePath prevTreePath;
+	private Metadata emptyMetadata = new Metadata();
+	private MetadataLoader metadataLoader;
+	private Set<EntryField> entryFields = new HashSet<EntryField>();
+
+	private int myFontLevel;
 
 	/**
 	 * Constructs an empty LibraryTreePanel.
@@ -273,23 +257,21 @@ class LibraryTreePanel extends JPanel {
 	 * @param treePath tree path to select in root-first order (may be null)
 	 */
 	protected void setSelectionPath(List<String> treePath) {
-		if (treePath != null && treePath.get(0).equals(rootNode.toString())) {
-			LibraryTreeNode node = rootNode;
-			for (int i = 1; i < treePath.size(); i++) {
-				String name = treePath.get(i);
-				int n = node.getChildCount();
-				inner: for (int j = 0; j < n; j++) {
-					if (name.equals(node.getChildAt(j).toString())) {
-						node = (LibraryTreeNode) node.getChildAt(j);
-						break inner;
-					}
+		if (treePath == null || !treePath.get(0).equals(rootNode.toString()))
+			return;
+		LibraryTreeNode node = rootNode;
+		for (int i = 1; i < treePath.size(); i++) {
+			String name = treePath.get(i);
+			int n = node.getChildCount();
+			inner: for (int j = 0; j < n; j++) {
+				if (name.equals(node.getChildAt(j).toString())) {
+					node = (LibraryTreeNode) node.getChildAt(j);
+					break inner;
 				}
 			}
-			setSelectedNode(node);
 		}
+		setSelectedNode(node);
 	}
-
-	private int myFontLevel;
 
 	/**
 	 * Sets the font level.
@@ -749,76 +731,7 @@ class LibraryTreePanel extends JPanel {
 		treeMouseListener = new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// select node and show popup menu
-				//System.out.println("LibraryTreePanel.mouseClicked " + e);
-				TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-				if (path == null) {
-					return;
-				}
-				tree.setSelectionPath(path);
-				LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
-				if (OSPRuntime.isPopupTrigger(e)) {
-					getPopup(node).show(tree, e.getX(), e.getY() + 8);
-				} else if (path.equals(prevTreePath)){
-					
-					checkLoadEvent(e, node,()->{
-						// asynchronously to LibraryBrowser					
-						firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
-					});
-				} else {
-					prevTreePath = path;
-				}
-			}
-
-			/**
-			 * BH allowing for single-click on icon. Double clicks are difficult to handle.
-			 * 
-			 * 
-			 * @param e    a MouseEvent
-			 * @param node a LibraryTreeNode
-			 * @return true if event should load the node
-			 */
-			private void checkLoadEvent(MouseEvent e, LibraryTreeNode node, Runnable load) {
-				
-				String target = node.getAbsoluteTarget();
-				if (target == null)
-					return;
-				if (LibraryComPADRE.isComPADREPath(target)) {
-					load.run();
-					return;
-				}
-
-				// BH 2022.12.02 but #143 was looking at target.id with wrong id
-				// Note that JavaScript has trouble detecting the double-click in this case.
-				// I don't remember why that is.
-				int n = e.getClickCount();
-				launchLater = n == 1;
-				if (n == 2) {
-					launchLater = false;
-					load.run();
-					return;
-				}
-				
-				Runnable r = new Runnable() {
-					@Override
-					public void run() {
-						if (launchLater) {
-							javajs.async.AsyncDialog.showYesNoAsync(browser.getWindow(),
-									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Message")
-									+ " \"" + node.getName() + "\"?", 
-									ToolsRes.getString("LibraryTreePanel.Dialog.Open.Title"), 
-									new ActionListener() {
-										@Override
-										public void actionPerformed(ActionEvent e) {
-											if (e.getID() == JOptionPane.YES_OPTION)
-												load.run();
-										}
-									});
-						}					
-					}
-				};
-				
-				OSPRuntime.setTimeout("loadEvent", 800, true, r);
+				doTreeMouseClicked(e);
 			}
 		};
 
@@ -1231,6 +1144,79 @@ class LibraryTreePanel extends JPanel {
 		metadataBox.add(metadataDropdown);
 	}
 
+	protected void doTreeMouseClicked(MouseEvent e) {
+		// select node and show popup menu
+		//System.out.println("LibraryTreePanel.mouseClicked " + e);
+		TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+		if (path == null) {
+			return;
+		}
+		tree.setSelectionPath(path);
+		LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
+		System.err.println(node.record.getAbsoluteTarget());
+		if (OSPRuntime.isPopupTrigger(e)) {
+			getPopup(node).show(tree, e.getX(), e.getY() + 8);
+		} else if (path.equals(prevTreePath)){
+			
+			checkLoadEvent(e.getClickCount(), node,()->{
+				// asynchronously to LibraryBrowser					
+				firePropertyChange(LibraryBrowser.PROPERTY_LIBRARY_TARGET, LibraryBrowser.HINT_LOAD_RESOURCE, node);
+			});
+		} else {
+			prevTreePath = path;
+		}
+	}
+	
+	/**
+	 * BH allowing for single-click on icon. Double clicks are difficult to handle.
+	 * 
+	 * 
+	 * @param n    mouse clicks
+	 * @param node a LibraryTreeNode
+	 * @return true if event should load the node
+	 */
+	private void checkLoadEvent(int n, LibraryTreeNode node, Runnable load) {
+		
+		String target = node.getAbsoluteTarget();
+		if (target == null)
+			return;
+		if (LibraryComPADRE.isComPADREPath(target)) {
+			load.run();
+			return;
+		}
+
+		// BH 2022.12.02 but #143 was looking at target.id with wrong id
+		// Note that JavaScript has trouble detecting the double-click in this case.
+		// I don't remember why that is, but on a touch device it is impossible to double-click.
+		launchLater = (n == 1);
+		if (n == 2) {
+			launchLater = false;
+			load.run();
+			return;
+		}
+		
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				if (launchLater) {
+					javajs.async.AsyncDialog.showYesNoAsync(browser.getWindow(),
+							ToolsRes.getString("LibraryTreePanel.Dialog.Open.Message")
+							+ " \"" + node.getName() + "\"?", 
+							ToolsRes.getString("LibraryTreePanel.Dialog.Open.Title"), 
+							new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									if (e.getID() == JOptionPane.YES_OPTION)
+										load.run();
+								}
+							});
+				}					
+			}
+		};
+		
+		OSPRuntime.setTimeout("loadEvent", 800, true, r);
+	}
+
 	protected String doOpenFile(String basePath) {
 		int result = JFileChooser.CANCEL_OPTION;
 		JFileChooser chooser = getFileChooser();
@@ -1475,14 +1461,14 @@ class LibraryTreePanel extends JPanel {
 			r.run();
 		}
 		clipboardAvailable = Boolean.FALSE;
-		pasteControl = null;
+		//pasteControl = null;
 		OSPRuntime.paste((dataString) -> {
 			if (dataString != null) {
 				XMLControlElement control = new XMLControlElement();
 				control.readXML(dataString);
 				Class<?> type = control.getObjectClass();
 				if (type != null && LibraryResource.class.isAssignableFrom(type)) {
-					pasteControl = control;
+					//pasteControl = control;
 					clipboardAvailable = Boolean.TRUE;
 					r.run();
 				}
@@ -1511,8 +1497,7 @@ class LibraryTreePanel extends JPanel {
 				popup.addSeparator();
 				popup.add(item);
 				item.addActionListener((e) -> {
-						String path = node.record.getCollectionPath();
-						browser.doLoadTab(path, node.record.treePath);
+						doShowOriginal(node);
 				});
 			}
 	  	if (rootResource==browser.getRecentCollection()) { // this is the recent collection tab
@@ -1579,6 +1564,11 @@ class LibraryTreePanel extends JPanel {
 		}
 		FontSizer.setFonts(popup, FontSizer.getLevel());
 		return popup;
+	}
+
+	private void doShowOriginal(LibraryTreeNode node) {
+		String path = node.record.getCollectionPath();
+		browser.doLoadTab(path, node.record.treePath);
 	}
 
 	/**
@@ -1853,6 +1843,15 @@ class LibraryTreePanel extends JPanel {
 	 */
 	protected static class HTMLPane extends JEditorPane {
 
+		final static HyperlinkListener hyperlinkListener = new HyperlinkListener() {
+			@Override
+			public void hyperlinkUpdate(HyperlinkEvent e) {
+				if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+					OSPDesktop.displayURL(e.getURL().toString());
+				}
+			}
+		};
+
 		public HTMLPane() {
 			setEditable(false);
 			setFocusable(false);
@@ -1860,11 +1859,11 @@ class LibraryTreePanel extends JPanel {
 			addHyperlinkListener(hyperlinkListener);
 			addPropertyChangeListener((e) -> {
 				if (e.getPropertyName().equals("page")) {
-					HTMLDocument document = (HTMLDocument) getDocument();
-					document.getStyleSheet().addRule(LibraryResource.getHTMLStyles());
-					document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
-					document.getStyleSheet().addRule(LibraryResource.getH1Style());
-					document.getStyleSheet().addRule(LibraryResource.getH2Style());				}
+					 StyleSheet styles = ((HTMLDocument) getDocument()).getStyleSheet();
+					styles.addRule(LibraryResource.getHTMLStyles());
+					styles.addRule(LibraryResource.getBodyStyle());
+					styles.addRule(LibraryResource.getH1Style());
+					styles.addRule(LibraryResource.getH2Style());				}
 			});									
 		}
 
@@ -2483,109 +2482,18 @@ class LibraryTreePanel extends JPanel {
 		@Override
 		public HTMLPane doInBackground() {
 			try {
-				
-			HTMLPane htmlPane = htmlPanesByNode.get(node);
-			if (htmlPane == null) {
-				String htmlStr;
-				URL url = node.getHTMLURL();
-				// returns URL of original (if available) or cached (if it exists) HTML file
-				if (url == null) {
-					htmlPane = new HTMLPane();
-					htmlStr = node.getHTMLString();
-				} else {
-					htmlPane = htmlPanesByURL.get(url);
-					if (htmlPane == null) {
-						htmlPane = new HTMLPane();
-						htmlPanesByURL.put(url, htmlPane);
-						// DB added 2020/09/26 to display zipped html files correctly in Java
-						if (!OSPRuntime.isJS) {
-							htmlStr = null;
-//							htmlPane.setText("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
-							try {
-								HTMLPane pane = htmlPane;
-								TreeSet<Metadata> data = node.record.getMetadata();
-								if (data == null || data.size() == 0) {
-									htmlPane.addPropertyChangeListener((e) -> {
-										if (e.getPropertyName() == "page" && node == getSelectedNode()) {
-											String htmlCode = pane.getText();
-											if (htmlCode.indexOf("<meta name=") > -1 ) {
-												node.record.setMetadata(null);
-												node.metadataSource = htmlCode;
-												node.getMetadata();
-												browser.setMessage(node.getToolTip(), null);
-											}
-										}
-	
-									});									
-								}
-								htmlPane.setPage(url);
-							} catch (Exception ex) {}
-						} else {
-							htmlStr = "";
-						}
-					} else if (url.equals(htmlPane.getPage())) {
-						htmlStr = null;
-					} else {
-						htmlStr = "";
-						htmlPane.getDocument().putProperty(Document.StreamDescriptionProperty, null);
-					}
+				HTMLPane htmlPane = htmlPanesByNode.get(node);
+				if (htmlPane == null) {
+					htmlPane = addHTMLPane(node);
+					if (htmlPane == null)
+						return null;
 				}
-				if (htmlStr != null) {
-					HTMLPane pane = htmlPane;
-					if (htmlStr == "") {
-						if (OSPRuntime.allowAsyncURL) {
-							ResourceLoader.getURLContentsAsync(url, (bytes) -> {
-									String s;
-									if (bytes == null)
-										s = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
-									else
-										s = new String(bytes);
-									showHTMLDocument(pane, url, s);
-									htmlPanesByNode.put(node, pane);
-									pane.setCaretPosition(0);
-									whenDone(pane);
-									return null;
-							});
-							return null;
-						}
-						htmlStr = new String(ResourceLoader.getURLContents(url));
-					}
-					showHTMLDocument(htmlPane, url, htmlStr);
-				}
-				htmlPanesByNode.put(node, htmlPane);
-				htmlPane.setCaretPosition(0);
-			}
-
-			whenDone(htmlPane);
-			
-
-			} catch (Exception e)  {
+				whenHTMLDisplayerDone(node, htmlPane);
+			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("LibraryTreePanel exception " + e);
 			}
 			return null;
-		}
-
-		/**
-		 * Only when the resource is loaded are we ready for sending the "done()"
-		 * message to AWTEventQueue. Java does this loading synchronously, but in a
-		 * concurrent thread; JavaScript will do it asynchronously in a background
-		 * thread.
-		 * 
-		 * Note that SwingWorkers may finish doInBackground and set "isDone" long before
-		 * they ever fire done() because done() is fired from an event added to the
-		 * event queue. But even this is not sufficient for truly asynchronous work.
-		 * 
-		 * @param htmlPane
-		 */
-		protected void whenDone(HTMLPane htmlPane) {
-			SwingUtilities.invokeLater(() -> {
-				if (htmlPane != null && node == getSelectedNode()) {
-					htmlScroller.setViewportView(htmlPane);
-					browser.setMessageForNode(node.getToolTip(), node == rootNode);
-				}
-			});
-
 		}
 
 		@Override
@@ -2602,6 +2510,103 @@ class LibraryTreePanel extends JPanel {
 //		document.getStyleSheet().addRule(LibraryResource.getBodyStyle());
 //		document.getStyleSheet().addRule(LibraryResource.getH1Style());
 //		document.getStyleSheet().addRule(LibraryResource.getH2Style());
+	}
+
+	/**
+	 * Only when the resource is loaded are we ready for sending the "done()"
+	 * message to AWTEventQueue. Java does this loading synchronously, but in a
+	 * concurrent thread; JavaScript will do it asynchronously in a background
+	 * thread.
+	 * 
+	 * Note that SwingWorkers may finish doInBackground and set "isDone" long before
+	 * they ever fire done() because done() is fired from an event added to the
+	 * event queue. But even this is not sufficient for truly asynchronous work.
+	 * 
+	 * @param htmlPane
+	 */
+	private void whenHTMLDisplayerDone(LibraryTreeNode node, HTMLPane htmlPane) {
+		if (htmlPane == null)
+			return;
+		SwingUtilities.invokeLater(() -> {
+			if (node == getSelectedNode()) {
+				htmlScroller.setViewportView(htmlPane);
+				browser.setMessageForNode(node.getToolTip(), node == rootNode);
+			}
+		});
+	}
+
+	private HTMLPane addHTMLPane(LibraryTreeNode node) {
+		String htmlStr;
+		HTMLPane htmlPane;
+		URL url = node.getHTMLURL();
+		// returns URL of original (if available) or cached (if it exists) HTML file
+		if (url == null) {
+			htmlPane = new HTMLPane();
+			htmlStr = node.getHTMLString();
+		} else {
+			htmlPane = htmlPanesByURL.get(url);
+			if (htmlPane == null) {
+				htmlPane = new HTMLPane();
+				htmlPanesByURL.put(url, htmlPane);
+				// DB added 2020/09/26 to display zipped html files correctly in Java
+				if (!OSPRuntime.isJS) {
+					htmlStr = null;
+//				htmlPane.setText("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
+					try {
+						HTMLPane pane = htmlPane;
+						TreeSet<Metadata> data = node.record.getMetadata();
+						if (data == null || data.size() == 0) {
+							htmlPane.addPropertyChangeListener((e) -> {
+								if (e.getPropertyName() == "page" && node == getSelectedNode()) {
+									String htmlCode = pane.getText();
+									if (htmlCode.indexOf("<meta name=") > -1) {
+										node.record.setMetadata(null);
+										node.metadataSource = htmlCode;
+										node.getMetadata();
+										browser.setMessage(node.getToolTip(), null);
+									}
+								}
+
+							});
+						}
+						htmlPane.setPage(url);
+					} catch (Exception ex) {
+					}
+				} else {
+					htmlStr = "";
+				}
+			} else if (url.equals(htmlPane.getPage())) {
+				htmlStr = null;
+			} else {
+				htmlStr = "";
+				htmlPane.getDocument().putProperty(Document.StreamDescriptionProperty, null);
+			}
+		}
+		if (htmlStr != null) {
+			HTMLPane pane = htmlPane;
+			if (htmlStr == "") {
+				if (OSPRuntime.allowAsyncURL) {
+					ResourceLoader.getURLContentsAsync(url, (bytes) -> {
+						String s;
+						if (bytes == null)
+							s = ("<h2>" + node + "</h2>"); //$NON-NLS-1$ //$NON-NLS-2$
+						else
+							s = new String(bytes);
+						showHTMLDocument(pane, url, s);
+						htmlPanesByNode.put(node, pane);
+						pane.setCaretPosition(0);
+						whenHTMLDisplayerDone(node, pane);
+						return null;
+					});
+					return null;
+				}
+				htmlStr = new String(ResourceLoader.getURLContents(url));
+			}
+			showHTMLDocument(htmlPane, url, htmlStr);
+		}
+		htmlPanesByNode.put(node, htmlPane);
+		htmlPane.setCaretPosition(0);
+		return htmlPane;
 	}
 
 	/**
@@ -2850,6 +2855,12 @@ class LibraryTreePanel extends JPanel {
 		htmlPanesByNode.clear();
 	}
 	
+	/**
+	 * Rebuild the tree model after a search. Otherwise the tree may not have the 
+	 * full mapping for the UI. Optionally select a node and show its info
+	 * 
+	 * @param node may be null
+	 */
 	public void refreshModel(LibraryTreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
 		model.reload();
@@ -2859,7 +2870,48 @@ class LibraryTreePanel extends JPanel {
 		}
 	}
 
+	protected void loadLocalCollectionMetadata(LibraryCollection collection, List<String> treePath) {
+		setRootResource(collection, pathToRoot, false, true);
+		setSelectionPath(treePath);
+		startMetadataLoader(treePath);
+	}
 
+	protected void cancelMetadataLoader() {
+		if (metadataLoader != null)
+			metadataLoader.cancel();
+	}
+
+	/**
+	 * 
+	 * Start a background SwingWorker to load metadata and set up search database.
+	 * 
+	 * @param treePath may be null
+	 */
+	protected void startMetadataLoader(List<String> treePath) {
+		cancelMetadataLoader();
+		metadataLoader = new MetadataLoader(treePath);
+		metadataLoader.execute();
+	}
+
+	protected void setChanged(boolean b) {
+		isChanged = b;
+	}
+
+	public static void removeHTMLPaneURL(URL url) {
+		htmlPanesByURL.remove(url);
+	}
+
+	public static void removeHTMLPaneNode(LibraryTreeNode node) {
+		htmlPanesByNode.remove(node);
+	}
+
+	public static void setDefaultForeground(Color foreground) {
+		defaultForeground = foreground;
+	}
+
+	public static Color getDefaultForeground() {
+		return defaultForeground;
+	}
 
 }
 

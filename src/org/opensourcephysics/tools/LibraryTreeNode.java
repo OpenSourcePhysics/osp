@@ -494,7 +494,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			String type = LibraryResource.getTypeFromPath(path, getHTMLPath());
 			if (!LibraryResource.UNKNOWN_TYPE.equals(type))
 				setType(type);
-			LibraryTreePanel.htmlPanesByNode.remove(this);
+			LibraryTreePanel.removeHTMLPaneNode(this);
 			record.setThumbnail(null);
 			treePanel.showInfo(this, "LibraryTreeNode.setTarget " + path);
 			treePanel.setChanged();
@@ -524,7 +524,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 */
 	protected void setBasePath(String path) {
 		if (record.setBasePath(path)) {
-			LibraryTreePanel.htmlPanesByNode.remove(this);
+			LibraryTreePanel.removeHTMLPaneNode(this);
 			record.setThumbnail(null);
 			treePanel.showInfo(this, "LibraryTreeNode.setBasePath " + path);
 			treePanel.setChanged();
@@ -539,7 +539,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 */
 	protected void setType(String type) {
 		if (record.setType(type)) {
-			LibraryTreePanel.htmlPanesByNode.remove(this);
+			LibraryTreePanel.removeHTMLPaneNode(this);
 			treePanel.showInfo(this, "LibraryTreeNode.setType");
 			treePanel.setChanged();
 			tooltip = null; // triggers new tooltip
@@ -886,10 +886,10 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 			SwingUtilities.invokeLater(() -> {
 				try {
 					// File thumbFile = get();
-					record.setThumbnail(thumbFile == null || !thumbFile.exists() ? null : thumbFile.getAbsolutePath());
-
+					record.setThumbnail(thumbFile == null || !thumbFile.exists() 
+							? null : thumbFile.getAbsolutePath());
 					if (record.getThumbnail() != null) {
-						LibraryTreePanel.htmlPanesByNode.remove(LibraryTreeNode.this);
+						LibraryTreePanel.removeHTMLPaneNode(LibraryTreeNode.this);
 						treePanel.showInfo(treePanel.getSelectedNode(), "LibraryTreeNode.ThumbnailDone");
 					}
 				} catch (Exception ignore) {
