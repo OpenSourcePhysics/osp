@@ -689,18 +689,18 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		if (readoutType == null)
 			return;
 		// add components to toolbar
-		boolean mobile = OSPRuntime.isMobile();
+		boolean small = OSPRuntime.isSmallScreen();
 		toolbar.removeAll();
 		toolbar.add(readout);
-		if (!mobile) toolbar.add(rateSpinner);
+		if (!small) toolbar.add(rateSpinner);
 		toolbar.add(resetButton);
 		toolbar.add(playButton);
 		toolbar.add(slider);
 		toolbar.add(backButton);
 		toolbar.add(stepSizeButton);
 		toolbar.add(stepButton);
-		if (!mobile) toolbar.add(loopButton);
-		if (inspectorButtonVisible && !mobile) {
+		if (!small) toolbar.add(loopButton);
+		if (inspectorButtonVisible && !small) {
 			toolbar.add(inspectorButton);
 		}
 

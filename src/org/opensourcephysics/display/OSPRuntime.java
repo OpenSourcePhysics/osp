@@ -472,7 +472,7 @@ public class OSPRuntime {
 	public static boolean useVirtualNumberPad;
 
 	/**
-	 * Determines if running on a mobile device
+	 * Determines if running on a mobile device.
 	 *
 	 * @return true if running on a mobile device
 	 */
@@ -480,8 +480,6 @@ public class OSPRuntime {
 		if (neverMobile)
 			return false;
 		if (preferMobile)
-			return true;
-		if (isSmallScreen())
 			return true;
 		return cssCursor;
 	}
@@ -691,9 +689,9 @@ public class OSPRuntime {
     boolean small = size.width > 0 && size.height > 0 
     		&& (size.width < smallScreen || size.height < smallScreen);
     return small;
-	}
-		
+	}		
 	private static int smallScreen = 480;
+	
 	public static final char DECIMAL_SEPARATOR_COMMA = ',';
 	public static final char DECIMAL_SEPARATOR_PERIOD = '.';
 

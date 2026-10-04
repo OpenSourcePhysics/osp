@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -1463,7 +1464,12 @@ public class ResourceLoader {
 		// this works for Jar
 		URLConnection c = url.openConnection();
     c.setUseCaches(cacheConnection);
-		return c.getInputStream();
+    try {
+    	InputStream stream = c.getInputStream();
+    	return stream;
+    } catch(FileNotFoundException e) {
+    	throw new IOException(e.getMessage());
+    }
 	}
 
 
