@@ -2413,7 +2413,7 @@ public class DatasetCurveFitter extends JPanel {
 //			try {
 //				return format.parse(getText()).doubleValue();
 //			} catch (ParseException e) {
-//				Toolkit.getDefaultToolkit().beep();
+//				OSPRuntime.beep(why);
 //				setValue(prevValue);
 //				return prevValue;
 //			}

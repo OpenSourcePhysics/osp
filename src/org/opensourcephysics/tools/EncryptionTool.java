@@ -273,8 +273,7 @@ public class EncryptionTool extends JFrame implements Tool {
 				displayXML(decrypt(control));
 				encryptedCheckBox.setEnabled(true);
 			} else {
-				Toolkit.getDefaultToolkit().beep();
-				OSPLog.fine("Bad password: " + password); //$NON-NLS-1$
+				OSPRuntime.beep("EncryptionTool: Bad password");
 			}
 		} else if (control.getObjectClass() == Cryptic.class) {
 			// decrypt control, change password, and re-encrypt

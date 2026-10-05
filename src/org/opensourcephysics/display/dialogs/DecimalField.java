@@ -11,6 +11,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import javax.swing.JTextField;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * This is a JTextField that accepts only decimal numbers.
  *
@@ -54,7 +56,7 @@ public class DecimalField extends JTextField {
         return maxValue.doubleValue();
       }
     } catch(ParseException e) {
-      Toolkit.getDefaultToolkit().beep();
+      OSPRuntime.beep("DecimalField parsing error");
       setValue(prevValue);
       return prevValue;
     }

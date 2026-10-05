@@ -2527,9 +2527,21 @@ public class OSPRuntime {
 	 * @return
 	 */
 	public static String encodeURIComponent(String target) {
-			URI uri = URI.create("https://XX/X?" + target);
+		try {
+			URI uri = new URI("https","XX", "?" + target);
 			String s = uri.toASCIIString();
 			return s.substring(s.indexOf("?") + 1);
+		} catch (Exception e) {
+			beep("OSPRuntime URI syntax error for " + target);
+			return target;
+		}
+	}
+
+	public static void beep(String msg) {
+		System.err.println(msg);
+		Toolkit.getDefaultToolkit().beep();
+		OSPLog.finer(msg);
+
 	}
 
 

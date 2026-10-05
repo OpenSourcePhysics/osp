@@ -701,19 +701,19 @@ public class ResourceLoader {
 		if (newCache != null && !newCache.equals(ospCache)) {
 			// reject new cache if it is a subdirectory of the current cache!
 			if (ospCache != null && newCache.getAbsolutePath().contains(ospCache.getAbsolutePath())) {
-				Toolkit.getDefaultToolkit().beep();
+				OSPRuntime.beep("ResourceLoader cache cannot be a subfolder of " + ospCache.getAbsolutePath());
 				OSPLog.finer("cache cannot be a subfolder of "+ospCache.getAbsolutePath());
 				return;
 			}
 			if (!newCache.exists() || !newCache.isDirectory()) {
 				if (!newCache.mkdirs()) {
-					Toolkit.getDefaultToolkit().beep();
+					OSPRuntime.beep("unable to create cache at "+newCache);
 					OSPLog.finer("unable to create cache at "+newCache);
 					return;
 				}
 			}
 			if (!newCache.canWrite()) {
-				Toolkit.getDefaultToolkit().beep();
+				OSPRuntime.beep("ResourceLoader can't write to cache at " + newCache);
 				OSPLog.finer("unable to write to cache at "+newCache);
 				return;
 			}

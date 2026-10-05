@@ -32,6 +32,8 @@
 package org.opensourcephysics.media.core;
 import java.awt.Toolkit;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * This is a NumberField that accepts only integers.
  *
@@ -81,7 +83,7 @@ public class IntegerField extends NumberField {
         return maxValue.intValue();
       }
     } catch(Exception e) {
-      Toolkit.getDefaultToolkit().beep();
+      OSPRuntime.beep("IntegerField parsing error");
       setIntValue((int) prevValue);
       return(int) prevValue;
     }

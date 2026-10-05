@@ -27,6 +27,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * A dialog for verifying passwords with a single public static method verify().
  *
@@ -101,7 +103,7 @@ public class Password extends JDialog {
 	public void actionPerformed(ActionEvent e) {
         String input = String.copyValueOf(passwordField.getPassword());
         if((password!=null)&&!input.equals(password)) {
-          Toolkit.getDefaultToolkit().beep();
+          	OSPRuntime.beep("Password failure");
           passwordField.setText("");                                         //$NON-NLS-1$
         } else {
           pass = true;
@@ -136,7 +138,7 @@ public class Password extends JDialog {
 	public void actionPerformed(ActionEvent e) {
         String input = String.copyValueOf(passwordField.getPassword());
         if((password!=null)&&!input.equals(password)) {
-          Toolkit.getDefaultToolkit().beep();
+          OSPRuntime.beep("Password failure");
           passwordField.setText(""); //$NON-NLS-1$
           passwordField.requestFocusInWindow();
         } else {

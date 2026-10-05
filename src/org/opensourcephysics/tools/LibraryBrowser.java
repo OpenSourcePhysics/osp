@@ -2283,7 +2283,7 @@ public class LibraryBrowser extends JPanel {
 			try {
 				searchDone(searchTerm, get());
 			} catch (Exception e) {
-				Toolkit.getDefaultToolkit().beep();
+				OSPRuntime.beep("LibraryBrowser.Searcher failed " + e.getMessage());
 			}
 		}
 	}
@@ -2402,8 +2402,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	protected void notifySearchNotFound(String searchTerm) {
-		Toolkit.getDefaultToolkit().beep();
-		OSPLog.finer(searchTerm + " not found");
+		OSPRuntime.beep("LibraryBrowser " + searchTerm + " not found");
 		// give visual cue, too
 		JTextField f = searchField;
 		Color color = f.getForeground();
