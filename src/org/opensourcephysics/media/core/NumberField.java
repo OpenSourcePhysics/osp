@@ -456,7 +456,7 @@ public class NumberField extends JTextField {
 				return maxValue;
 			}
 		} catch (ParseException e) {
-			Toolkit.getDefaultToolkit().beep();
+			OSPRuntime.beep("NumberField parsing error");
 			setValue(prevValue);
 			return prevValue;
 		}

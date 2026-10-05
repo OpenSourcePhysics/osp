@@ -190,7 +190,7 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	public static Resource getResource(String name) {
-		return getResource(name, true, false);
+		return getResource(name, true, false, false);
 	}
 
 	/**
@@ -202,10 +202,10 @@ public class ResourceLoader {
 	 * @return the Resource, or null if none found
 	 */
 	public static Resource getResourceZipURLsOK(String name) {
-//		zipURLsOK = true;
-//		Resource res = getResource(name, true);
-//		zipURLsOK = false;
-		return getResource(name, true, true); // BH 2020.11.12
+		return getResoureZipURLsOKpvt(name, true);
+	}
+	private static Resource getResoureZipURLsOKpvt(String name, boolean fromZipURLsOK) {
+		return getResource(name, true, true, fromZipURLsOK); // BH 2020.11.12
 	}
 
 	/**
@@ -224,7 +224,7 @@ public class ResourceLoader {
 	public static Resource getResource(String name, Class<?> type) {
 		// BH 2020.11.12 Why is it important for DataLoaderApp to search paths?
 		//return getResource(name, type, true, false);		
-		return findResource(name, type, false, false);
+		return findResource(name, type, false, false, false);
 	}
 
 	/**
@@ -238,7 +238,7 @@ public class ResourceLoader {
 	 * @return the URL for this resource, or null if none found
 	 */
 	public static URL getTextURL(String name, Class<?> type) {
-		Resource res = getResource(name, type, true, false);
+		Resource res = getResource(name, type, true, false, false);
 		return (res == null ? null : res.getURL());
 	}
 
@@ -249,10 +249,11 @@ public class ResourceLoader {
 	 *
 	 * @param name        the file or URL name
 	 * @param searchFiles true to search files
+	 * @param fromZipURLsOK TODO
 	 * @return the Resource, or null if none found
 	 */
-	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK) {
-		return getResource(name, Resource.class, searchFiles, zipURLsOK);
+	private static Resource getResource(String name, boolean searchFiles, boolean zipURLsOK, boolean fromZipURLsOK) {
+		return getResource(name, Resource.class, searchFiles, zipURLsOK, fromZipURLsOK);
 	}
 
 	/**
@@ -263,9 +264,10 @@ public class ResourceLoader {
 	 * @param name        the file or URL name
 	 * @param type        the Class providing default ClassLoader resource loading
 	 * @param searchFiles true to search files
+	 * @param fromZipURLsOK TODO
 	 * @return the Resource, or null if none found
 	 */
-	private static Resource getResource(String name, Class<?> type, boolean searchFiles, boolean zipURLsOK) {
+	private static Resource getResource(String name, Class<?> type, boolean searchFiles, boolean zipURLsOK, boolean fromZipURLsOK) {
 		if ((name == null) || name.equals("")) { //$NON-NLS-1$
 			return null;
 		}
@@ -281,7 +283,7 @@ public class ResourceLoader {
 			name = name.substring(2);
 		}
 		// look for resource with name only
-		Resource res = findResource(name, type, searchFiles, zipURLsOK);
+		Resource res = findResource(name, type, searchFiles, zipURLsOK, fromZipURLsOK);
 		if (res != null) {
 			return res;
 		}
@@ -293,7 +295,7 @@ public class ResourceLoader {
 			String path = getPath(next, name);
 			if (pathsNotFound.contains(path))
 				continue;
-			res = findResource(path, type, searchFiles, zipURLsOK);
+			res = findResource(path, type, searchFiles, zipURLsOK, false);
 			if (res != null) {
 				return res;
 			}
@@ -367,7 +369,7 @@ public class ResourceLoader {
 		// look for resource with basePath and name
 		pathsNotFound.clear();
 		String path = getPath(basePath, name);
-		Resource res = findResource(path, type, searchFiles, false);
+		Resource res = findResource(path, type, searchFiles, false, false);
 		if (res != null) {
 			return res.toString();
 		}
@@ -408,7 +410,7 @@ public class ResourceLoader {
 			path = getPath(getPath(it.next(), basePath), name);
 			if (pathsNotFound.contains(path))
 				continue;
-			res = findResource(path, type, searchFiles, false);
+			res = findResource(path, type, searchFiles, false, false);
 			if (res != null) {
 				return res.toString();
 			}
@@ -433,6 +435,7 @@ public class ResourceLoader {
 			if (searchPaths.contains(base)) {
 				searchPaths.remove(base);
 			} else {
+				System.out.println("ResourceLoader seaarchPath += " + base);
 				OSPLog.fine("Added path: " + base); //$NON-NLS-1$
 			}
 			searchPaths.add(0, base);
@@ -698,19 +701,19 @@ public class ResourceLoader {
 		if (newCache != null && !newCache.equals(ospCache)) {
 			// reject new cache if it is a subdirectory of the current cache!
 			if (ospCache != null && newCache.getAbsolutePath().contains(ospCache.getAbsolutePath())) {
-				Toolkit.getDefaultToolkit().beep();
+				OSPRuntime.beep("ResourceLoader cache cannot be a subfolder of " + ospCache.getAbsolutePath());
 				OSPLog.finer("cache cannot be a subfolder of "+ospCache.getAbsolutePath());
 				return;
 			}
 			if (!newCache.exists() || !newCache.isDirectory()) {
 				if (!newCache.mkdirs()) {
-					Toolkit.getDefaultToolkit().beep();
+					OSPRuntime.beep("unable to create cache at "+newCache);
 					OSPLog.finer("unable to create cache at "+newCache);
 					return;
 				}
 			}
 			if (!newCache.canWrite()) {
-				Toolkit.getDefaultToolkit().beep();
+				OSPRuntime.beep("ResourceLoader can't write to cache at " + newCache);
 				OSPLog.finer("unable to write to cache at "+newCache);
 				return;
 			}
@@ -960,16 +963,21 @@ public class ResourceLoader {
 	 * @param alwaysOverwrite true to overwrite an existing file, if any
 	 */
 	public static File downloadToOSPCache(String urlPath, String fileName, boolean alwaysOverwrite) {
+		return downloadToOSPCachePvt(urlPath, fileName, alwaysOverwrite, false);
+	}
+
+	private final static File NOTFOUND = new File("NOTFOUND");
+	public static File downloadToOSPCachePvt(String urlPath, String fileName, boolean alwaysOverwrite, boolean fromZipURLsOK) {
 		if (fileName == null)
 			return null;
 		File target = getOSPCacheFile(urlPath, fileName);
-		File file = download(urlPath, target, alwaysOverwrite);
+		File file = downloadPvt(urlPath, target, alwaysOverwrite, fromZipURLsOK);
 		if (file == null && webConnected) {
 			clearWebTest();
 			webConnected = isWebConnected(); // $NON-NLS-1$
 			if (!webConnected) {
 				if (showWebConnectionDialog() == WEB_CONNECTION_RETRY) {
-					return downloadToOSPCache(urlPath, fileName, alwaysOverwrite);
+					return downloadToOSPCachePvt(urlPath, fileName, alwaysOverwrite, fromZipURLsOK);
 				}
 //				JOptionPane.showMessageDialog(null,
 //						ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -1625,6 +1633,10 @@ public class ResourceLoader {
 	 * @return the downloaded file, or null if failed
 	 */
 	public static File download(String urlPath, File target, boolean alwaysOverwrite) {
+		return downloadPvt(urlPath, target, alwaysOverwrite, false);
+	}
+	
+	public static File downloadPvt(String urlPath, File target, boolean alwaysOverwrite, boolean fromZipURLsOK) {
 		if (target == null)
 			target = getOSPCacheFile(urlPath);
 		if (target.getParentFile() == null)
@@ -1644,7 +1656,7 @@ public class ResourceLoader {
 		if (!webConnected) {
 			if (showWebConnectionDialog() == WEB_CONNECTION_RETRY) {
 				clearWebTest();
-				return download(urlPath, target, alwaysOverwrite);
+				return downloadPvt(urlPath, target, alwaysOverwrite, fromZipURLsOK);
 			}
 
 //			JOptionPane.showMessageDialog(null, ToolsRes.getString("LibraryBrowser.Dialog.ServerUnavailable.Message"), //$NON-NLS-1$
@@ -1664,7 +1676,7 @@ public class ResourceLoader {
 			downloadURL = urlPath;
 			InputStream is = null;
 			try {
-				Resource res = getResourceZipURLsOK(urlPath);
+				Resource res = (fromZipURLsOK ? null : getResourceZipURLsOK(urlPath));
 				is = (res == null ? ResourceLoader.openStream(new URL(urlPath)) : res.openInputStream());
 				if (OSPRuntime.isJS) {
 					OSPRuntime.jsutil.streamToFile(is, target);
@@ -1918,18 +1930,23 @@ public class ResourceLoader {
 			urlConnect = (HttpURLConnection) url.openConnection();
 			urlConnect.setConnectTimeout(OSPRuntime.WEB_CONNECTED_TEST_JAVA_TIMEOUT_MS);
 			urlConnect.getContent();
-			if (isWebTest)
-				webTestOK = Boolean.TRUE;
-			urlConnect.disconnect();
-			return true;
 		} catch (Exception ex) {
-			OSPLog.debug("ResourceLoader failed to read " + url + " " + ex);
-			if (isWebTest)
-				webTestOK = Boolean.FALSE;
-			if (urlConnect != null)
-				urlConnect.disconnect();
-			return false;
-		}
+			String msg = ex.getMessage();
+			if (msg.indexOf("no content-type") < 0) {
+				OSPLog.debug("ResourceLoader failed to read " + url + " " + ex);
+				if (isWebTest)
+					webTestOK = Boolean.FALSE;
+				if (urlConnect != null)
+					urlConnect.disconnect();
+				return false;
+			}
+		} 
+		if (isWebTest)
+			webTestOK = Boolean.TRUE;
+	
+		if (urlConnect != null)
+			urlConnect.disconnect();
+		return true;
 	}
 
 	/**
@@ -2143,10 +2160,11 @@ public class ResourceLoader {
 	 * Creates a Resource from within a zip or jar file.
 	 *
 	 * @param path the file path
+	 * @param fromZipURLsOK TODO
 	 * @return the resource, if any
 	 */
 //  @SuppressWarnings("resource") // Java 7
-	static private Resource createZipResource(String path) {
+	static private Resource createZipResource(String path, boolean fromZipURLsOK) {
 		// convert to non-URI form
 		path = getNonURIPath(path);
 
@@ -2173,7 +2191,7 @@ public class ResourceLoader {
 		boolean deleteOnExit = ospCache == null;
 		if (isZip && isHTTP(path)) { // $NON-NLS-1$
 			String zipFileName = XML.getName(base);
-			File zipFile = downloadToOSPCache(base, zipFileName, false);
+			File zipFile = downloadToOSPCachePvt(base, zipFileName, false, fromZipURLsOK);
 			if (zipFile != null) {
 				if (deleteOnExit)
 					zipFile.deleteOnExit();
@@ -2457,7 +2475,7 @@ public class ResourceLoader {
 
 	private static Resource findResource(String path, Class<?> type, 
 			boolean searchFiles, 
-			boolean zipURLsOK) {
+			boolean zipURLsOK, boolean fromZipURLsOK) {
 
 		// createOnly parameter here was always false; only used in commented out section below
 		boolean isHTTP = isHTTP(path);
@@ -2491,7 +2509,7 @@ public class ResourceLoader {
 
 		if ((searchFiles && (res = createFileResource(path)) != null)
 				|| (res = createURLResource(path, zipURLsOK)) != null 
-				|| (res = createZipResource(path)) != null
+				|| (res = createZipResource(path, fromZipURLsOK)) != null
 				|| (res = createClassResource(path, type)) != null) {
 			// res is not null;
 		}
@@ -2676,7 +2694,7 @@ public class ResourceLoader {
 //	        contents = new HashMap<String, ZipEntry>();
 //	        jarContents.put(source.getPath(), contents);
 //	        OSPRuntime.addJSCachedBytes(source);
-//	        ZipInputStream input = new ZipInputStream(new FileInputStream(source));
+//	        ZipInputStream input = new ZipInputStream(newFileInputStream(source));
 //	        ZipEntry zipEntry = null;
 //	        while((zipEntry = input.getNextEntry())!=null) {
 //	          if(zipEntry.isDirectory()) {
@@ -2759,7 +2777,7 @@ public class ResourceLoader {
 				} else if (isHTTP(filename)) {
 					return (isZip ? extractFileFromZIP(filename, target, false, true) : null);
 				}
-				Resource res = getResource(filename, false, false); // BH don't allow ZIP files here
+				Resource res = getResource(filename, false, false, false); // BH don't allow ZIP files here
 				inputStream = (res == null ? null : res.openInputStream());
 //			}
 			if (inputStream == null) {
@@ -3231,7 +3249,7 @@ public class ResourceLoader {
 			boolean isjar = isJarZipTrz(urlPath, true);
 			byte[] bytes = (isjar ? getZipEntryBytes(urlPath, null) : null);
 			is = (isjar ? new ByteArrayInputStream(bytes)
-					: isHTTP(urlPath) ? openStream(new URL(urlPath)) : new FileInputStream(urlPath));
+					: isHTTP(urlPath) ? openStream(new URL(urlPath)) : newFileInputStreamStr(urlPath));
 			FileOutputStream fos = new FileOutputStream(f);
 			OSPRuntime.jsutil.transferTo(is, fos);
 			fos.close();
@@ -3338,6 +3356,18 @@ public class ResourceLoader {
 		return (url == null ? cl.getClassLoader().getResource(path) : url);
 	}
 
+	private static InputStream newFileInputStream(File f) throws FileNotFoundException {
+		FileInputStream fis = new FileInputStream(f);;
+		System.err.println("file " + f);
+		return fis;
+	}
+
+	private static InputStream newFileInputStreamStr(String path) throws FileNotFoundException {
+		FileInputStream fis = new FileInputStream(path);
+		System.err.println("string " + path);
+		return fis;
+	}
+
 	public static boolean copyFile(File inFile, File outFile) {
 		return copyFile(inFile, outFile, 16384);
 	}
@@ -3360,7 +3390,7 @@ public class ResourceLoader {
 				out.write(buffer, 0, buffer.length);
 			} else {
 				buffer = new byte[bufLen]; // 2^14
-				InputStream in = new FileInputStream(inFile);
+				InputStream in = newFileInputStream(inFile);
 				while (true) {
 					synchronized (buffer) {
 						int amountRead = in.read(buffer);

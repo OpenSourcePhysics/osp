@@ -106,15 +106,32 @@ public class LibraryCollection extends LibraryResource {
 		resources.remove(resource);
 	}
 
+	public void removeResourceAt(int i) {
+		resources.remove(i);
+	}
+	
 	/**
 	 * Gets the array of resources in this collection.
 	 *
 	 * @return an array of resources
 	 */
-	public LibraryResource[] getResources() {
+	@Override
+	public ArrayList<LibraryResource> getResources() {
+		return resources;
+	}
+
+	/**
+	 * Gets the array of resources in this collection.
+	 *
+	 * @return an array of resources
+	 */
+	public LibraryResource[] getResourceArray() {
 		return resources.toArray(new LibraryResource[resources.size()]);
 	}
 
+	
+	//.toArray(new LibraryResource[resources.size()]);
+	
 	/**
 	 * Clears resources.
 	 */
@@ -149,7 +166,8 @@ public class LibraryCollection extends LibraryResource {
 			XML.getLoader(LibraryResource.class).saveObject(control, obj);
 			LibraryCollection collection = (LibraryCollection) obj;
 			if (!collection.resources.isEmpty()) {
-				control.setValue("resources", collection.getResources()); //$NON-NLS-1$
+				control.setValue("resources", 
+						collection.getResources().toArray(new LibraryResource[0])); //$NON-NLS-1$
 			}
 		}
 
@@ -177,13 +195,13 @@ public class LibraryCollection extends LibraryResource {
 			XML.getLoader(LibraryResource.class).loadObject(control, obj);
 			LibraryCollection collection = (LibraryCollection) obj;
 			collection.resources.clear();
-			LibraryResource[] resources = (LibraryResource[]) control.getObject("resources"); //$NON-NLS-1$
+			Object o = control.getObject("resources"); //$NON-NLS-1$
+			LibraryResource[] resources = (o == null ? null : o instanceof LibraryResource[] ? (LibraryResource[]) o : (LibraryResource[])((ArrayList<?>)o).toArray(new LibraryResource[0]));
 			if (resources != null) {
 				for (LibraryResource next : resources) {
 					collection.addResource(next);
 				}
-			}
-			else {
+			} else {
 				String target = control.getString("target");
 				collection.setTarget(target);
 			}
@@ -196,14 +214,15 @@ public class LibraryCollection extends LibraryResource {
 		int c = super.compareTo(resource);
 		if (c != EQUAL || !(resource instanceof LibraryCollection))
 			return c;
-		LibraryResource[] children1 = ((LibraryCollection) this).getResources();
-		LibraryResource[] children2 = ((LibraryCollection) resource).getResources();
-		if (children1.length > children2.length)
-			return BEFORE;
-		if (children1.length < children2.length)
-			return AFTER;
-		for (int i = 0; i < children1.length; i++) {
-			int result = children1[i].compareTo(children2[i]);
+		ArrayList<LibraryResource> r2 = resource.getResources();
+		switch (Integer.compare(resources.size(), r2.size())) {
+			case 1:
+				return BEFORE;
+			case -1:
+				return AFTER;
+		}
+		for (int i = resources.size(); --i >= 0;) {
+			int result = resources.get(i).compareTo(r2.get(i));
 			if (result != EQUAL)
 				return result;
 		}
@@ -213,11 +232,11 @@ public class LibraryCollection extends LibraryResource {
 	@Override
 	public int hashCode() {
 		int h = super.hashCode();
-			LibraryResource[] children = getResources();
-			for (int i = 0; i < children.length; i++) {
-				h |= children[i].hashCode();
-			}
-			return h;
+		ArrayList<LibraryResource> resources = getResources();
+		for (int i = resources.size(); --i >= 0;) {
+			h |= resources.get(i).hashCode();
+		}
+		return h;
 	}
 }
 

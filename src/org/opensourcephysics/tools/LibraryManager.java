@@ -609,7 +609,7 @@ class LibraryManager extends JDialog {
 
 		resizeLabels();
 
-		pathField.setForeground(LibraryTreePanel.defaultForeground);
+		pathField.setForeground(LibraryTreePanel.getDefaultForeground());
 		if (tabbedPane.getSelectedComponent() == collectionsPanel) {
 			nameField.setEditable(true);
 			int i = collectionList.getSelectedIndex();
@@ -890,7 +890,7 @@ class LibraryManager extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					File file = ResourceLoader.getSearchCacheFile(urlPath);
 					if (file.delete()) {
-						LibraryBrowser.isSearchMapLoaded = false;
+						browser.resetSearchMap();
 						refreshSearchTab();
 					}
 				}

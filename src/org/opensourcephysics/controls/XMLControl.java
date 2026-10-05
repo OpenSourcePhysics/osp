@@ -91,6 +91,17 @@ public interface XMLControl extends Control, XMLProperty {
    */
   public String write(String fileName);
 
+	/**
+	 * Writes this control as an xml file with the specified name,
+	 * 
+	 * but does not add it to the search path, as for preferences from Tracker
+	 *
+	 * 
+	 * @param fileName
+	 * @return
+	 */
+  public String writeNoSearch(String fileName);
+	
   /**
    * Writes the control to a Writer.
    *
@@ -113,7 +124,7 @@ public interface XMLControl extends Control, XMLProperty {
 	List<XMLProperty> getPropsRaw();
 
 	Object loadObject(Object obj, Object data);
-	
+
 }
 
 

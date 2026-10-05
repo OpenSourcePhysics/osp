@@ -52,6 +52,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.opensourcephysics.display.OSPRuntime;
+
 import javajs.async.AsyncSwingWorker;
 
 public class ProgressMonitorDemo extends JPanel implements PropertyChangeListener {
@@ -125,7 +127,7 @@ public class ProgressMonitorDemo extends JPanel implements PropertyChangeListene
 		case "state":
 			switch (evt.getNewValue().toString()) {
 			case AsyncSwingWorker.DONE_ASYNC:
-				Toolkit.getDefaultToolkit().beep();
+				OSPRuntime.beep("ProgessMonitor finished.");
 				append("Task completed.\n");
 				startButton.setEnabled(true);				
 				break;
