@@ -435,6 +435,7 @@ public class ResourceLoader {
 			if (searchPaths.contains(base)) {
 				searchPaths.remove(base);
 			} else {
+				System.out.println("+ " + base);
 				OSPLog.fine("Added path: " + base); //$NON-NLS-1$
 			}
 			searchPaths.add(0, base);
@@ -2693,7 +2694,7 @@ public class ResourceLoader {
 //	        contents = new HashMap<String, ZipEntry>();
 //	        jarContents.put(source.getPath(), contents);
 //	        OSPRuntime.addJSCachedBytes(source);
-//	        ZipInputStream input = new ZipInputStream(new FileInputStream(source));
+//	        ZipInputStream input = new ZipInputStream(newFileInputStream(source));
 //	        ZipEntry zipEntry = null;
 //	        while((zipEntry = input.getNextEntry())!=null) {
 //	          if(zipEntry.isDirectory()) {
@@ -3248,7 +3249,7 @@ public class ResourceLoader {
 			boolean isjar = isJarZipTrz(urlPath, true);
 			byte[] bytes = (isjar ? getZipEntryBytes(urlPath, null) : null);
 			is = (isjar ? new ByteArrayInputStream(bytes)
-					: isHTTP(urlPath) ? openStream(new URL(urlPath)) : new FileInputStream(urlPath));
+					: isHTTP(urlPath) ? openStream(new URL(urlPath)) : newFileInputStreamStr(urlPath));
 			FileOutputStream fos = new FileOutputStream(f);
 			OSPRuntime.jsutil.transferTo(is, fos);
 			fos.close();
@@ -3355,6 +3356,18 @@ public class ResourceLoader {
 		return (url == null ? cl.getClassLoader().getResource(path) : url);
 	}
 
+	private static InputStream newFileInputStream(File f) throws FileNotFoundException {
+		FileInputStream fis = new FileInputStream(f);;
+		System.err.println("file " + f);
+		return fis;
+	}
+
+	private static InputStream newFileInputStreamStr(String path) throws FileNotFoundException {
+		FileInputStream fis = new FileInputStream(path);
+		System.err.println("string " + path);
+		return fis;
+	}
+
 	public static boolean copyFile(File inFile, File outFile) {
 		return copyFile(inFile, outFile, 16384);
 	}
@@ -3377,7 +3390,7 @@ public class ResourceLoader {
 				out.write(buffer, 0, buffer.length);
 			} else {
 				buffer = new byte[bufLen]; // 2^14
-				InputStream in = new FileInputStream(inFile);
+				InputStream in = newFileInputStream(inFile);
 				while (true) {
 					synchronized (buffer) {
 						int amountRead = in.read(buffer);

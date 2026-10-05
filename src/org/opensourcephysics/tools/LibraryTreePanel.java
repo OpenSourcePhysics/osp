@@ -1153,7 +1153,6 @@ class LibraryTreePanel extends JPanel {
 		}
 		tree.setSelectionPath(path);
 		LibraryTreeNode node = (LibraryTreeNode) tree.getLastSelectedPathComponent();
-		System.err.println(node.record.getAbsoluteTarget());
 		if (OSPRuntime.isPopupTrigger(e)) {
 			getPopup(node).show(tree, e.getX(), e.getY() + 8);
 		} else if (path.equals(prevTreePath)){

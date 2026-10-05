@@ -190,8 +190,6 @@ public class LibraryCollection extends LibraryResource {
 		 */
 		@Override
 		public Object loadObject(XMLControl control, Object obj) {
-			if (control.toString().indexOf("Innovative Uses of Video Analysis") >= 0)
-				System.err.println("????");
 			XML.getLoader(LibraryResource.class).loadObject(control, obj);
 			LibraryCollection collection = (LibraryCollection) obj;
 			collection.resources.clear();

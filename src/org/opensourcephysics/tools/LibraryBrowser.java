@@ -1331,7 +1331,7 @@ public class LibraryBrowser extends JPanel {
 		treePanelListener = new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				System.err.println("LibraryBroswer.propertyChange " + e.getPropertyName());
+				//System.err.println("LibraryBroswer.propertyChange " + e.getPropertyName());
 				switch (e.getPropertyName()) {
 				case PROPERTY_LIBRARY_EDITED:
 					// from LibraryTreePanel
@@ -2300,7 +2300,7 @@ public class LibraryBrowser extends JPanel {
 			if (path == "") {
 				resource.setBasePath(XML.getDirectoryPath(s) + "/");
 			}
-			System.err.println(resource.getBasePath() + "," + s);
+			//System.err.println(resource.getBasePath() + "," + s);
 			setSearchChildBasePaths(resource);
 			searchResourceMap.put(s, resource);
 		}
@@ -2309,10 +2309,7 @@ public class LibraryBrowser extends JPanel {
 	private static void setSearchChildBasePaths(LibraryResource resource) {
 		ArrayList<LibraryResource> children = resource.getResources();
 		if (children == null) {
-			String p = resource.getInheritedBasePath();
-			if (p.indexOf("/") < 0)
-			System.err.println(p);
-			resource.setBasePath(p);
+			resource.setBasePath(resource.getInheritedBasePath());
 		} else {
 			for (LibraryResource child : children) {
 				setSearchChildBasePaths(child);
