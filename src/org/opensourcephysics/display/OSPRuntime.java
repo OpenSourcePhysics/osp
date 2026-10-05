@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.JarURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -2537,6 +2536,10 @@ public class OSPRuntime {
 		}
 	}
 
+	/**
+	 * Just a handy central location for notifying errors and issues.
+	 * @param msg
+	 */
 	public static void beep(String msg) {
 		System.err.println(msg);
 		Toolkit.getDefaultToolkit().beep();
