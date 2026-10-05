@@ -3717,7 +3717,7 @@ public class LibraryBrowser extends JPanel {
 
     		@Override
     		public Library doInBackground() {
-    			Thread.currentThread().setName("LibraryInitializer");
+    			Thread.currentThread().setName("LibraryInitializationWorker");
     			if (history.libraryPath == null)
     				return library;
     			Runnable webChecker = new Runnable() {
@@ -3769,9 +3769,6 @@ public class LibraryBrowser extends JPanel {
     		}
     	}
 
-    	//////// LibrarySearchWorker //////////
-    	
-		
 		private class LibrarySearchWorker extends SwingWorker<LibraryTreeNode, Object> {
     		private String searchTerm;
 
@@ -3781,6 +3778,7 @@ public class LibraryBrowser extends JPanel {
 
     		@Override
     		public LibraryTreeNode doInBackground() {
+    			Thread.currentThread().setName("LibrarySearchWorker");
     			return searchFor(searchTerm.trim(), getSearchTargets());
     		}
 
@@ -3990,7 +3988,7 @@ public class LibraryBrowser extends JPanel {
 
     		@Override
     		public LibraryTreePanel doInBackground() {
-    			Thread.currentThread().setName("LibraryTabLoader");
+    			Thread.currentThread().setName("LibraryTabWorker");
     			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     			String realPath = path;
     			File cachedFile = ResourceLoader.getSearchCacheFile(path);
