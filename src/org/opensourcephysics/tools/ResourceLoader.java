@@ -435,7 +435,7 @@ public class ResourceLoader {
 			if (searchPaths.contains(base)) {
 				searchPaths.remove(base);
 			} else {
-				System.out.println("ResourceLoader seaarchPath += " + base);
+				System.out.println("ResourceLoader searchPath += " + base);
 				OSPLog.fine("Added path: " + base); //$NON-NLS-1$
 			}
 			searchPaths.add(0, base);
