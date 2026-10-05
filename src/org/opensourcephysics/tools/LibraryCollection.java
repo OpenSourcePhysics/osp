@@ -165,7 +165,8 @@ public class LibraryCollection extends LibraryResource {
 			XML.getLoader(LibraryResource.class).saveObject(control, obj);
 			LibraryCollection collection = (LibraryCollection) obj;
 			if (!collection.resources.isEmpty()) {
-				control.setValue("resources", collection.getResources()); //$NON-NLS-1$
+				control.setValue("resources", 
+						collection.getResources().toArray(new LibraryResource[0])); //$NON-NLS-1$
 			}
 		}
 
@@ -193,13 +194,13 @@ public class LibraryCollection extends LibraryResource {
 			XML.getLoader(LibraryResource.class).loadObject(control, obj);
 			LibraryCollection collection = (LibraryCollection) obj;
 			collection.resources.clear();
-			LibraryResource[] resources = (LibraryResource[]) control.getObject("resources"); //$NON-NLS-1$
+			Object o = control.getObject("resources"); //$NON-NLS-1$
+			LibraryResource[] resources = (o == null ? null : o instanceof LibraryResource[] ? (LibraryResource[]) o : (LibraryResource[])((ArrayList<?>)o).toArray(new LibraryResource[0]));
 			if (resources != null) {
 				for (LibraryResource next : resources) {
 					collection.addResource(next);
 				}
-			}
-			else {
+			} else {
 				String target = control.getString("target");
 				collection.setTarget(target);
 			}
