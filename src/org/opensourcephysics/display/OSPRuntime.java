@@ -9,6 +9,7 @@ package org.opensourcephysics.display;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -676,21 +677,27 @@ public class OSPRuntime {
 	/** 
 	 * Determines if running in a "small" screen: according to AI:
 	 * Small (Mobile Portrait): 320px to 479px
-	 * Examples: iPhone SE (375px), iPhone 13/14/15/16 (390px to 393px), iPhone Pro Max (430px), and mainstream Android devices.
 	 * Medium (Mobile Landscape / Small Tablets): 480px to 767px
-	 * Examples: iPhones rotated sideways, older or very small Android tablets.
 	 * Large (Tablets / iPads): 768px to 1024px
 	 * 
+	 * @param c a top-level Container like JFrame, etc
 	 * @return true if small
 	 */	
-	public static boolean isSmallScreen() {		
-    Dimension size = getHTMLPageSize();
+	public static boolean isSmallScreen(Container c) {		
+		Dimension size;
+		if (c != null) size = c.getSize();			
+		else size = getHTMLPageSize(); // returns screen size in Java
     // Check if logical width or height is under the "smallScreen" threshold
     boolean small = size.width > 0 && size.height > 0 
-    		&& (size.width < smallScreen || size.height < smallScreen);
+    		&& (size.width < getSmallScreenThreshold() || size.height < getSmallScreenThreshold());
     return small;
-	}		
-	private static int smallScreen = 480;
+	}
+	
+	public static int getSmallScreenThreshold() {
+		return (int)(FontSizer.getFactor() * (smallScreen));		
+	}
+	
+	public static int smallScreen = 480;
 	
 	public static final char DECIMAL_SEPARATOR_COMMA = ',';
 	public static final char DECIMAL_SEPARATOR_PERIOD = '.';

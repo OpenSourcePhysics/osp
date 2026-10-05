@@ -689,7 +689,15 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		if (readoutType == null)
 			return;
 		// add components to toolbar
-		boolean small = OSPRuntime.isSmallScreen();
+		boolean small = false;
+		Container c = vidPanel.getTopLevelAncestor();
+		if (c != null) {
+			small = c.getSize().width < OSPRuntime.getSmallScreenThreshold();			
+		}
+		else {
+			small = OSPRuntime.isSmallScreen(c);			
+		}
+		
 		toolbar.removeAll();
 		toolbar.add(readout);
 		if (!small) toolbar.add(rateSpinner);
