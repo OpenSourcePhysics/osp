@@ -693,6 +693,24 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 	 */
 	@Override
 	public String write(String fileName) {
+		return writePvt(fileName, true);
+	}
+
+	/**
+	 * Writes this control as an xml file with the specified name,
+	 * 
+	 * but does not add it to the search path
+	 *
+	 * 
+	 * @param fileName
+	 * @return
+	 */
+	@Override
+	public String writeNoSearch(String fileName) {
+		return writePvt(fileName, false);
+	}
+
+	private String writePvt(String fileName, boolean addSearchPath) {	
 		canWrite = true;
 		/** j2sIgnore */
 		{ // BH 2022.03.19 skip checks in JS
@@ -726,7 +744,9 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			// add search path to ResourceLoader
 			if (file.exists()) {
 				String path = XML.getDirectoryPath(file.getCanonicalPath());
-				ResourceLoader.addSearchPath(path);
+				if (addSearchPath) {
+					ResourceLoader.addSearchPath(path);
+				}
 			}
 			// write dtd if valid
 			if (isValid()) {
