@@ -1910,10 +1910,6 @@ class LibraryTreePanel extends JPanel {
 				this.treePath = treePath;
 			}
 
-			void cancel() {
-				canceled = true;
-			}
-
 			@Override
 			public Void doInBackground() {
     			Thread.currentThread().setName("LibraryTreeMetadataWorker");
@@ -1921,6 +1917,15 @@ class LibraryTreePanel extends JPanel {
 					setupAndRunLoaders();
 				}
 				return null;
+			}
+
+			@Override
+			protected void done() {
+    			Thread.currentThread().setName("LibraryTreeNodeWorker(done)");
+			}
+
+			void cancel() {
+				canceled = true;
 			}
 
 			private void setupAndRunLoaders() {
@@ -1988,7 +1993,7 @@ class LibraryTreePanel extends JPanel {
 					}
 				}
 			}
-
+			
 		}
 
 		/**
@@ -2216,6 +2221,7 @@ class LibraryTreePanel extends JPanel {
 						browser.refreshTabTitle(pathToRoot, rootResource);
 					}
 				});
+    			Thread.currentThread().setName("LibraryTreeNodeWorker(done)");
 			}
 
 			@Override
@@ -2246,6 +2252,7 @@ class LibraryTreePanel extends JPanel {
 							return null;
 					}
 					whenHTMLDisplayerDone(node, htmlPane);
+	    			Thread.currentThread().setName("LibraryPaneHTMLDisplayWorker(done)");
 				} catch (Exception e) {
 					e.printStackTrace();
 					System.out.println("LibraryTreePanel exception " + e);

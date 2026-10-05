@@ -816,6 +816,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 
 		@Override
 		public File doInBackground() {
+			Thread.currentThread().setName("LibraryNodeThumbnailWorker");
 			runMe();
 			return null;
 		}
@@ -901,6 +902,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 				} catch (Exception ignore) {
 				}
 			});
+			Thread.currentThread().setName("LibraryNodeThumbnailWorker(done)");
 		}
 
 		@Override

@@ -3741,6 +3741,7 @@ public class LibraryBrowser extends JPanel {
     			}
     			refreshCollectionsMenu();
     			refreshRecentMenu();
+    			Thread.currentThread().setName("LibraryInitializationWorker(done)");
     		}
     	}
 
@@ -3764,6 +3765,7 @@ public class LibraryBrowser extends JPanel {
     			} catch (Exception e) {
     				OSPRuntime.beep("LibraryBrowser.Searcher failed " + e.getMessage());
     			}
+    			Thread.currentThread().setName("LibrarySearchWorker(done)");
     		}
     	}
 
@@ -4088,6 +4090,7 @@ public class LibraryBrowser extends JPanel {
     			} catch (Exception ignore) {
     			}
     			setCursor(Cursor.getDefaultCursor());
+    			Thread.currentThread().setName("LibraryTabWorker(done)");
     		}
     	}
     	
