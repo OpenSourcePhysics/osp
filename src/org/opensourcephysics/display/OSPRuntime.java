@@ -2524,7 +2524,7 @@ public class OSPRuntime {
 	/**
 	 * Using URI.toASCIIString() 
 	 * @param target
-	 * @return
+	 * @return full URL encoded as a URI
 	 */
 	public static String encodeURIComponent(String target) {
 		try {
