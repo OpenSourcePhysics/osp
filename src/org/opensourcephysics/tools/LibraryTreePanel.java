@@ -176,8 +176,10 @@ class LibraryTreePanel extends JPanel {
 	private TreePath prevTreePath;
 	private Metadata emptyMetadata = new Metadata();
 	private Set<EntryField> entryFields = new HashSet<EntryField>();
+	private boolean clipboardAvailable;
 
 	private int myFontLevel;
+
 
 	/**
 	 * Constructs an empty LibraryTreePanel.
@@ -1216,7 +1218,7 @@ class LibraryTreePanel extends JPanel {
 		OSPRuntime.setTimeout("loadEvent", 800, true, r);
 	}
 
-	protected String doOpenFile(String basePath) {
+	private String doOpenFile(String basePath) {
 		int result = JFileChooser.CANCEL_OPTION;
 		JFileChooser chooser = getFileChooser();
 		chooser.setDialogTitle(null);
@@ -1239,7 +1241,7 @@ class LibraryTreePanel extends JPanel {
 		return null;
 	}
 
-	protected void doOpenHTML(LibraryTreeNode node) {
+	private void doOpenHTML(LibraryTreeNode node) {
 		int result = JFileChooser.CANCEL_OPTION;
 		JFileChooser chooser = getFileChooser();
 		chooser.setDialogTitle(null);
@@ -1275,7 +1277,7 @@ class LibraryTreePanel extends JPanel {
 		return b;
 	}
 
-	protected void doMouseClick(MouseEvent e) {
+	private void doMouseClick(MouseEvent e) {
 		if (!OSPRuntime.isPopupTrigger(e))
 			return;
 		LibraryTreeNode node = getSelectedNode();
@@ -1372,7 +1374,7 @@ class LibraryTreePanel extends JPanel {
 	/**
 	 * Enables/disables buttons based on selected node and clipboard state.
 	 */
-	protected void enableButtons() {
+	private void enableButtons() {
 		LibraryTreeNode node = getSelectedNode();
 		boolean nodeIsCollection = node != null && node.record instanceof LibraryCollection;
 		addCollectionButton.setEnabled(nodeIsCollection);
@@ -1415,7 +1417,7 @@ class LibraryTreePanel extends JPanel {
 	 * 
 	 * @param root the root node
 	 */
-	protected void createTree(LibraryTreeNode root) {
+	private void createTree(LibraryTreeNode root) {
 		treeModel = new DefaultTreeModel(root);
 		tree = new JTree(treeModel) {
 			@Override
@@ -1445,19 +1447,17 @@ class LibraryTreePanel extends JPanel {
 		treeScroller.setViewportView(tree);
 	}
 
-	private Boolean clipboardAvailable;
-
 	/**
 	 * Determines if the clipboard can be pasted.
 	 * 
 	 */
-	protected void ifClipboardPastable(Runnable r) {
+	private void ifClipboardPastable(Runnable r) {
 		if (!OSPRuntime.allowLibClipboardPasteCheck)
 			return;
-		if (clipboardAvailable == Boolean.TRUE) {
+		if (clipboardAvailable) {
 			r.run();
 		}
-		clipboardAvailable = Boolean.FALSE;
+		clipboardAvailable = false;
 		// pasteControl = null;
 		OSPRuntime.paste((dataString) -> {
 			if (dataString != null) {
@@ -1466,7 +1466,7 @@ class LibraryTreePanel extends JPanel {
 				Class<?> type = control.getObjectClass();
 				if (type != null && LibraryResource.class.isAssignableFrom(type)) {
 					// pasteControl = control;
-					clipboardAvailable = Boolean.TRUE;
+					clipboardAvailable = true;
 					r.run();
 				}
 			}
@@ -1681,137 +1681,6 @@ class LibraryTreePanel extends JPanel {
 		return true;
 	}
 
-	/**
-	 * BH NOT IMPLEMENTED????
-	 * 
-	 * Returns the phrase before the next AND or OR operator, the operator itself,
-	 * and the remainder of the phrase.
-	 *
-	 * @param phrase a search phrase
-	 * @return String[]
-	 */
-	protected String[] getNextSplit(String phrase) {
-		String[] and = phrase.split(AND, 2);
-		String[] or = phrase.split(OR, 2);
-		String[] open = phrase.split(Pattern.quote(OPENING), 2);
-		int which = and[0].length() <= or[0].length() ? and[0].length() <= open[0].length() ? 0 : 2
-				: or[0].length() <= open[0].length() ? 1 : 2;
-		if (which == 2 && open.length > 1) { // found opening parentheses
-
-			// split remainder into parenthesis contents and remainder
-			String[] split = getParenthesisSplit(open[1]);
-			if (split.length == 1) {
-				return new String[] { split[0] };
-			}
-			int n = split[1].indexOf(AND);
-			int m = split[1].indexOf(OR);
-			if (n == -1 && m == -1) {
-				return new String[] { open[1] };
-			}
-			if (n > -1 && (m == -1 || n < m)) { // AND
-				return new String[] { split[0], AND, split[1].substring(n + AND.length()) };
-			}
-			if (m > -1 && (n == -1 || m < n)) { // OR
-				return new String[] { split[0], OR, split[1].substring(m + OR.length()) };
-			}
-		}
-		switch (which) {
-		case 0:
-			if (and.length == 1)
-				return new String[] { and[0] };
-			return new String[] { and[0], AND, and[1] };
-		case 1:
-			if (or.length == 1)
-				return new String[] { or[0] };
-			return new String[] { or[0], OR, or[1] };
-		}
-		return new String[] { phrase };
-	}
-
-	/**
-	 * Returns the phrase enclosed in parentheses along with the remainder of a
-	 * phrase.
-	 *
-	 * @param phrase a phrase that starts immediately AFTER an opening parenthesis
-	 * @return String[] {the enclosed phrase, the remainder}
-	 */
-	protected String[] getParenthesisSplit(String phrase) {
-
-		int index = 1; // index of closing parenthesis
-		int n = 1; // number of unpaired opening parentheses
-		int opening = phrase.indexOf(OPENING, index);
-		int closing = phrase.indexOf(CLOSING, index);
-		while (n > 0) {
-			if (opening > -1 && opening < closing) {
-				n++;
-				index = opening + 1;
-				opening = phrase.indexOf(OPENING, index);
-			} else if (closing > -1) {
-				n--;
-				index = closing + 1;
-				closing = phrase.indexOf(CLOSING, index);
-			} else
-				return new String[] { phrase };
-		}
-		String token = phrase.substring(0, index - 1);
-		String remainder = phrase.substring(index);
-		return remainder.trim().equals("") ? new String[] { token } : new String[] { token, remainder }; //$NON-NLS-1$
-	}
-
-	/**
-	 * Returns the nodes that are contained in the keysets of both of two input
-	 * maps.
-	 * 
-	 * @param results1
-	 * @param results2
-	 * @return map of nodes found in both keysets
-	 */
-	protected Map<LibraryTreeNode, List<String[]>> applyAND(Map<LibraryTreeNode, List<String[]>> results1,
-			Map<LibraryTreeNode, List<String[]>> results2) {
-		Map<LibraryTreeNode, List<String[]>> resultsAND = new HashMap<LibraryTreeNode, List<String[]>>();
-		Set<LibraryTreeNode> keys1 = results1.keySet();
-		for (LibraryTreeNode node : results2.keySet()) {
-			if (keys1.contains(node)) { // node is in both keysets
-				List<String[]> matchedTerms = new ArrayList<String[]>();
-				matchedTerms.addAll(results1.get(node));
-				matchedTerms.addAll(results2.get(node));
-				resultsAND.put(node, matchedTerms);
-			}
-		}
-		return resultsAND;
-	}
-
-	/**
-	 * Returns the nodes that are contained in the keysets of either of two input
-	 * maps.
-	 * 
-	 * @param results1
-	 * @param results2
-	 * @return map of nodes found in either keyset
-	 */
-	protected Map<LibraryTreeNode, List<String[]>> applyOR(Map<LibraryTreeNode, List<String[]>> results1,
-			Map<LibraryTreeNode, List<String[]>> results2) {
-		Map<LibraryTreeNode, List<String[]>> resultsOR = new HashMap<LibraryTreeNode, List<String[]>>();
-		// add nodes in results1
-		for (LibraryTreeNode node : results1.keySet()) {
-			List<String[]> matchedTerms = new ArrayList<String[]>();
-			matchedTerms.addAll(results1.get(node));
-			resultsOR.put(node, matchedTerms);
-		}
-		// add nodes in results2
-		for (LibraryTreeNode node : results2.keySet()) {
-			if (resultsOR.keySet().contains(node)) {
-				resultsOR.get(node).addAll(results2.get(node));
-				continue;
-			}
-			List<String[]> matchedTerms = new ArrayList<String[]>();
-			matchedTerms.addAll(results2.get(node));
-			resultsOR.put(node, matchedTerms);
-		}
-		return resultsOR;
-	}
-
-
 	protected static JEditorPane newHTMLPane() {
 		return new HTMLPane();
 	}
@@ -1842,14 +1711,6 @@ class LibraryTreePanel extends JPanel {
 		}
 	}
 
-	/**
-	 *  called by refresh button  -- what is it supposed to do?
-	 */
-	protected void refreshSelectedNode() {
-		// TODO Auto-generated method stub
-
-	}
-
 	protected void scrollToPath(TreePath path, boolean andSelect) {
 		// OSPLog.debug("LibraryTreePanel.scrollToPath " + andSelect + " " + path);
 		if (OSPRuntime.doScrollToPath)
@@ -1869,7 +1730,7 @@ class LibraryTreePanel extends JPanel {
 	 * 
 	 * @param node may be null
 	 */
-	public void refreshModel(LibraryTreeNode node) {
+	protected void refreshModel(LibraryTreeNode node) {
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		model.reload();
 		if (node != null) {
@@ -1882,19 +1743,19 @@ class LibraryTreePanel extends JPanel {
 		isChanged = b;
 	}
 
-	public static void removeHTMLPaneURL(URL url) {
+	protected static void removeHTMLPaneURL(URL url) {
 		htmlPanesByURL.remove(url);
 	}
 
-	public static void removeHTMLPaneNode(LibraryTreeNode node) {
+	protected static void removeHTMLPaneNode(LibraryTreeNode node) {
 		htmlPanesByNode.remove(node);
 	}
 
-	public static void setDefaultForeground(Color foreground) {
+	protected static void setDefaultForeground(Color foreground) {
 		defaultForeground = foreground;
 	}
 
-	public static Color getDefaultForeground() {
+	protected static Color getDefaultForeground() {
 		return defaultForeground;
 	}
 
@@ -2982,6 +2843,151 @@ class LibraryTreePanel extends JPanel {
 		}
 	}
 
+	//////////////unimplemented code///////////
+	
+	
+	/**
+	 *  called by refresh button  -- what is it supposed to do?
+	 */
+	protected void refreshSelectedNode() {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * BH NOT IMPLEMENTED????
+	 * 
+	 * Returns the phrase before the next AND or OR operator, the operator itself,
+	 * and the remainder of the phrase.
+	 *
+	 * @param phrase a search phrase
+	 * @return String[]
+	 */
+	protected String[] getNextSplit(String phrase) {
+		String[] and = phrase.split(AND, 2);
+		String[] or = phrase.split(OR, 2);
+		String[] open = phrase.split(Pattern.quote(OPENING), 2);
+		int which = and[0].length() <= or[0].length() ? and[0].length() <= open[0].length() ? 0 : 2
+				: or[0].length() <= open[0].length() ? 1 : 2;
+		if (which == 2 && open.length > 1) { // found opening parentheses
+
+			// split remainder into parenthesis contents and remainder
+			String[] split = getParenthesisSplit(open[1]);
+			if (split.length == 1) {
+				return new String[] { split[0] };
+			}
+			int n = split[1].indexOf(AND);
+			int m = split[1].indexOf(OR);
+			if (n == -1 && m == -1) {
+				return new String[] { open[1] };
+			}
+			if (n > -1 && (m == -1 || n < m)) { // AND
+				return new String[] { split[0], AND, split[1].substring(n + AND.length()) };
+			}
+			if (m > -1 && (n == -1 || m < n)) { // OR
+				return new String[] { split[0], OR, split[1].substring(m + OR.length()) };
+			}
+		}
+		switch (which) {
+		case 0:
+			if (and.length == 1)
+				return new String[] { and[0] };
+			return new String[] { and[0], AND, and[1] };
+		case 1:
+			if (or.length == 1)
+				return new String[] { or[0] };
+			return new String[] { or[0], OR, or[1] };
+		}
+		return new String[] { phrase };
+	}
+
+	/**
+	 * Returns the phrase enclosed in parentheses along with the remainder of a
+	 * phrase.
+	 *
+	 * @param phrase a phrase that starts immediately AFTER an opening parenthesis
+	 * @return String[] {the enclosed phrase, the remainder}
+	 */
+	protected String[] getParenthesisSplit(String phrase) {
+
+		int index = 1; // index of closing parenthesis
+		int n = 1; // number of unpaired opening parentheses
+		int opening = phrase.indexOf(OPENING, index);
+		int closing = phrase.indexOf(CLOSING, index);
+		while (n > 0) {
+			if (opening > -1 && opening < closing) {
+				n++;
+				index = opening + 1;
+				opening = phrase.indexOf(OPENING, index);
+			} else if (closing > -1) {
+				n--;
+				index = closing + 1;
+				closing = phrase.indexOf(CLOSING, index);
+			} else
+				return new String[] { phrase };
+		}
+		String token = phrase.substring(0, index - 1);
+		String remainder = phrase.substring(index);
+		return remainder.trim().equals("") ? new String[] { token } : new String[] { token, remainder }; //$NON-NLS-1$
+	}
+
+	/**
+	 * Returns the nodes that are contained in the keysets of both of two input
+	 * maps.
+	 * 
+	 * @param results1
+	 * @param results2
+	 * @return map of nodes found in both keysets
+	 */
+	protected Map<LibraryTreeNode, List<String[]>> applyAND(Map<LibraryTreeNode, List<String[]>> results1,
+			Map<LibraryTreeNode, List<String[]>> results2) {
+		Map<LibraryTreeNode, List<String[]>> resultsAND = new HashMap<LibraryTreeNode, List<String[]>>();
+		Set<LibraryTreeNode> keys1 = results1.keySet();
+		for (LibraryTreeNode node : results2.keySet()) {
+			if (keys1.contains(node)) { // node is in both keysets
+				List<String[]> matchedTerms = new ArrayList<String[]>();
+				matchedTerms.addAll(results1.get(node));
+				matchedTerms.addAll(results2.get(node));
+				resultsAND.put(node, matchedTerms);
+			}
+		}
+		return resultsAND;
+	}
+
+	/**
+	 * Returns the nodes that are contained in the keysets of either of two input
+	 * maps.
+	 * 
+	 * @param results1
+	 * @param results2
+	 * @return map of nodes found in either keyset
+	 */
+	protected Map<LibraryTreeNode, List<String[]>> applyOR(Map<LibraryTreeNode, List<String[]>> results1,
+			Map<LibraryTreeNode, List<String[]>> results2) {
+		Map<LibraryTreeNode, List<String[]>> resultsOR = new HashMap<LibraryTreeNode, List<String[]>>();
+		// add nodes in results1
+		for (LibraryTreeNode node : results1.keySet()) {
+			List<String[]> matchedTerms = new ArrayList<String[]>();
+			matchedTerms.addAll(results1.get(node));
+			resultsOR.put(node, matchedTerms);
+		}
+		// add nodes in results2
+		for (LibraryTreeNode node : results2.keySet()) {
+			if (resultsOR.keySet().contains(node)) {
+				resultsOR.get(node).addAll(results2.get(node));
+				continue;
+			}
+			List<String[]> matchedTerms = new ArrayList<String[]>();
+			matchedTerms.addAll(results2.get(node));
+			resultsOR.put(node, matchedTerms);
+		}
+		return resultsOR;
+	}
+
+
+
+	
+	
 }
 
 /*

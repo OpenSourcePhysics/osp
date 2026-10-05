@@ -2086,31 +2086,6 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
-	private boolean launchTrackerJar(String trackerHome, String target) {
-		trackerHome = XML.forwardSlash(trackerHome);
-		// launch local Tracker
-		try {
-			JREFinder jreFinder = JREFinder.getFinder();
-			File jreFile = jreFinder.getDefaultJRE(64, trackerHome, true, "OpenJDK");
-			if (jreFile == null)
-				return false;
-			ArrayList<String> cmd = new ArrayList<String>();
-			cmd.add(XML.forwardSlash(jreFile.getAbsolutePath()) + "/bin/java");
-			cmd.add("-jar"); //$NON-NLS-1$
-			cmd.add(trackerHome + "/tracker_starter.jar");
-			cmd.add(target);
-			// prepare to execute the command
-			ProcessBuilder builder = new ProcessBuilder(cmd);
-			Process process = builder.start();
-			int result = process.waitFor();
-			// if process returns immediately with exit code 1, try online
-			return (result == 0);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
 	protected String getChooserDir() {
 		return history.getChooserDir();
 	}
@@ -4117,6 +4092,34 @@ public class LibraryBrowser extends JPanel {
     	}
     	
     }
-	
+
+    ////////////Unimplemented code ///////////
+    
+	private boolean launchTrackerJar(String trackerHome, String target) {
+		trackerHome = XML.forwardSlash(trackerHome);
+		// launch local Tracker
+		try {
+			JREFinder jreFinder = JREFinder.getFinder();
+			File jreFile = jreFinder.getDefaultJRE(64, trackerHome, true, "OpenJDK");
+			if (jreFile == null)
+				return false;
+			ArrayList<String> cmd = new ArrayList<String>();
+			cmd.add(XML.forwardSlash(jreFile.getAbsolutePath()) + "/bin/java");
+			cmd.add("-jar"); //$NON-NLS-1$
+			cmd.add(trackerHome + "/tracker_starter.jar");
+			cmd.add(target);
+			// prepare to execute the command
+			ProcessBuilder builder = new ProcessBuilder(cmd);
+			Process process = builder.start();
+			int result = process.waitFor();
+			// if process returns immediately with exit code 1, try online
+			return (result == 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+
 	
 }

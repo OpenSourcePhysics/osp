@@ -38,6 +38,12 @@ import org.opensourcephysics.tools.LibraryResource.Metadata;
  * A DefaultMutableTreeNode for a LibraryTreePanel tree, with a LibraryResource
  * user object. Provides convenience methods for getting, setting and displaying
  * LibraryResource data.
+ * 
+ * Each LibraryTreeNode has an associated (LibararyResource) record.
+ * In addition, if it is for a collection, it can hold an ArrayList 
+ * of LibraryResources, the resources field.
+ * 
+ * 
  *
  * @author Douglas Brown
  * @version 1.0
@@ -553,7 +559,7 @@ public class LibraryTreeNode extends DefaultMutableTreeNode implements Comparabl
 	 * @param types an array of resource types
 	 * @return a list of LibraryResources
 	 */
-	protected ArrayList<LibraryResource> getChildResources(String[] types) {
+	private ArrayList<LibraryResource> getChildResources(String[] types) {
 		resources.clear();
 		for (String type : types) {
 			for (int i = 0; i < getChildCount(); i++) {
