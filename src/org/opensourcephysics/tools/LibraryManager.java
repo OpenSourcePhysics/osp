@@ -890,7 +890,7 @@ class LibraryManager extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					File file = ResourceLoader.getSearchCacheFile(urlPath);
 					if (file.delete()) {
-						LibraryBrowser.resetSearchMap();
+						browser.resetSearchMap();
 						refreshSearchTab();
 					}
 				}

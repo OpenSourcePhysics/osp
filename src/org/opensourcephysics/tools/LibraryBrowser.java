@@ -30,10 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -156,6 +152,7 @@ public class LibraryBrowser extends JPanel {
 	protected final Library library = new Library();
 	protected final LibraryHistory history = new LibraryHistory();
 
+	private final LibraryWorker worker = new LibraryWorker();
 	private static Map<String, LibraryResource> searchResourceMap; // path to resource
 	private TreeMap<String, String> searchPathMap; // name to path
 	private static boolean isSearchMapLoaded = false;
@@ -1135,13 +1132,6 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
-	private void loadTabAsync(String path, int index, List<String> treePath, PropertyChangeListener listener) {
-		TabLoader loader = new TabLoader(path, index, treePath);
-		if (listener != null)
-			loader.addPropertyChangeListener(listener);
-		loader.execute();
-	}
-
 	/**
 	 * Creates the visible components of this panel.
 	 */
@@ -1155,7 +1145,7 @@ public class LibraryBrowser extends JPanel {
 		loadCollectionAction = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				doLoadTab(e.getActionCommand(), null);
+				loadTab(e.getActionCommand(), null);
 			}
 		};
 
@@ -1266,7 +1256,12 @@ public class LibraryBrowser extends JPanel {
 		searchAction = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				doSearch();
+	    		String searchTerm = searchField.getText().trim();
+	    		if (searchTerm.length() == 0)
+	    			return;
+	    		searchField.selectAll();
+	    		searchField.setBackground(Color.white);
+				worker.startSearch(searchTerm);
 			}
 		};
 		searchLabel = new JLabel();
@@ -1508,7 +1503,7 @@ public class LibraryBrowser extends JPanel {
 		helpMenu.add(aboutItem);
 
 		// create html about-browser pane
-		htmlAboutPane = new LibraryTreePanel.HTMLPane();
+		htmlAboutPane = LibraryTreePanel.newHTMLPane();
 		htmlScroller = new JScrollPane(htmlAboutPane);
 		htmlAboutPane.setText(getAboutLibraryBrowserText());
 //		HTMLDocument document = (HTMLDocument) htmlAboutPane.getDocument();
@@ -1518,7 +1513,7 @@ public class LibraryBrowser extends JPanel {
 		window.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent e) {
-				new LibraryLoader().execute();
+				worker.startLibararyLoader();
 			}
 		});
 		messageButton = new JButton();
@@ -1581,7 +1576,7 @@ public class LibraryBrowser extends JPanel {
 		}
 	}
 
-	protected void doDownload() {
+	private void doDownload() {
 		String urlPath = commandField.getText().trim();
 		if (urlPath == null || "".equals(urlPath))
 			return;
@@ -1626,7 +1621,7 @@ public class LibraryBrowser extends JPanel {
 	 * @param path     the path
 	 * @param treePath tree path to select in root-first order (may be null)
 	 */
-	protected void doLoadTab(String path, List<String> treePath) {
+	protected void loadTab(String path, List<String> treePath) {
 		if (path == null)
 			return;
 		path = XML.forwardSlash(path);
@@ -1644,38 +1639,43 @@ public class LibraryBrowser extends JPanel {
 		loadTabAndListen(path, treePath, "LoadTab");
 	}
 
-	public boolean loadTabAndListen(String path, List<String> treePath, String mode) {
+	private boolean loadTabAndListen(String path, List<String> treePath, String mode) {
 		return addTabAndExecute(path, treePath, new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
-				if ("progress".equals(e.getPropertyName())) { //$NON-NLS-1$
-					Integer n = (Integer) e.getNewValue();
-					if (n > -1) {
-						OSPRuntime.showStatus("LibaryBrowser: " + n);//$NON-NLS-1$
-						tabbedPane.setSelectedIndex(n);
-						switch (mode) {
-						case "LoadTab"://$NON-NLS-1$
-							break;
-						case "OpenRecent"://$NON-NLS-1$
-							refreshGUI();
-							break;
-						case "CreateNew"://$NON-NLS-1$
-							LibraryTreePanel treePanel = getSelectedTreePanel();
-							if (treePanel == null)
-								break;
-							treePanel.setEditing(true);
-							treePanel.setChanged();
-							// new collection is saved in a temp xml file
-							treePanel.setName("temp");
-							String temp = ToolsRes.getString("LibraryBrowser.MenuItem.New");
-							treePanel.rootNode.setName(temp);
-							refreshGUI();
-							break;
-						}
-					}
+				switch (e.getPropertyName()) {
+				case "progress":
+					int n = ((Integer) e.getNewValue()).intValue();
+					if (n >= 0)
+						processTabAdded(mode, n);
+					break;
 				}
 			}
 		});
+	}
+
+	private void processTabAdded(String mode, int n) {
+		OSPRuntime.showStatus("LibaryBrowser: " + n);//$NON-NLS-1$
+		tabbedPane.setSelectedIndex(n);
+		switch (mode) {
+		case "LoadTab"://$NON-NLS-1$
+			break;
+		case "OpenRecent"://$NON-NLS-1$
+			refreshGUI();
+			break;
+		case "CreateNew"://$NON-NLS-1$
+			LibraryTreePanel treePanel = getSelectedTreePanel();
+			if (treePanel == null)
+				break;
+			treePanel.setEditing(true);
+			treePanel.setChanged();
+			// new collection is saved in a temp xml file
+			treePanel.setName("temp");
+			String temp = ToolsRes.getString("LibraryBrowser.MenuItem.New");
+			treePanel.rootNode.setName(temp);
+			refreshGUI();
+			break;
+		}
 	}
 
 	/**
@@ -1687,7 +1687,7 @@ public class LibraryBrowser extends JPanel {
 	 * @param listener
 	 * @return true if successful
 	 */
-	protected boolean addTabAndExecute(String path, List<String> treePath, PropertyChangeListener listener) {
+	private boolean addTabAndExecute(String path, List<String> treePath, PropertyChangeListener listener) {
 		if (path == null)
 			return false;
 		File cachedFile = ResourceLoader.getSearchCacheFile(path);
@@ -1702,7 +1702,7 @@ public class LibraryBrowser extends JPanel {
 			}
 			return false;
 		}
-		loadTabAsync(path, -1, treePath, listener);
+		worker.startTabLoading(path, -1, treePath, listener);
 		return true;
 	}
 
@@ -1754,40 +1754,12 @@ public class LibraryBrowser extends JPanel {
 						isXML);
 				refreshTabTitle(treePanel.pathToRoot, treePanel.rootResource);
 				// start background SwingWorker to load metadata and set up search database
-				treePanel.startMetadataLoader(null);
+				treePanel.startMetadataWorker(null);
 				refreshGUI(false);
 				return;
 			}
 		} else if (node != null) {
-			// for other nodes delete cached files and reload the node
-			LibraryTreePanel.HTMLPane pane = new LibraryTreePanel.HTMLPane();
-			pane.setText(
-					"<h2>" + ToolsRes.getString("LibraryBrowser.Info.Refreshing") + " '" + node + "'</h2>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			treePanel.htmlScroller.setViewportView(pane);
-			URL url = node.getHTMLURL(); // returns cached file URL, if any
-			if (url != null) {
-				File cachedFile = ResourceLoader.getOSPCacheFile(url.toExternalForm());
-				if (cachedFile.exists()) {
-					cachedFile.delete();
-				}
-				LibraryTreePanel.removeHTMLPaneURL(url);
-			}
-
-			// delete thumbnail image, if any
-			String target = node.getAbsoluteTarget();
-			if (OSPRuntime.doCacheThumbnail && target != null) {
-				File thumb = node.getThumbnailFile();
-				if (thumb.exists()) {
-					thumb.delete();
-					node.record.setThumbnail(null);
-				}
-			}
-			// clear metadata and description
-			node.record.setMetadata(null);
-			node.record.setDescription(null);
-			node.tooltip = null;
-			node.metadataSource = null;
-			treePanel.new NodeLoader(node).execute();
+			treePanel.refreshNode(node);
 		}
 
 	}
@@ -2139,15 +2111,6 @@ public class LibraryBrowser extends JPanel {
 		return false;
 	}
 
-	protected void doSearch() {
-		String searchTerm = searchField.getText().trim();
-		if (searchTerm.length() == 0)
-			return;
-		searchField.selectAll();
-		searchField.setBackground(Color.white);
-		new Searcher(searchTerm).execute();
-	}
-
 	protected String getChooserDir() {
 		return history.getChooserDir();
 	}
@@ -2265,163 +2228,6 @@ public class LibraryBrowser extends JPanel {
 
 	}
 	
-	// do actual search in separate swingworker thread
-	class Searcher extends SwingWorker<LibraryTreeNode, Object> {
-		private String searchTerm;
-
-		public Searcher(String searchTerm) {
-			this.searchTerm = searchTerm;
-		}
-
-		@Override
-		public LibraryTreeNode doInBackground() {
-			return searchFor(searchTerm.trim(), getSearchTargets());
-		}
-
-		@Override
-		protected void done() {
-			try {
-				searchDone(searchTerm, get());
-			} catch (Exception e) {
-				OSPRuntime.beep("LibraryBrowser.Searcher failed " + e.getMessage());
-			}
-		}
-	}
-
-	/**
-	 * Adds a searchable collection to the search resource map.
-	 */
-	protected static void addSearchResource(LibraryResource resource) {
-		if (searchResourceMap == null)
-			searchResourceMap = new HashMap<>();
-		String s = resource.collectionPath;
-		if (s != null && s.length() > 0) {
-			String path = resource.getBasePath();
-			if (path == "") {
-				resource.setBasePath(XML.getDirectoryPath(s) + "/");
-			}
-			//System.err.println(resource.getBasePath() + "," + s);
-			setSearchChildBasePaths(resource);
-			searchResourceMap.put(s, resource);
-		}
-	}
-
-	private static void setSearchChildBasePaths(LibraryResource resource) {
-		ArrayList<LibraryResource> children = resource.getResources();
-		if (children == null) {
-			resource.setBasePath(resource.getInheritedBasePath());
-		} else {
-			for (LibraryResource child : children) {
-				setSearchChildBasePaths(child);
-			}
-		}
-	}
-
-	protected TreeMap<String, String> getSearchPathMap() {
-		loadSearchPathMap();
-		return searchPathMap;
-	}
-
-	protected static void resetSearchMap() {
-		isSearchMapLoaded = false;
-	}
-
-	/**
-	 * Loads all searchable paths into the search path map.
-	 */
-	protected void loadSearchPathMap() {
-		if (isSearchMapLoaded)
-			return;
-		isSearchMapLoaded = true;
-
-		List<File> temp = (OSPRuntime.isJS ? null : new ArrayList<File>());
-
-		if (searchPathMap == null)
-			searchPathMap = new TreeMap<String, String>();
-		searchPathMap.clear();
-		TreeSet<String> paths = library.getAllPaths();
-		for (String path : paths) {
-			if (path.contains("EJS") || !ResourceLoader.isHTTP(path))
-				continue;
-
-			String name = library.getAllPathsToNameMap().get(path);
-			if (LibraryComPADRE.isComPADREPath(path))
-				name = "ComPADRE " + name;
-			searchPathMap.put(name, path);
-			if (temp != null)
-				temp.add(ResourceLoader.getSearchCacheFile(path));
-		}
-
-		if (temp != null) {
-			// in Java, add local cached files if not included above
-			List<File> files = ResourceLoader.getSearchFileList();
-			for (int i = 0; i < files.size(); i++) {
-				File next = files.get(i);
-				if (!temp.contains(next)) {
-					XMLControl control = new XMLControlElement(next.getPath());
-					String name = control.getString("name");
-					if (name != null) {
-						String realPath = control.getString("real_path");
-						searchPathMap.put(name, realPath == null ? next.getPath() : realPath);
-					}
-				}
-			}
-		}
-
-		searchTargetPaths = new ArrayList<String>();
-		searchTargetNames = new ArrayList<String>();
-		for (String name : searchPathMap.keySet()) {
-			String path = searchPathMap.get(name);
-			searchTargetNames.add(name);
-			searchTargetPaths.add(path);
-			if (OSPRuntime.isJS) {
-				// search current tabs and ComPADRE targets by default
-				if (getTabIndexFromPath(path) > -1 || name.startsWith("ComPADRE")) {
-					library.getNoSearchSet().remove(path);
-				}
-			}
-		}
-	}
-	
-	protected void searchDone(String searchTerm, LibraryTreeNode resultsTreeNode) {
-		if (resultsTreeNode == null) {
-			notifySearchNotFound(searchTerm);
-			return;
-		}
-		LibraryTreePanel treePanel = getSearchResultsTreePanel();
-		String title = treePanel.getCollection().getName();
-		int i = getTabIndexFromTitle(title);
-		synchronized (tabbedPane) {
-			if (i == -1)
-				tabbedPane.addTab(title, treePanel);
-			tabbedPane.setSelectedComponent(treePanel);
-		}
-		LibraryTreePanel.removeHTMLPaneNode(resultsTreeNode);
-		treePanel.refreshModel(resultsTreeNode);		
-		refreshGUI();
-	}
-
-	protected void notifySearchNotFound(String searchTerm) {
-		OSPRuntime.beep("LibraryBrowser " + searchTerm + " not found");
-		// give visual cue, too
-		JTextField f = searchField;
-		Color color = f.getForeground();
-		f.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
-		f.setForeground(Color.RED);
-		f.setBackground(Color.white);
-		if (searchTimer == null) {
-			searchTimer = OSPRuntime.trigger(1000, (e) -> {
-				f.setText(searchTerm);
-				f.setForeground(color);
-				f.selectAll();
-				f.setBackground(Color.white);
-			});
-		} else {
-			searchTimer.restart();
-		}
-
-	}
-
 	protected void doCommand() {
 		if (!openButton.isEnabled())
 			return;
@@ -2481,7 +2287,7 @@ public class LibraryBrowser extends JPanel {
 				|| !TRACKER_FILTER.acceptPath(path) && "LibraryCollection".equals(res.getXMLClassName());
 
 		if (isCollection) {
-			doLoadTab(path, null);
+			loadTab(path, null);
 			refreshGUI();
 			LibraryTreePanel treePanel = getSelectedTreePanel();
 			if (treePanel != null && treePanel.pathToRoot.equals(path)) {
@@ -2705,7 +2511,7 @@ public class LibraryBrowser extends JPanel {
 	 * @param path the path to the file
 	 */
 	public void open(String path) {
-		doLoadTab(path, null);
+		loadTab(path, null);
 	}
 
 	/**
@@ -2724,7 +2530,7 @@ public class LibraryBrowser extends JPanel {
 			treePanel.save();
 		}
 		tabbedPane.removeTabAt(index);
-		treePanel.cancelMetadataLoader();
+		treePanel.cancelMetadataWorker();
 		return true;
 	}
 
@@ -2863,7 +2669,7 @@ public class LibraryBrowser extends JPanel {
 	 * Shows a dialog for the user to choose search targets.
 	 */
 	private void chooseSearchTargets() {
-		loadSearchPathMap();
+		worker.loadSearchPathMap();
 		boolean firstTime = searchTargetChooser == null;
 		if (firstTime) {
 			searchTargetChooser = new ListChooser(ToolsRes.getString("LibraryManager.Title.Search"),
@@ -2896,59 +2702,12 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	/**
-	 * Loads search collections into the search resource map. Note this loads only
-	 * those collections NOT in the library.noSearchSet. Once a collection is added
-	 * to the map it stays.
-	 */
-	private void loadSearchResourceMap() {
-		loadSearchPathMap();
-		// add local search cache files first when running in Java
-		/** j2sIgnore */
-		{
-			List<File> cacheFiles = ResourceLoader.getSearchFileList();
-			for (String nextPath : searchPathMap.values()) {
-				File cacheFile = ResourceLoader.getSearchCacheFile(nextPath);
-				if (cacheFiles.contains(cacheFile) && !library.getNoSearchSet().contains(nextPath)
-						&& (searchResourceMap == null || !searchResourceMap.keySet().contains(nextPath))) {
-					// cache file should be included in searchResourceMap but is not
-					XMLControl control = new XMLControlElement(cacheFile);
-					if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-						LibraryResource resource = (LibraryResource) control.loadObject(null);
-						resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
-						addSearchResource(resource);
-					}
-				}
-			}
-		}
-		// add searchable web files for both Java and JS
-		TreeSet<String> paths = library.getAllPaths();
-		XMLControl control;
-		Set<String> set = library.getNoSearchSet();
-		for (String path : paths) {
-			if (!ResourceLoader.isHTTP(path) || set.contains(path))
-				continue;
-			if (searchResourceMap == null || !searchResourceMap.keySet().contains(path)) {
-				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
-				File f = ResourceLoader.getSearchCacheFile(path);
-				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
-				control = new XMLControlElement(searchPath);
-				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
-					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
-					collection.collectionPath = path;
-					addSearchResource(collection);
-				}
-			}
-		}
-
-	}
-
-	/**
 	 * Returns the set of searchable resources.
 	 * 
 	 * @return a set of searchable resources
 	 */
 	protected Set<LibraryResource> getSearchTargets() {
-		loadSearchResourceMap();
+		worker.loadSearchResourceMap();
 		Set<LibraryResource> searchTargets = new TreeSet<LibraryResource>();
 		Set<String> set = library.getNoSearchSet();
 		if (searchResourceMap != null) {
@@ -3484,7 +3243,7 @@ public class LibraryBrowser extends JPanel {
 		}
 		LibraryTreePanel treePanel = getTreePanel(index);
 		String path = LibraryComPADRE.getCollectionPath(treePanel.pathToRoot, primaryOnly);
-		loadTabAsync(path, index, null, null);
+		worker.startTabLoading(path, index, null, null);
 		return true;
 	}
 
@@ -3545,216 +3304,6 @@ public class LibraryBrowser extends JPanel {
 
 		void refreshFontSize() {
 			FontSizer.setFont(titleLabel);
-		}
-	}
-
-	/**
-	 * A SwingWorker class to load the Library at startup.
-	 */
-	class LibraryLoader extends SwingWorker<Library, Object> {
-
-		@Override
-		public Library doInBackground() {
-			if (history.libraryPath == null)
-				return library;
-
-			Runnable webChecker = new Runnable() {
-				@Override
-				public void run() {
-					boolean[] isDialogShown = new boolean[] { false };
-					if (!isWebConnected(isDialogShown)) {
-						if (!isDialogShown[0]
-								&& ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
-							checkedWebConnection = false;
-							ResourceLoader.clearWebTest();
-							run();
-						}
-					}
-				}
-			};
-			if (!ResourceLoader.isHTTP(history.libraryPath)) {
-				// load library
-				loadMyLocalLibrary();
-				webChecker.run();
-			} else {
-				webChecker.run(); // check web connection first
-				if (isWebConnected(null)) {
-					library.load(history.libraryPath);
-				}
-			}
-			return library;
-		}
-
-		@Override
-		protected void done() {
-			try {
-//				Library library = get();
-				// add previously open tabs not available for loading in doInBackground method
-				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
-				String[] paths = history.getOpenTabPaths();
-				if (!history.haveMetadataLoaderListener && paths != null) {
-					for (String path : paths) {
-						boolean available = isWebConnected(null) && ResourceLoader.isHTTP(path);
-						if (available) {
-							addTabAndExecute(path, null, null);
-						}
-					}
-				}
-			} catch (Exception ignore) {
-			}
-			refreshCollectionsMenu();
-			refreshRecentMenu();
-		}
-	}
-
-	/**
-	 * A SwingWorker class to load tabs.
-	 */
-	class TabLoader extends SwingWorker<LibraryTreePanel, Object> {
-
-		String path;
-		int index;
-		List<String> treePath;
-
-		TabLoader(String pathToAdd, int tabIndex, List<String> treePath) {
-			path = pathToAdd;
-			index = tabIndex;
-			this.treePath = treePath;
-		}
-
-		@Override
-		public LibraryTreePanel doInBackground() {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			String realPath = path;
-			File cachedFile = ResourceLoader.getSearchCacheFile(path);
-			// ALWAYS open web collections if metadataLoaderListener is non-null
-			// since it is non-null only when refreshing metadata for JS
-			if (history.webMetadataLoaderListener == null && cachedFile.exists() && ResourceLoader.isHTTP(path)) {
-				realPath = cachedFile.getAbsolutePath();
-			}
-			// BH 2020.04.14 added to speed up zip file checking
-			boolean doCache = OSPRuntime.doCacheZipContents;
-			OSPRuntime.doCacheZipContents = true;
-			LibraryResource resource = loadResource(realPath);
-			OSPRuntime.doCacheZipContents = doCache;
-			if (!doCache)
-				ResourceLoader.clearZipCache();
-
-			boolean isTRZ = (ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
-			boolean isLocal = (!ResourceLoader.isHTTP(realPath));
-
-			if (resource != null) {
-				LibraryTreePanel treePanel = null;
-				if (isTRZ) {
-					// look for html in TRZ files
-					Map<String, ZipEntry> contents = ResourceLoader.getZipContents(realPath, true);
-					if (contents != null) {
-						// determine baseName
-						String baseName = XML.stripExtension(XML.getName(realPath)); // first guess: filename
-						for (String next : contents.keySet()) {
-							if (next.indexOf("_thumbnail") > -1) {
-								String thumb = XML.getName(next);
-								baseName = thumb.substring(0, thumb.indexOf("_thumbnail"));
-								resource.setName(baseName); // do we want this?
-								break;
-							}
-						}
-						for (String next : contents.keySet()) {
-							if (next.endsWith(".html") || next.endsWith(".htm")) { //$NON-NLS-1$ //$NON-NLS-2$
-								String nextName = XML.getName(next);
-								if (XML.stripExtension(nextName).equals(baseName + "_info")) { //$NON-NLS-1$
-									// set html path to info html
-									String trzName = XML.getName(realPath);
-									resource.setHTMLPath(trzName + "!/" + next);
-									break;
-								}
-							}
-						}
-					}
-					if (isLocal) {
-						// open local files in the recentCollection instead of in their own tab
-						String recentCollectionPath = getOSPPath() + RECENT_COLLECTION_NAME;
-						path = recentCollectionPath;
-						LibraryCollection collection = getRecentCollection();
-						// does collection already have resource with same target?
-						LibraryResource duplicate = null;
-						for (LibraryResource next: collection.getResources()) {
-							if (next.getTarget().equals(resource.getTarget())) {
-								duplicate = next;
-								break;
-							}
-						}
-						if (collection.insertResource(resource, 0)) {
-							if (duplicate != null) {
-								collection.removeResource(duplicate);
-							}
-							// remove excess nodes from recent collection
-							ArrayList<LibraryResource> resources = collection.getResources();
-							for (int i = resources.size(); --i >= maxRecentCollectionSize;) {
-								collection.removeResource(resources.get(i));
-							}
-							resource.collectionPath = recentCollectionPath;
-						}
-						treePath = resource.getTreePath(null);
-						index = getTabIndexFromPath(recentCollectionPath);
-						resource = collection;
-					}
-				}
-				treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
-				if (isLocal && isTRZ) {
-					// tab is non-editable XML
-					treePanel.setRootResource(resource, path, false, true);
-				} else {
-					// tab is editable only if it is a local XML file
-					// and if running in Java, not the recent collection and not in the search cache
-					boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$
-					/** j2sIgnore */
-					{
-						if (path.equals(getOSPPath() + RECENT_COLLECTION_NAME)) {
-							editable = false;
-							resource.collectionPath = path;
-						}
-						if (ResourceLoader.isSearchPath(path))
-							editable = false;
-					}
-					treePanel.setRootResource(resource, path, editable, isResourcePathXML);
-				}
-				return treePanel;
-			}
-			return null;
-		}
-
-		@Override
-		protected void done() {
-			try {
-				LibraryTreePanel treePanel = get();
-				if (treePanel != null) {
-					treePanel.setFontLevel(FontSizer.getLevel());
-
-					if (index < 0) {
-						tabbedPane.addTab("", treePanel); //$NON-NLS-1$
-						index = tabbedPane.getTabCount() - 1;
-					}
-					refreshTabTitle(path, treePanel.rootResource);
-					tabbedPane.setToolTipTextAt(index, path);
-
-					treePanel.setSelectionPath(treePath);
-
-					LibraryTreeNode node = treePanel.getSelectedNode();
-					treePanel.new NodeLoader(node).execute();
-
-					// start background SwingWorker to load metadata and set up search database
-					treePanel.startMetadataLoader(treePath);
-					setProgress(index);
-				} else {
-					warnNotLoaded(path);
-					history.removeRecent(path);
-					refreshRecentMenu();
-					setProgress(-1);
-				}
-			} catch (Exception ignore) {
-			}
-			setCursor(Cursor.getDefaultCursor());
 		}
 	}
 
@@ -4114,7 +3663,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	/**
-	 * Used by Tracker
+	 * Used by Tracker, but doesn't do anything
 	 */
 	public void refreshSelectedNode() {
 		OSPRuntime.trigger(1000, (e) -> {
@@ -4125,4 +3674,451 @@ public class LibraryBrowser extends JPanel {
 		});
 	}
 
+	
+	protected TreeMap<String, String> getSearchPathMap() {
+		worker.loadSearchPathMap();
+		return searchPathMap;
+	}
+
+	protected void resetSearchMap() {
+		isSearchMapLoaded = false;
+	}
+
+	/**
+	 * Collecting all the SwingWorkers here. These include:
+	 * 
+	 * LibraryInitializationWorker    - for faster start-up
+	 * 
+	 * LibrarySearchWorker            - handles all asynchronous searching tasks
+	 * 
+	 * LibraryTabWorker               - asynchronously loads the browser tabs 
+	 * 
+	 * @author hanso
+	 *
+	 */
+    private class LibraryWorker {
+
+		private void startLibararyLoader() {
+			new LibraryInitializationWorker().execute();
+		}
+
+    	private void startSearch(String searchTerm) {
+    		new LibrarySearchWorker(searchTerm).execute();
+    	}
+    	
+    	private void startTabLoading(String path, int index, List<String> treePath, PropertyChangeListener listener) {
+    		new LibraryTabWorker(path, index, treePath, listener).execute();
+    	}
+
+    	/**
+    	 * A SwingWorker class to load the Library at startup.
+    	 */
+    	class LibraryInitializationWorker extends SwingWorker<Library, Object> {
+
+    		@Override
+    		public Library doInBackground() {
+    			Thread.currentThread().setName("LibraryInitializer");
+    			if (history.libraryPath == null)
+    				return library;
+    			Runnable webChecker = new Runnable() {
+    				@Override
+    				public void run() {
+    					boolean[] isDialogShown = new boolean[] { false };
+    					if (!isWebConnected(isDialogShown)) {
+    						if (!isDialogShown[0]
+    								&& ResourceLoader.showWebConnectionDialog() == ResourceLoader.WEB_CONNECTION_RETRY) {
+    							checkedWebConnection = false;
+    							ResourceLoader.clearWebTest();
+    							run();
+    						}
+    					}
+    				}
+    			};
+    			if (!ResourceLoader.isHTTP(history.libraryPath)) {
+    				// load library
+    				loadMyLocalLibrary();
+    				webChecker.run();
+    			} else {
+    				webChecker.run(); // check web connection first
+    				if (isWebConnected(null)) {
+    					library.load(history.libraryPath);
+    				}
+    			}
+    			return library;
+    		}
+
+    		@Override
+    		protected void done() {
+    			try {
+//    				Library library = get();
+    				// add previously open tabs not available for loading in doInBackground method
+    				// but NOT when refreshing DL search data (non-null metadataLoaderListener)
+    				String[] paths = history.getOpenTabPaths();
+    				if (!history.haveMetadataLoaderListener && paths != null) {
+    					for (String path : paths) {
+    						boolean available = isWebConnected(null) && ResourceLoader.isHTTP(path);
+    						if (available) {
+    							addTabAndExecute(path, null, null);
+    						}
+    					}
+    				}
+    			} catch (Exception ignore) {
+    			}
+    			refreshCollectionsMenu();
+    			refreshRecentMenu();
+    		}
+    	}
+
+    	//////// LibrarySearchWorker //////////
+    	
+		
+		private class LibrarySearchWorker extends SwingWorker<LibraryTreeNode, Object> {
+    		private String searchTerm;
+
+    		public LibrarySearchWorker(String searchTerm) {
+    			this.searchTerm = searchTerm;
+    		}
+
+    		@Override
+    		public LibraryTreeNode doInBackground() {
+    			return searchFor(searchTerm.trim(), getSearchTargets());
+    		}
+
+    		@Override
+    		protected void done() {
+    			try {
+    				searchDone(searchTerm, get());
+    			} catch (Exception e) {
+    				OSPRuntime.beep("LibraryBrowser.Searcher failed " + e.getMessage());
+    			}
+    		}
+    	}
+
+    	/**
+    	 * Loads search collections into the search resource map. Note this loads only
+    	 * those collections NOT in the library.noSearchSet. Once a collection is added
+    	 * to the map it stays.
+    	 */
+    	private void loadSearchResourceMap() {
+    		loadSearchPathMap();
+    		// add local search cache files first when running in Java
+    		/** j2sIgnore */
+    		{
+    			List<File> cacheFiles = ResourceLoader.getSearchFileList();
+    			for (String nextPath : searchPathMap.values()) {
+    				File cacheFile = ResourceLoader.getSearchCacheFile(nextPath);
+    				if (cacheFiles.contains(cacheFile) && !library.getNoSearchSet().contains(nextPath)
+    						&& (searchResourceMap == null || !searchResourceMap.keySet().contains(nextPath))) {
+    					// cache file should be included in searchResourceMap but is not
+    					XMLControl control = new XMLControlElement(cacheFile);
+    					if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+    						LibraryResource resource = (LibraryResource) control.loadObject(null);
+    						resource.collectionPath = control.getString("real_path"); //$NON-NLS-1$
+    						addSearchResource(resource);
+    					}
+    				}
+    			}
+    		}
+    		// add searchable web files for both Java and JS
+    		TreeSet<String> paths = library.getAllPaths();
+    		XMLControl control;
+    		Set<String> set = library.getNoSearchSet();
+    		for (String path : paths) {
+    			if (!ResourceLoader.isHTTP(path) || set.contains(path))
+    				continue;
+    			if (searchResourceMap == null || !searchResourceMap.keySet().contains(path)) {
+    				// determine cache path name and try to load from WEB_SEARCH_BASE_PATH
+    				File f = ResourceLoader.getSearchCacheFile(path);
+    				String searchPath = WEB_SEARCH_BASE_PATH + f.getName();
+    				control = new XMLControlElement(searchPath);
+    				if (!control.failedToRead() && LibraryResource.class.isAssignableFrom(control.getObjectClass())) {
+    					LibraryCollection collection = (LibraryCollection) control.loadObject(null);
+    					collection.collectionPath = path;
+    					worker.addSearchResource(collection);
+    				}
+    			}
+    		}
+
+    	}
+
+    	/**
+    	 * Adds a searchable collection to the search resource map.
+    	 */
+    	private void addSearchResource(LibraryResource resource) {
+    		if (searchResourceMap == null)
+    			searchResourceMap = new HashMap<>();
+    		String s = resource.collectionPath;
+    		if (s != null && s.length() > 0) {
+    			String path = resource.getBasePath();
+    			if (path == "") {
+    				resource.setBasePath(XML.getDirectoryPath(s) + "/");
+    			}
+    			//System.err.println(resource.getBasePath() + "," + s);
+    			setSearchChildBasePaths(resource);
+    			searchResourceMap.put(s, resource);
+    		}
+    	}
+
+    	private void setSearchChildBasePaths(LibraryResource resource) {
+    		ArrayList<LibraryResource> children = resource.getResources();
+    		if (children == null) {
+    			resource.setBasePath(resource.getInheritedBasePath());
+    		} else {
+    			for (LibraryResource child : children) {
+    				setSearchChildBasePaths(child);
+    			}
+    		}
+    	}
+
+    	/**
+    	 * Loads all searchable paths into the search path map.
+    	 */
+    	protected void loadSearchPathMap() {
+    		if (isSearchMapLoaded)
+    			return;
+    		isSearchMapLoaded = true;
+
+    		List<File> temp = (OSPRuntime.isJS ? null : new ArrayList<File>());
+
+    		if (searchPathMap == null)
+    			searchPathMap = new TreeMap<String, String>();
+    		searchPathMap.clear();
+    		TreeSet<String> paths = library.getAllPaths();
+    		for (String path : paths) {
+    			if (path.contains("EJS") || !ResourceLoader.isHTTP(path))
+    				continue;
+
+    			String name = library.getAllPathsToNameMap().get(path);
+    			if (LibraryComPADRE.isComPADREPath(path))
+    				name = "ComPADRE " + name;
+    			searchPathMap.put(name, path);
+    			if (temp != null)
+    				temp.add(ResourceLoader.getSearchCacheFile(path));
+    		}
+
+    		if (temp != null) {
+    			// in Java, add local cached files if not included above
+    			List<File> files = ResourceLoader.getSearchFileList();
+    			for (int i = 0; i < files.size(); i++) {
+    				File next = files.get(i);
+    				if (!temp.contains(next)) {
+    					XMLControl control = new XMLControlElement(next.getPath());
+    					String name = control.getString("name");
+    					if (name != null) {
+    						String realPath = control.getString("real_path");
+    						searchPathMap.put(name, realPath == null ? next.getPath() : realPath);
+    					}
+    				}
+    			}
+    		}
+
+    		searchTargetPaths = new ArrayList<String>();
+    		searchTargetNames = new ArrayList<String>();
+    		for (String name : searchPathMap.keySet()) {
+    			String path = searchPathMap.get(name);
+    			searchTargetNames.add(name);
+    			searchTargetPaths.add(path);
+    			if (OSPRuntime.isJS) {
+    				// search current tabs and ComPADRE targets by default
+    				if (getTabIndexFromPath(path) > -1 || name.startsWith("ComPADRE")) {
+    					library.getNoSearchSet().remove(path);
+    				}
+    			}
+    		}
+    	}
+    	
+    	protected void searchDone(String searchTerm, LibraryTreeNode resultsTreeNode) {
+    		if (resultsTreeNode == null) {
+    			notifySearchNotFound(searchTerm);
+    			return;
+    		}
+    		LibraryTreePanel treePanel = getSearchResultsTreePanel();
+    		String title = treePanel.getCollection().getName();
+    		int i = getTabIndexFromTitle(title);
+    		synchronized (tabbedPane) {
+    			if (i == -1)
+    				tabbedPane.addTab(title, treePanel);
+    			tabbedPane.setSelectedComponent(treePanel);
+    		}
+    		LibraryTreePanel.removeHTMLPaneNode(resultsTreeNode);
+    		treePanel.refreshModel(resultsTreeNode);		
+    		refreshGUI();
+    	}
+
+    	protected void notifySearchNotFound(String searchTerm) {
+    		OSPRuntime.beep("LibraryBrowser " + searchTerm + " not found");
+    		// give visual cue, too
+    		JTextField f = searchField;
+    		Color color = f.getForeground();
+    		f.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
+    		f.setForeground(Color.RED);
+    		f.setBackground(Color.white);
+    		if (searchTimer == null) {
+    			searchTimer = OSPRuntime.trigger(1000, (e) -> {
+    				f.setText(searchTerm);
+    				f.setForeground(color);
+    				f.selectAll();
+    				f.setBackground(Color.white);
+    			});
+    		} else {
+    			searchTimer.restart();
+    		}
+
+    	}
+
+    	/////////////////////////////// loader
+    	
+    	
+    	////////////////// LibraryTabLoadingWorker /////////////////
+    	
+    	/**
+    	 * A SwingWorker class to load tabs.
+    	 */
+    	private class LibraryTabWorker extends SwingWorker<LibraryTreePanel, Object> {
+
+    		String path;
+    		int index;
+    		List<String> treePath;
+
+    		LibraryTabWorker(String pathToAdd, int tabIndex, List<String> treePath, PropertyChangeListener listener) {
+    			path = pathToAdd;
+    			index = tabIndex;
+    			this.treePath = treePath;
+        		if (listener != null)
+        			addPropertyChangeListener(listener);
+    		}
+
+    		@Override
+    		public LibraryTreePanel doInBackground() {
+    			Thread.currentThread().setName("LibraryTabLoader");
+    			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    			String realPath = path;
+    			File cachedFile = ResourceLoader.getSearchCacheFile(path);
+    			// ALWAYS open web collections if metadataLoaderListener is non-null
+    			// since it is non-null only when refreshing metadata for JS
+    			if (history.webMetadataLoaderListener == null && cachedFile.exists() && ResourceLoader.isHTTP(path)) {
+    				realPath = cachedFile.getAbsolutePath();
+    			}
+    			// BH 2020.04.14 added to speed up zip file checking
+    			boolean doCache = OSPRuntime.doCacheZipContents;
+    			OSPRuntime.doCacheZipContents = true;
+    			LibraryResource resource = loadResource(realPath);
+    			OSPRuntime.doCacheZipContents = doCache;
+    			if (!doCache)
+    				ResourceLoader.clearZipCache();
+
+    			boolean isTRZ = (ResourceLoader.isJarZipTrz(path.toLowerCase(), false));
+    			boolean isLocal = (!ResourceLoader.isHTTP(realPath));
+
+    			if (resource != null) {
+    				LibraryTreePanel treePanel = null;
+    				if (isTRZ) {
+    					// look for html in TRZ files
+    					Map<String, ZipEntry> contents = ResourceLoader.getZipContents(realPath, true);
+    					if (contents != null) {
+    						// determine baseName
+    						String baseName = XML.stripExtension(XML.getName(realPath)); // first guess: filename
+    						for (String next : contents.keySet()) {
+    							if (next.indexOf("_thumbnail") > -1) {
+    								String thumb = XML.getName(next);
+    								baseName = thumb.substring(0, thumb.indexOf("_thumbnail"));
+    								resource.setName(baseName); // do we want this?
+    								break;
+    							}
+    						}
+    						for (String next : contents.keySet()) {
+    							if (next.endsWith(".html") || next.endsWith(".htm")) { //$NON-NLS-1$ //$NON-NLS-2$
+    								String nextName = XML.getName(next);
+    								if (XML.stripExtension(nextName).equals(baseName + "_info")) { //$NON-NLS-1$
+    									// set html path to info html
+    									String trzName = XML.getName(realPath);
+    									resource.setHTMLPath(trzName + "!/" + next);
+    									break;
+    								}
+    							}
+    						}
+    					}
+    					if (isLocal) {
+    						// open local files in the recentCollection instead of in their own tab
+    						String recentCollectionPath = getOSPPath() + RECENT_COLLECTION_NAME;
+    						path = recentCollectionPath;
+    						LibraryCollection collection = getRecentCollection();
+    						// does collection already have resource with same target?
+    						LibraryResource duplicate = null;
+    						for (LibraryResource next: collection.getResources()) {
+    							if (next.getTarget().equals(resource.getTarget())) {
+    								duplicate = next;
+    								break;
+    							}
+    						}
+    						if (collection.insertResource(resource, 0)) {
+    							if (duplicate != null) {
+    								collection.removeResource(duplicate);
+    							}
+    							// remove excess nodes from recent collection
+    							ArrayList<LibraryResource> resources = collection.getResources();
+    							for (int i = resources.size(); --i >= maxRecentCollectionSize;) {
+    								collection.removeResource(resources.get(i));
+    							}
+    							resource.collectionPath = recentCollectionPath;
+    						}
+    						treePath = resource.getTreePath(null);
+    						index = getTabIndexFromPath(recentCollectionPath);
+    						resource = collection;
+    					}
+    				}
+    				treePanel = index < 0 ? createLibraryTreePanel() : getTreePanel(index);
+    				if (isLocal && isTRZ) {
+    					// tab is non-editable XML
+    					treePanel.setRootResource(resource, path, false, true);
+    				} else {
+    					// tab is editable only if it is a local XML file
+    					// and if running in Java, not the recent collection and not in the search cache
+    					boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$
+    					/** j2sIgnore */
+    					{
+    						if (path.equals(getOSPPath() + RECENT_COLLECTION_NAME)) {
+    							editable = false;
+    							resource.collectionPath = path;
+    						}
+    						if (ResourceLoader.isSearchPath(path))
+    							editable = false;
+    					}
+    					treePanel.setRootResource(resource, path, editable, isResourcePathXML);
+    				}
+    				return treePanel;
+    			}
+    			return null;
+    		}
+
+    		@Override
+    		protected void done() {
+    			try {
+    				LibraryTreePanel treePanel = get();
+    				if (treePanel != null) {
+    					treePanel.setFontLevel(FontSizer.getLevel());
+
+    					if (index < 0) {
+    						tabbedPane.addTab("", treePanel); //$NON-NLS-1$
+    						index = tabbedPane.getTabCount() - 1;
+    					}
+    					refreshTabTitle(path, treePanel.rootResource);
+    					tabbedPane.setToolTipTextAt(index, path);
+    					treePanel.updateTree(treePath);
+    					setProgress(index);
+    				} else {
+    					warnNotLoaded(path);
+    					history.removeRecent(path);
+    					refreshRecentMenu();
+    					setProgress(-1);
+    				}
+    			} catch (Exception ignore) {
+    			}
+    			setCursor(Cursor.getDefaultCursor());
+    		}
+    	}
+    	
+    }
+	
+	
 }

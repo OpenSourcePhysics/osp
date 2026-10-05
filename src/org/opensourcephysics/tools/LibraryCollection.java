@@ -115,6 +115,7 @@ public class LibraryCollection extends LibraryResource {
 	 *
 	 * @return an array of resources
 	 */
+	@Override
 	public ArrayList<LibraryResource> getResources() {
 		return resources;
 	}
