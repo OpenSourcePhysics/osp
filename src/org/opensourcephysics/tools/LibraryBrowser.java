@@ -3514,8 +3514,8 @@ public class LibraryBrowser extends JPanel {
 		protected Set<LibraryResource> searchCollectionFor(String searchPhrase, LibraryCollection collection,
 				boolean justOne) {
 			// deal with AND and OR requests
-			boolean haveAnd = (searchPhrase.contains(AND));
-			boolean haveOr = (searchPhrase.contains(OR));
+			boolean haveAnd = searchPhrase.contains(AND);
+			boolean haveOr = searchPhrase.contains(OR);
 			String[] toAND = (haveAnd ? searchPhrase.split(AND) : null);
 			String[] toOR = (haveOr ? searchPhrase.split(OR) : null);
 			if (haveAnd && !haveOr) {
