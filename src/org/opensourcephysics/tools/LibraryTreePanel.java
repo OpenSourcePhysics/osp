@@ -2854,6 +2854,32 @@ class LibraryTreePanel extends JPanel {
 		// TODO Auto-generated method stub
 
 	}
+
+	public LibraryTreeNode addOrReplaceCollectionByName(String name) {
+		LibraryCollection root = (LibraryCollection) rootResource;
+		
+		// remove any child node with same name
+		for (int j = 0; j < rootNode.getChildCount(); j++) {
+			LibraryTreeNode childNode = (LibraryTreeNode) rootNode.getChildAt(j);
+			if (childNode.getName().equals(name)) {
+				removeNode(childNode);
+			}
+		}
+		// create a LibraryCollection for the search results and add it
+		LibraryCollection results = new LibraryCollection(name);
+		root.addResource(results);
+		LibraryTreeNode resultsNode = new LibraryTreeNode(results, this);
+		insertChildAt(resultsNode, rootNode, rootNode.getChildCount());
+		return resultsNode;
+	}
+
+	public void addCollectionResourceClone(LibraryResource next, LibraryTreeNode collectionNode) {
+		LibraryResource clone = next.getClone();
+		((LibraryCollection)collectionNode.record).addResource(clone);
+		LibraryTreeNode newNode = new LibraryTreeNode(clone, this);
+		newNode.setBasePath(next.getInheritedBasePath());
+		insertChildAt(newNode, collectionNode, collectionNode.getChildCount());
+	}
 	
 }
 
