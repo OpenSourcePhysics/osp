@@ -3733,7 +3733,7 @@ public class LibraryBrowser extends JPanel {
     					return "Search term mismatched () " + search;
     				}
     				tokens.add(new RPNToken(MODE_O, opEND, -1));
-    				System.err.println("LB RPN " + tokens);
+//    				System.err.println("LB RPN " + tokens);
     				return null;
     			}
     			
@@ -3773,7 +3773,7 @@ public class LibraryBrowser extends JPanel {
     					lastOp = oStack.peek();
     					if (lastOp == opLPAREN && op != opRPAREN)
     						break;
-    					showStacks();
+    					//showStacks();
     					char clast = lastOp.charAt(0); 
     					char c = op.charAt(0);
     					if (clast > c) {
