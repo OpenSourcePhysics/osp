@@ -678,12 +678,15 @@ public class LibraryResource implements Comparable<LibraryResource> {
 
 	/**
 	 * Gets a clone of this resource.
+	 * @param selected TODO
 	 *
 	 * @return the clone
 	 */
-	public LibraryResource getClone() {
-		boolean isCollection = this instanceof LibraryCollection;
-		LibraryResource resource = isCollection ? new LibraryCollection(getName()) : new LibraryResource(getName());
+	public LibraryResource getClone(Set<LibraryResource> selected) {
+		return copyFieldsTo(new LibraryResource(getName()));
+	}
+
+	protected LibraryResource copyFieldsTo(LibraryResource resource) {
 		resource.setBasePath(getBasePath());
 		resource.setTarget(getTarget());
 		resource.setHTMLPath(getHTMLPath());
@@ -697,14 +700,6 @@ public class LibraryResource implements Comparable<LibraryResource> {
 				resource.addMetadata(new Metadata(next.getData()[0], next.getData()[1]));
 			}
 		}
-		if (isCollection) {
-			LibraryCollection thisCollection = (LibraryCollection) this;
-			for (LibraryResource next : thisCollection.getResources()) {
-				((LibraryCollection) resource).addResource(next.getClone());
-			}
-
-		}
-		// lines below are for search results
 		resource.collectionPath = getCollectionPath();
 		resource.treePath = getTreePath(null);
 		return resource;
@@ -1096,6 +1091,14 @@ public class LibraryResource implements Comparable<LibraryResource> {
 
 	public ArrayList<LibraryResource> getResources() {
 		return null;
+	}
+
+	public int getResourceCount() {
+		return 0;
+	}
+
+	public boolean hasSelectedResources(Set<LibraryResource> selected) {
+		return selected.contains(this);
 	}
 
 }

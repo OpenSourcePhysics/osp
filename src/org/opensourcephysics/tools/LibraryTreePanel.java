@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 import javax.swing.AbstractAction;
@@ -1143,7 +1142,6 @@ class LibraryTreePanel extends JPanel {
 
 	protected void doTreeMouseClicked(MouseEvent e) {
 		// select node and show popup menu
-		// System.out.println("LibraryTreePanel.mouseClicked " + e);
 		TreePath path = tree.getPathForLocation(e.getX(), e.getY());
 		if (path == null) {
 			return;
@@ -1573,8 +1571,6 @@ class LibraryTreePanel extends JPanel {
 	protected boolean insertChildAt(LibraryTreeNode child, LibraryTreeNode parent, int index) {
 		if (tree == null || parent.getChildCount() < index)
 			return false;
-		// System.out.println("LibraryTreePanel.insertChild " + index + " " +
-		// child.getDisplayString());
 		DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
 		model.insertNodeInto(child, parent, index);
 		return true;
@@ -2035,7 +2031,6 @@ class LibraryTreePanel extends JPanel {
 			}
 
 			private void loadZipPathAsync(String htmlPath, String target, String targetURLPath, String base) {
-				// System.out.println("LoadZipNodeAsync " + htmlPath + " -> " + target);
 				ResourceLoader.getZipContentsAsync(targetURLPath, (files) -> {
 					if (files == null)
 						return null;
@@ -2119,7 +2114,6 @@ class LibraryTreePanel extends JPanel {
 			}
 
 			private void loadPathAsync(String htmlPath, String target) {
-				// System.out.println("LoadNodeAsync " + htmlPath + " -> " + target);
 
 				String reloadUrlPath = node.record.getProperty("reload_url"); //$NON-NLS-1$
 				if (reloadUrlPath != null)
@@ -2141,8 +2135,6 @@ class LibraryTreePanel extends JPanel {
 						public void run() {
 							hasNewChildren = true;
 							processNode(htmlPath);
-							String s = "\"" + n.getName() + "\""; //$NON-NLS-1$
-							System.out.println("OK - LTP " + s);
 						}
 					};
 
@@ -2249,7 +2241,7 @@ class LibraryTreePanel extends JPanel {
 	    			Thread.currentThread().setName("LibraryPaneHTMLDisplayWorker(done)");
 				} catch (Exception e) {
 					e.printStackTrace();
-					System.out.println("LibraryTreePanel exception " + e);
+					System.err.println("LibraryTreePanel exception " + e);
 				}
 				return null;
 			}
@@ -2873,12 +2865,14 @@ class LibraryTreePanel extends JPanel {
 		return resultsNode;
 	}
 
-	public void addCollectionResourceClone(LibraryResource next, LibraryTreeNode collectionNode) {
-		LibraryResource clone = next.getClone();
-		((LibraryCollection)collectionNode.record).addResource(clone);
+	protected void addCollectionResourceSearchResultClone(LibraryResource resource, LibraryTreeNode parentNode, Set<LibraryResource> selected) {
+		if (!resource.hasSelectedResources(selected))
+			return;
+		LibraryResource clone = resource.getClone(selected);
+		((LibraryCollection)parentNode.record).addResource(clone);
 		LibraryTreeNode newNode = new LibraryTreeNode(clone, this);
-		newNode.setBasePath(next.getInheritedBasePath());
-		insertChildAt(newNode, collectionNode, collectionNode.getChildCount());
+		newNode.setBasePath(resource.getInheritedBasePath());
+		insertChildAt(newNode, parentNode, parentNode.getChildCount());
 	}
 	
 }

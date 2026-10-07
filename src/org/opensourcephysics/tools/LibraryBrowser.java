@@ -33,6 +33,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1810,7 +1811,7 @@ public class LibraryBrowser extends JPanel {
 				processTargetCollection(node);
 				return;
 			}
-			record = node.record.getClone();
+			record = node.record.getClone(null);
 			record.setBasePath(node.getBasePath());
 		} else if (newValue instanceof LibraryResource) {
 			record = (LibraryResource) newValue;
@@ -2684,7 +2685,7 @@ public class LibraryBrowser extends JPanel {
 		Set<String> set = library.getNoSearchSet();
 		if (searchResourceMap != null) {
 			for (LibraryResource r : searchResourceMap.values()) {
-				LibraryResource rc = r.getClone();
+				LibraryResource rc = r.getClone(null);
 				String path = rc.collectionPath;
 				if (path != null && !set.contains(path)) {
 					searchTargets.add(rc);
@@ -3469,7 +3470,7 @@ public class LibraryBrowser extends JPanel {
     				return null;
 
     			doLog = (OSPLog.getLevelValue() <= Level.FINER.intValue());
-    			Set<LibraryResource> found = new TreeSet<>();
+    			Set<LibraryResource> found = new HashSet<>();
 //    			if (useRPN) {
     				// rpnTokens are now set
     				RPN rpn = new RPN();
@@ -3496,27 +3497,37 @@ public class LibraryBrowser extends JPanel {
     					searchAddResource(searchPhrase, target, found);
     				}
     			}
+    			Iterator<LibraryResource> it = found.iterator();
+    			while (it.hasNext()) {
+    			    LibraryResource next = it.next();
+    			    if (!next.hasSelectedResources(found)) {
+    			        it.remove();
+    			    }
+    			}
     			if (found.isEmpty())
     				return null;
+    			TreeSet<LibraryResource> ordered = new TreeSet<>(found);
     			LibraryTreePanel treePanel = getSearchResultsTreePanel();
     			LibraryTreeNode resultsNode = treePanel.addOrReplaceCollectionByName("'" + searchPhrase.toLowerCase() + "' ("+found.size()+")");
     			// add ComPADRE results first
-    			for (LibraryResource next : found) {
+    			for (LibraryResource next : ordered) {
     				if (!next.collectionPath.contains("compadre.org"))
     					continue;
-    				treePanel.addCollectionResourceClone(next, resultsNode);
+    				treePanel.addCollectionResourceSearchResultClone(next, resultsNode, found);
     			}
     			// add non-ComPADRE results
-    			for (LibraryResource next : found) {
+    			for (LibraryResource next : ordered) {
     				if (next.collectionPath.contains("compadre.org"))
     					continue;
-    				treePanel.addCollectionResourceClone(next, resultsNode);
+    				treePanel.addCollectionResourceSearchResultClone(next, resultsNode, found);
     			}
-    			treePanel.scrollToPath(((LibraryTreeNode) resultsNode.getLastChild()).getTreePath(), false);
+    			if (resultsNode.getChildCount() > 0)
+    				treePanel.scrollToPath(((LibraryTreeNode) resultsNode.getLastChild()).getTreePath(), false);
     			treePanel.setChanged(false);
     			FontSizer.setFonts(treePanel);
     			treePanel.setSelectedNode(resultsNode);
     			rpnTokens = null;
+    			treePanel.refreshModel(resultsNode);
     			return resultsNode;
     		}
 
@@ -3760,7 +3771,7 @@ public class LibraryBrowser extends JPanel {
     					return "Search term mismatched () " + search;
     				}
     				tokens.add(new RPNToken(MODE_O, opEND, -1));
-   				System.err.println("LB RPN " + tokens);
+    				System.err.println("LB RPN " + tokens);
     				return null;
     			}
     			
@@ -3852,7 +3863,7 @@ public class LibraryBrowser extends JPanel {
     						return false;
     					if (all == null) {
     						all = new TreeSet<>();
-    						addAll(collection, all);
+    						addWithAllChildren(collection, all);
     					}
     					x = xStack.pop();
     					Set<LibraryResource> x1 = new TreeSet<>(all);
@@ -3877,7 +3888,7 @@ public class LibraryBrowser extends JPanel {
     				if (search.indexOf(op, pt) != pt) 
     					return -1;
     				pt += nchar;
-    				switch (pt == nchar ? ' ' : search.charAt(pt)) {
+    				switch (pt == nchar || pt == search.length() ? ' ' : search.charAt(pt)) {
     				case ' ':
     				case '(':
     					return pt;
@@ -3896,10 +3907,9 @@ public class LibraryBrowser extends JPanel {
 					// just checking or nothing to check
 					return found;
 				}
-
 				if (searchAddResource(text, collection, found)) {
 					// if the collection is found, add all of its children
-					addAll(collection, found);
+					addWithAllChildren(collection, found);
 				} else {
 					// check each record in the collection
 					for (LibraryResource record : collection.getResources()) {
@@ -3915,12 +3925,14 @@ public class LibraryBrowser extends JPanel {
 				return found;
 			}
     		
-			private void addAll(LibraryResource resource, Set<LibraryResource> found) {
-				found.add(resource);
+			private void addWithAllChildren(LibraryResource resource, Set<LibraryResource> found) {
 				ArrayList<LibraryResource> children = resource.getResources();
+				// BH TEST for now, skipping the Collection itself
+				if (resource.getResourceCount() == 0);
+					found.add(resource);
 				if (children != null) {
 					for (LibraryResource child : children) {
-						addAll(child, found);
+						addWithAllChildren(child, found);
 					}
 				}
 			}
@@ -4192,7 +4204,6 @@ public class LibraryBrowser extends JPanel {
     			if (path == "") {
     				resource.setBasePath(XML.getDirectoryPath(s) + "/");
     			}
-    			//System.err.println(resource.getBasePath() + "," + s);
     			setSearchChildBasePaths(resource);
     			searchResourceMap.put(s, resource);
     		}
@@ -4287,14 +4298,14 @@ public class LibraryBrowser extends JPanel {
     	protected void notifySearchNotFound(String searchTerm) {
     		OSPRuntime.beep("LibraryBrowser " + searchTerm + " not found");
     		// give visual cue, too
+    		setSearchText(ToolsRes.getString("LibraryBrowser.Search.NotFound"), "notifySearchNotFound"); //$NON-NLS-1$
     		JTextField f = searchField;
     		Color color = f.getForeground();
-    		f.setText(ToolsRes.getString("LibraryBrowser.Search.NotFound")); //$NON-NLS-1$
     		f.setForeground(Color.RED);
     		f.setBackground(Color.white);
     		if (searchTimer == null) {
     			searchTimer = OSPRuntime.trigger(1000, (e) -> {
-    				f.setText(searchTerm);
+    				setSearchText(searchTerm, "timerTrigger");
     				f.setForeground(color);
     				f.selectAll();
     				f.setBackground(Color.white);
@@ -4488,6 +4499,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 
-	static int test = 0;
-	
+	protected void setSearchText(String search, String by) {
+		searchField.setText(search);
+	}
 }

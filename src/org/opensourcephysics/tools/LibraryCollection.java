@@ -8,6 +8,7 @@
 package org.opensourcephysics.tools;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import org.opensourcephysics.controls.XML;
 import org.opensourcephysics.controls.XMLControl;
@@ -139,6 +140,20 @@ public class LibraryCollection extends LibraryResource {
 		resources.clear();
 	}
 
+	/**
+	 * From a search, we want only the selected records.
+	 */
+	@Override
+	public LibraryCollection getClone(Set<LibraryResource> selected) {
+		LibraryCollection collection = new LibraryCollection(getName());
+		copyFieldsTo(collection);
+		for (LibraryResource next : getResources()) {
+			if (selected == null || selected.contains(next))
+				collection.addResource(next.getClone(selected));
+		}
+		return collection;
+	}
+
 //_____________________________  static methods  ____________________________
 
 	/**
@@ -238,6 +253,31 @@ public class LibraryCollection extends LibraryResource {
 		}
 		return h;
 	}
+	
+	@Override
+	public int getResourceCount() {
+		return (resources == null ? 0 : resources.size());
+	}
+
+	/**
+	 * Determine if any child on this path has been selected. 
+	 * 
+	 * (If not, we will remove it.)
+	 */
+	@Override
+	public boolean hasSelectedResources(Set<LibraryResource> selected) {
+		for (int i = getResourceCount(); --i >= 0;) {
+			LibraryResource resource = resources.get(i);
+			if (resource.getResourceCount() > 0) {
+				if (resource.hasSelectedResources(selected))
+					return true;
+			} else if(selected.contains(resource)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
 
 /*
