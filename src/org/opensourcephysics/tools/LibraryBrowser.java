@@ -3665,7 +3665,9 @@ public class LibraryBrowser extends JPanel {
     							break;
     						case MODE_O:
     							// xxxx ! or xxxx (
-    							if (c == '!' || c == '(') {
+    							if (c == '!') {
+        							tokens.add(new RPNToken(MODE_O, opAND, -1));
+    							} else if (c == '(') {
     								return "Search term error " + search.substring(0, pt + 1);
     							}
     							break;
