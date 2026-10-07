@@ -3850,7 +3850,7 @@ public class LibraryBrowser extends JPanel {
     						return false;
     					if (all == null) {
     						all = new TreeSet<>();
-    						all.addAll(collection.getResources());
+    						addAll(collection, all);
     					}
     					x = xStack.pop();
     					Set<LibraryResource> x1 = new TreeSet<>(all);
