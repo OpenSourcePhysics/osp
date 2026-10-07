@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -3424,6 +3425,15 @@ public class LibraryBrowser extends JPanel {
 		private class LibrarySearchWorker extends SwingWorker<LibraryTreeNode, Object> {
     		private String searchTerm;
 
+    		private boolean useRPN = true;
+
+    		// static constants
+    		private final static String AND = " AND "; //$NON-NLS-1$
+    		private final static String OR = " OR "; //$NON-NLS-1$
+    		private final static String OPENING = "("; //$NON-NLS-1$
+    		private final static String CLOSING = ")"; //$NON-NLS-1$
+
+
     		public LibrarySearchWorker(String searchTerm) {
     			this.searchTerm = searchTerm;
     		}
@@ -3443,295 +3453,651 @@ public class LibraryBrowser extends JPanel {
     			}
     			Thread.currentThread().setName("LibrarySearchWorker(done)");
     		}
+    		
+    		private ArrayList<RPNToken> rpnTokens;
+
+    		/**
+    		 * Searches a set of LibraryResources for resources matching a search phrase.
+    		 * 
+    		 * @param searchPhrase  the phrase to match
+    		 * @param searchTargets a set of LibraryResources to search
+    		 * @return a LibraryTreeNode with the search results, or null if no matches
+    		 *         found
+    		 */
+    		protected LibraryTreeNode searchFor(String searchPhrase, Set<LibraryResource> searchTargets) {
+    		    
+    			if (searchPhrase == null || searchPhrase.trim().equals("")) //$NON-NLS-1$
+    				return null;
+
+    			doLog = (OSPLog.getLevelValue() <= Level.FINER.intValue());
+    			Set<LibraryResource> found = new TreeSet<>();
+    			if (useRPN) {
+    				// rpnTokens are now set
+    				RPN rpn = new RPN();
+    				String err = rpn.parse(searchPhrase);
+    				if (err != null) {
+    					System.err.println(err);
+    					return null;
+    				}
+    			}
+    			for (LibraryResource target : searchTargets) {
+    				if (target == null)
+    					continue;
+    				if (target instanceof LibraryCollection) {
+    					Set<LibraryResource> set = searchCollectionFor(searchPhrase, (LibraryCollection) target, true);
+    					if (set == null) {
+    						// there was an error
+    						return null;
+    					}
+    					for (LibraryResource next : set) {
+    						next.collectionPath = target.collectionPath;
+    					}
+    					found.addAll(set);
+    				} else if (searchResourceText(searchPhrase, target, true) != null) {
+    					found.add(target);
+    				}
+    			}
+    			if (found.isEmpty())
+    				return null;
+    			LibraryTreePanel treePanel = getSearchResultsTreePanel();
+    			LibraryTreeNode resultsNode = treePanel.addOrReplaceCollectionByName("'" + searchPhrase.toLowerCase() + "' ("+found.size()+")");
+    			// add ComPADRE results first
+    			for (LibraryResource next : found) {
+    				if (!next.collectionPath.contains("compadre.org"))
+    					continue;
+    				treePanel.addCollectionResourceClone(next, resultsNode);
+    			}
+    			// add non-ComPADRE results
+    			for (LibraryResource next : found) {
+    				if (next.collectionPath.contains("compadre.org"))
+    					continue;
+    				treePanel.addCollectionResourceClone(next, resultsNode);
+    			}
+    			treePanel.scrollToPath(((LibraryTreeNode) resultsNode.getLastChild()).getTreePath(), false);
+    			treePanel.setChanged(false);
+    			FontSizer.setFonts(treePanel);
+    			treePanel.setSelectedNode(resultsNode);
+    			rpnTokens = null;
+    			return resultsNode;
+    		}
+
+    		/**
+    		 * Searches a LibraryCollection for matches to a search phrase.
+    		 *
+    		 * @param searchPhrase the phrase
+    		 * @param collection   the LibraryResource
+    		 * @param justOne      TODO
+    		 * @return a List of String[] {where match was found, value in which match was
+    		 *         found}, or null if no match found
+    		 */
+    		protected Set<LibraryResource> searchCollectionFor(String searchPhrase, LibraryCollection collection,
+    				boolean justOne) {
+    			// deal with logic
+    			if (rpnTokens == null)
+    				return processANDOR(searchPhrase, collection, justOne);
+    			return new RPN().process(rpnTokens, collection, justOne);
+    		}
+
+    		class RPNToken {
+    			private String value;
+    			private int mode;
+				private int pt;
+    			
+    			RPNToken(int mode, String value, int pt) {
+    				this.mode = mode;
+    				this.value = value;
+    				this.pt = pt;
+    			}
+    			
+    			@Override
+    			public String toString() {
+    				return "[RPNToken " + mode + ":" + value + "]";
+    			}
+    		}
+    		
+    		/**
+    		 * Reverse Polish Notation processor 
+    		 * 
+    		 * allows "xxxx", NOT, &,|,!
+    		 * 
+    		 * also does a syntax check prior to actual searching, returning null if there is a syntax error
+    		 * 
+    		 * @author hanso
+    		 *
+    		 */
+    		class RPN {
+    			/**
+    			 * the operand stack; must be length 1 for successful exit
+    			 */
+    			private Stack<Set<LibraryResource>> xStack = new Stack<>();
+    			/**
+    			 * the operator stack; must be empty for successful exit
+    			 */
+    			private Stack<String> oStack = new Stack<>();
+    			private final static int MODE_XO = 0;
+    			private final static int MODE_X  = 1;
+    			private final static int MODE_O  = 2;
+    			private final static String opEND    = "0-END";
+    			private final static String opOR     = "2-|";
+    			private final static String opAND    = "3-&";
+    			private final static String opNOT    = "4-!";
+    			private final static String opLPAREN = "5-(";
+    			private final static String opRPAREN = "6-)";
+    			private final static String operators = "(|&!)";
+    			private final static String opReplacements = "O|A&N!";
+    			private final static char NOOP = '\0';
+    			private int mode = MODE_XO;
+    			private int stringPt;
+    			private int parenCount = 0;
+    			private LibraryCollection collection;
+    			private Set<LibraryResource> all;
+    			private int id;
+    			
+    			protected RPN() {
+    				id = ++test;
+    			}
+    			
+    			private String parse(String search) {
+    				ArrayList<RPNToken> tokens = rpnTokens = new ArrayList<>();
+    				char op = NOOP;
+    				int pt2;
+    				boolean inQuotes = false;
+    				boolean inString = false;
+					boolean spaceTerminated = false;
+    				mode = MODE_X;
+    				String searchUC = search.toUpperCase();
+    				for (int n = search.length(), pt = 0; pt < n; pt++) {
+    					char c = (op == '\0' ? search.charAt(pt) : op);
+    					if (inQuotes) {
+    						if (c != '"')
+    							continue;
+    						String text = search.substring(stringPt, pt);
+    						tokens.add(new RPNToken(MODE_X, text, -1));
+    						mode = MODE_O;
+    						pt++;
+    						inQuotes = false;
+    						spaceTerminated = false;
+    						continue;
+    					} else if (c == '"') {
+    						if (mode != MODE_X) {
+    							return "Search term error " + search.substring(0, pt + 1);
+    						}
+    						inQuotes = true;
+    						stringPt = pt + 1;
+    						continue;
+    					}
+    					// not in quotes
+    					boolean isOp = (operators.indexOf(c) >= 0);
+    					if (isOp) {
+    						spaceTerminated = false;
+    						op = NOOP;
+    						switch (mode) {
+    						case MODE_X:
+    							if (c == '|' || c == '&' || c == ')') {
+    								// & & or & )
+    								return "Search term error " + search.substring(0, pt + 1);
+    							}
+    							break;
+    						case MODE_O:
+    							// xxxx ! or xxxx (
+    							if (c == '!' || c == '(') {
+    								return "Search term error " + search.substring(0, pt + 1);
+    							}
+    							break;
+    						}
+    						mode = MODE_X;
+    						String strOp = null;
+    						switch (c) {
+    						case '&':
+    							strOp = opAND;
+    							break;
+    						case '|':
+    							strOp = opOR;
+    							break;
+    						case '!':
+    							strOp = opNOT;
+    							break;
+    						case '(':
+    							parenCount++;
+    							strOp = opLPAREN;
+    							break;
+    						case ')':
+    							if (--parenCount < 0) {
+    								return "Search term mismatched () " + search.substring(0, pt + 1);
+    							}
+    							strOp = opRPAREN;
+    							mode = MODE_O;
+    							break;
+    						}
+    						if (strOp != null)
+    							tokens.add(new RPNToken(MODE_O, strOp, -1));
+    					} else {
+    						// not an operator
+    						if (inString) {
+    							spaceTerminated = (c == ' ');
+    							if (spaceTerminated || pt + 1 == n || ((c = search.charAt(pt + 1)) == ')')) {
+    								String text = search.substring(stringPt, (c == ' ' ? pt : pt + 1));
+    								tokens.add(new RPNToken(MODE_X, text, (spaceTerminated ? stringPt : -1)));
+    								inString = false;
+    								mode = MODE_O;
+    							}
+    						} else {
+    							// maybe still an operator
+    							switch (c) {
+    							case 'a':
+    							case 'A':
+    								c = 'A';
+    								pt2 = checkOp(searchUC, pt, "AND", 3, n);
+    								break;
+    							case 'n':
+    							case 'N':
+    								c = 'N';
+    								pt2 = checkOp(searchUC, pt, "NOT", 3, n);
+    								break;
+    							case 'o':
+    							case 'O':
+    								c = 'O';
+    								pt2 = checkOp(searchUC, pt, "OR", 2, n);
+    								break;
+    							default:
+    								pt2 = -1;
+    								break;
+    							}
+    							if (pt2 > 0) {
+    								// predefine op
+    								op = opReplacements.charAt(opReplacements.indexOf(c) + 1);
+    								// point to penultimate char of AND OR NOT
+    								pt = pt2 - 2;
+    							} else if (c != ' ') {
+        							int nt = tokens.size() - 1 ;
+        							if (spaceTerminated && nt >= 0) {
+        								RPNToken t = tokens.get(nt);
+        								if (t.mode == MODE_X && t.pt >= 0) {
+        									stringPt = t.pt;
+        									tokens.remove(nt);
+        								}
+        							} else {
+        								stringPt = pt;
+        							}
+    								inString = true;
+    							}
+    						}
+    					}
+    				}
+    				if (inQuotes) {
+    					// x AND "
+    					return "Search term mismatched \" " + search;
+    				}
+    				if (parenCount != 0) {
+    					// x AND "... or x (...
+    					return "Search term mismatched () " + search;
+    				}
+    				tokens.add(new RPNToken(MODE_O, opEND, -1));
+    				System.err.println("LB RPN " + tokens);
+    				return null;
+    			}
+    			
+				private Set<LibraryResource> process(ArrayList<RPNToken> rpnTokens, LibraryCollection collection,
+						boolean justOne) {
+					this.collection = collection;
+					for (int n = rpnTokens.size(), i = 0; i < n; i++) {
+						RPNToken t = rpnTokens.get(i);
+						switch (t.mode) {
+						case MODE_X:
+							Set<LibraryResource> result = searchCollectionText(t.value, collection, justOne);
+							xStack.push(result);
+							break;
+						case MODE_O:
+							if (!doOrPushOp(t.value)) {
+								// here we are checking for proper sequence of operands and operations
+								return null;
+							}
+							break;
+						}
+					}
+					return xStack.pop();
+				}
+    			
+    			private void pushOp(String op) {
+    				oStack.push(op);
+    			}
+
+
+    			private boolean doOrPushOp(String op) {
+    				// char defines precedence. | < & < !
+    				String lastOp = null;
+    				while (true) {
+    					if (op == opLPAREN || oStack.isEmpty()) {
+    						break;
+    					}
+    					lastOp = oStack.peek();
+    					if (lastOp == opLPAREN && op != opRPAREN)
+    						break;
+    					showStacks();
+    					char clast = lastOp.charAt(0); 
+    					char c = op.charAt(0);
+    					if (clast > c) {
+    						if (!doOp(oStack.pop()))
+    							return false;
+    						continue;
+    					}
+    					break;
+    				}
+    				if (op == opEND) {
+    					return doOp(op);
+    				}
+    				pushOp(op);
+    				return true;
+    			}
+
+    			private void showStacks() {
+    				System.out.println("x: " + xStack);
+    				System.out.println("o: " + oStack);
+    			}
+    			
+				private boolean doOp(String op) {
+    				Set<LibraryResource> x;
+    				switch (op) {
+    				case opEND:
+    					while (oStack.size() > 0) {
+    						if (!doOrPushOp(oStack.pop()))
+    							return false;
+    					}					 
+    					if (xStack.size() != 1)
+    						return false;
+    					break;
+    				case opAND:
+    					if (xStack.size() < 2)
+    						return false;
+    					x = xStack.pop();
+    					if (xStack.peek().size() > 0)
+    						xStack.peek().retainAll(x);					
+    					break;
+    				case opOR:
+    					if (xStack.size() < 2)
+    						return false;
+    					x = xStack.pop();
+    					xStack.peek().addAll(x);					
+    					break;
+    				case opNOT:
+    					if (xStack.size() < 1)
+    						return false;
+    					if (all == null) {
+    						all = new TreeSet<>();
+    						all.addAll(collection.getResources());
+    					}
+    					x = xStack.pop();
+    					Set<LibraryResource> x1 = new TreeSet<>(all);
+    					x1.removeAll(x);
+    					xStack.push(x1);
+    					break;
+    				case opRPAREN:					
+    					while (oStack.size() > 0) {
+    						op = oStack.pop();
+    						if (op == opLPAREN) {
+    							break;
+    						}
+    						if (!doOp(op))
+    							return false;
+    					}					 
+    					break;
+    				}
+    				return true;
+    			}
+
+    			private int checkOp(String search, int pt, String op, int nchar, int len) {
+    				if (search.indexOf(op, pt) != pt) 
+    					return -1;
+    				pt += nchar;
+    				switch (pt == nchar ? ' ' : search.charAt(pt)) {
+    				case ' ':
+    				case '(':
+    					return pt;
+    				default:
+    					return -1;
+    				}
+    			}
+    			
+    			
+    		}
+
+    		private Set<LibraryResource> searchCollectionText(String text, LibraryCollection collection,
+    				boolean justOne) {
+    			//no AND OR NOT ( )
+    			Set<LibraryResource> found = new TreeSet<>();
+    			if (collection == null || text.length() == 0) {
+    				// just checking or nothing to check
+    				return found;
+    			}
+    			// check the colletion itself
+    			if (searchResourceText(text, collection, justOne) != null) {
+    				found.add(collection);
+    			}
+    			// check each record in the collection
+    			for (LibraryResource record : collection.getResources()) {
+    				if (record == null)
+    					continue;
+    				if (record instanceof LibraryCollection) {
+    					Set<LibraryResource> set = searchCollectionText(text, (LibraryCollection) record, justOne);
+    					found.addAll(set);
+    				} else {
+    					if (searchResourceText(text, record, justOne) != null) {
+    						found.add(record);
+    					}
+    				}
+    			}
+    			return found;
+    		}
+    		
+    		@SuppressWarnings("null")
+    		private Set<LibraryResource> processANDOR(String searchPhrase, LibraryCollection collection, boolean justOne) {
+    			boolean haveAnd = searchPhrase.contains(AND);
+    			boolean haveOr = searchPhrase.contains(OR);
+    			if (!haveAnd && !haveOr) {
+    			// just a phrase, no AND or OR
+    				return searchCollectionText(searchPhrase, collection, justOne);
+    			}
+    			String[] toAND = (haveAnd ? searchPhrase.split(AND) : null);
+    			String[] toOR = (haveOr ? searchPhrase.split(OR) : null);
+    			if (!haveOr) {
+    				Set<LibraryResource> results = processANDOR(toAND[0], collection, justOne);
+    				if (doLog)
+    					OSPLog.finer("AND '" + toAND[0] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    				for (int i = 1; i < toAND.length; i++) {
+    					Set<LibraryResource> next = processANDOR(toAND[i], collection, justOne);
+    					if (doLog)
+    						OSPLog.finer("AND '" + toAND[i] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    					results = applyAND(results, next);
+    				}
+    				if (doLog)
+    					OSPLog.finer("AND found: " + results.size()); //$NON-NLS-1$
+    				return results;
+    			} else if (!haveAnd) {
+    				Set<LibraryResource> results = processANDOR(toOR[0], collection, justOne);
+    				if (doLog)
+    					OSPLog.finer("OR '" + toOR[0] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    				for (int i = 1; i < toOR.length; i++) {
+    					Set<LibraryResource> next = processANDOR(toOR[i], collection, justOne);
+    					if (doLog)
+    						OSPLog.finer("OR '" + toOR[i] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    					results = applyOR(results, next);
+    				}
+    				if (doLog)
+    					OSPLog.finer("OR found: " + results.size()); //$NON-NLS-1$
+    				return results;
+    			}
+    			// haveAnd && haveOr
+    			// apply operations in left-to-right order but give precedence to parentheses
+    			String[] split = getNextSplit(searchPhrase);
+    			Set<LibraryResource> results = processANDOR(split[0], collection, justOne);
+    			while (split.length > 2) {
+    				String operator = split[1];
+    				String remainder = split[2];
+    				split = getNextSplit(remainder);
+    				Set<LibraryResource> next = processANDOR(split[0], collection, justOne);
+    				if (operator.equals(AND)) {
+    					results = applyAND(results, next);
+    				} else if (operator.equals(OR)) {
+    					results = applyOR(results, next);
+    				}
+    			}
+    			return results;
+    		}
+
+    		/**
+    		 * Searches a LibraryResource for matches to a search phrase.
+    		 * 
+    		 * 
+    		 * 
+    		 * @param text the text to search for
+    		 * @param record       the LibraryResource
+    		 * @param justOne      true to return if any hit is found (always true)
+    		 * @return a List of String[] {category where match found, value where match
+    		 *         found}, or null if no match found
+    		 *         
+    		 */
+    		protected List<String[]> searchResourceText(String text, LibraryResource record, boolean justOne) {
+    			String toMatch = text.toLowerCase();
+    			ArrayList<String[]> foundData = new ArrayList<>();
+    			// search node name
+    			String name = record.getName();
+    			if (name.toLowerCase().contains(toMatch)) {
+    				foundData.add(new String[] { "name", name }); //$NON-NLS-1$
+    				if (justOne)
+    					return foundData;
+    			}
+    			// search node type
+    			String type = record.getType();
+    			if (type.toLowerCase().contains(toMatch)) {
+    				foundData.add(new String[] { "type", type }); //$NON-NLS-1$
+    				if (justOne)
+    					return foundData;
+    			}
+    			// search metadata
+    			Set<Metadata> metadata = record.getMetadata();
+    			if (metadata != null) {
+    				for (Metadata next : metadata) {
+    					String key = next.getData()[0];
+    					String value = next.getData()[1];
+    					if (value.toLowerCase().indexOf(toMatch) > -1) {
+    						foundData.add(new String[] { key, value });
+    						if (justOne)
+    							return foundData;
+    					}
+    				}
+    			}
+    			return foundData.isEmpty() ? null : foundData;
+    		}
+
+    		/**
+    		 * Returns the phrase before the next AND or OR operator, the operator itself,
+    		 * and the remainder of the phrase.
+    		 *
+    		 * @param phrase a search phrase
+    		 * @return String[]
+    		 */
+    		protected String[] getNextSplit(String phrase) {
+    			String[] and = phrase.split(AND, 2);
+    			String[] or = phrase.split(OR, 2);
+    			String[] open = phrase.split(Pattern.quote(OPENING), 2);
+    			int which = and[0].length() <= or[0].length() ? and[0].length() <= open[0].length() ? 0 : 2
+    					: or[0].length() <= open[0].length() ? 1 : 2;
+    			if (which == 2 && open.length > 1) { // found opening parentheses
+
+    				// split remainder into parenthesis contents and remainder
+    				String[] split = getParenthesisSplit(open[1]);
+    				if (split.length == 1) {
+    					return new String[] { split[0] };
+    				}
+    				int n = split[1].indexOf(AND);
+    				int m = split[1].indexOf(OR);
+    				if (n == -1 && m == -1) {
+    					return new String[] { open[1] };
+    				}
+    				if (n > -1 && (m == -1 || n < m)) { // AND
+    					return new String[] { split[0], AND, split[1].substring(n + AND.length()) };
+    				}
+    				if (m > -1 && (n == -1 || m < n)) { // OR
+    					return new String[] { split[0], OR, split[1].substring(m + OR.length()) };
+    				}
+    			}
+    			switch (which) {
+    			case 0:
+    				if (and.length == 1)
+    					return new String[] { and[0] };
+    				return new String[] { and[0], AND, and[1] };
+    			case 1:
+    				if (or.length == 1)
+    					return new String[] { or[0] };
+    				return new String[] { or[0], OR, or[1] };
+    			}
+    			return new String[] { phrase };
+    		}
+
+    		/**
+    		 * Returns the phrase enclosed in parentheses along with the remainder of a
+    		 * phrase.
+    		 *
+    		 * @param phrase a phrase that starts immediately AFTER an opening parenthesis
+    		 * @return String[] {the enclosed phrase, the remainder}
+    		 */
+    		private String[] getParenthesisSplit(String phrase) {
+
+    			int index = 1; // index of closing parenthesis
+    			int n = 1; // number of unpaired opening parentheses
+    			int opening = phrase.indexOf(OPENING, index);
+    			int closing = phrase.indexOf(CLOSING, index);
+    			while (n > 0) {
+    				if (opening > -1 && opening < closing) {
+    					n++;
+    					index = opening + 1;
+    					opening = phrase.indexOf(OPENING, index);
+    				} else if (closing > -1) {
+    					n--;
+    					index = closing + 1;
+    					closing = phrase.indexOf(CLOSING, index);
+    				} else
+    					return new String[] { phrase };
+    			}
+    			String token = phrase.substring(0, index - 1);
+    			String remainder = phrase.substring(index);
+    			return remainder.trim().equals("") ? new String[] { token } : new String[] { token, remainder }; //$NON-NLS-1$
+    		}
+
+    		/**
+    		 * Returns the resources that are contained in the keysets of both of two input
+    		 * maps.
+    		 * 
+    		 * @param results1
+    		 * @param results2
+    		 * @return map of resources found in both keysets
+    		 */
+    		private Set<LibraryResource> applyAND(Set<LibraryResource> results1,
+    				Set<LibraryResource> results2) {
+    			Set<LibraryResource> result = new TreeSet<>(results1);
+    			result.retainAll(results2);
+    			return result;
+    		}
+
+    		/**
+    		 * Returns the resources that are contained in the keysets of either of two
+    		 * input maps.
+    		 * 
+    		 * @param results1
+    		 * @param results2
+    		 * @return map of resources found in either keyset
+    		 */
+    		private Set<LibraryResource> applyOR(Set<LibraryResource> results1,
+    				Set<LibraryResource> results2) {
+    			Set<LibraryResource> result = new TreeSet<>(results1);
+    			result.addAll(results2);
+    			return result;
+    		}
+
+
     	}
 
-		// static constants
-		private final static String AND = " AND "; //$NON-NLS-1$
-		private final static String OR = " OR "; //$NON-NLS-1$
-		private final static String OPENING = "("; //$NON-NLS-1$
-		private final static String CLOSING = ")"; //$NON-NLS-1$
-
 		private boolean doLog;
-		/**
-		 * Searches a set of LibraryResources for resources matching a search phrase.
-		 * 
-		 * @param searchPhrase  the phrase to match
-		 * @param searchTargets a set of LibraryResources to search
-		 * @return a LibraryTreeNode with the search results, or null if no matches
-		 *         found
-		 */
-		protected LibraryTreeNode searchFor(String searchPhrase, Set<LibraryResource> searchTargets) {
-			if (searchPhrase == null || searchPhrase.trim().equals("")) //$NON-NLS-1$
-				return null;
-			doLog = (OSPLog.getLevelValue() <= Level.FINER.intValue());
-			Set<LibraryResource> found = new TreeSet<>();
-			for (LibraryResource target : searchTargets) {
-				if (target == null)
-					continue;
-				if (target instanceof LibraryCollection) {
-					Set<LibraryResource> set = searchCollectionFor(searchPhrase, (LibraryCollection) target, true);
-					for (LibraryResource next : set) {
-						next.collectionPath = target.collectionPath;
-					}
-					found.addAll(set);
-				} else if (searchResourceFor(searchPhrase, target, true) != null) {
-					found.add(target);
-				}
-			}
-			if (found.isEmpty())
-				return null;
-			LibraryTreePanel treePanel = getSearchResultsTreePanel();
-			LibraryTreeNode resultsNode = treePanel.addOrReplaceCollectionByName("'" + searchPhrase + "'");
-			// add ComPADRE results first
-			for (LibraryResource next : found) {
-				if (!next.collectionPath.contains("compadre.org"))
-					continue;
-				treePanel.addCollectionResourceClone(next, resultsNode);
-			}
-			// add non-ComPADRE results
-			for (LibraryResource next : found) {
-				if (next.collectionPath.contains("compadre.org"))
-					continue;
-				treePanel.addCollectionResourceClone(next, resultsNode);
-			}
-			treePanel.scrollToPath(((LibraryTreeNode) resultsNode.getLastChild()).getTreePath(), false);
-			treePanel.setChanged(false);
-			FontSizer.setFonts(treePanel);
-			treePanel.setSelectedNode(resultsNode);
-			return resultsNode;
-		}
-
-		/**
-		 * Searches a LibraryCollection for matches to a search phrase.
-		 * 
-		 * @param searchPhrase the phrase
-		 * @param collection   the LibraryResource
-		 * @param justOne      TODO
-		 * @return a List of String[] {where match was found, value in which match was
-		 *         found}, or null if no match found
-		 */
-		@SuppressWarnings("null")
-		protected Set<LibraryResource> searchCollectionFor(String searchPhrase, LibraryCollection collection,
-				boolean justOne) {
-			// deal with AND and OR requests
-			boolean haveAnd = searchPhrase.contains(AND);
-			boolean haveOr = searchPhrase.contains(OR);
-			String[] toAND = (haveAnd ? searchPhrase.split(AND) : null);
-			String[] toOR = (haveOr ? searchPhrase.split(OR) : null);
-			if (haveAnd && !haveOr) {
-				Set<LibraryResource> results = searchCollectionFor(toAND[0], collection, justOne);
-				if (doLog)
-					OSPLog.finer("AND '" + toAND[0] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				for (int i = 1; i < toAND.length; i++) {
-					Set<LibraryResource> next = searchCollectionFor(toAND[i], collection, justOne);
-					if (doLog)
-						OSPLog.finer("AND '" + toAND[i] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-					results = applyAND(results, next);
-				}
-				if (doLog)
-					OSPLog.finer("AND found: " + results.size()); //$NON-NLS-1$
-				return results;
-			} else if (haveOr && !haveAnd) {
-				Set<LibraryResource> results = searchCollectionFor(toOR[0], collection, justOne);
-				if (doLog)
-					OSPLog.finer("OR '" + toOR[0] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				for (int i = 1; i < toOR.length; i++) {
-					Set<LibraryResource> next = searchCollectionFor(toOR[i], collection, justOne);
-					if (doLog)
-						OSPLog.finer("OR '" + toOR[i] + "' (found: " + results.size() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-					results = applyOR(results, next);
-				}
-				if (doLog)
-					OSPLog.finer("OR found: " + results.size()); //$NON-NLS-1$
-				return results;
-			} else if (haveAnd && haveOr) {
-				// apply operations in left-to-right order but give precedence to parentheses
-				String[] split = getNextSplit(searchPhrase);
-				Set<LibraryResource> results = searchCollectionFor(split[0], collection, justOne);
-				while (split.length > 2) {
-					String operator = split[1];
-					String remainder = split[2];
-					split = getNextSplit(remainder);
-					Set<LibraryResource> next = searchCollectionFor(split[0], collection, justOne);
-					if (operator.equals(AND)) {
-						results = applyAND(results, next);
-					} else if (operator.equals(OR)) {
-						results = applyOR(results, next);
-					}
-				}
-				return results;
-			}
-
-			// just a phrase, no AND or OR
-			Set<LibraryResource> found = new TreeSet<>();
-			if (searchResourceFor(searchPhrase, collection, justOne) != null) {
-				found.add(collection);
-			}
-			for (LibraryResource record : collection.getResources()) {
-				if (record == null)
-					continue;
-				if (record instanceof LibraryCollection) {
-					Set<LibraryResource> set = searchCollectionFor(searchPhrase, (LibraryCollection) record, justOne);
-					found.addAll(set);
-				} else {
-					if (searchResourceFor(searchPhrase, record, justOne) != null) {
-						found.add(record);
-					}
-				}
-			}
-			return found;
-		}
-
-		/**
-		 * Searches a LibraryResource for matches to a search phrase.
-		 * 
-		 * 
-		 * 
-		 * @param searchPhrase the phrase
-		 * @param record       the LibraryResource
-		 * @param justOne      true to return if any hit is found (always true)
-		 * @return a List of String[] {category where match found, value where match
-		 *         found}, or null if no match found
-		 *         
-		 */
-		protected List<String[]> searchResourceFor(String searchPhrase, LibraryResource record, boolean justOne) {
-			String toMatch = searchPhrase.toLowerCase();
-			ArrayList<String[]> foundData = new ArrayList<>();
-			// search node name
-			String name = record.getName();
-			if (name.toLowerCase().contains(toMatch)) {
-				foundData.add(new String[] { "name", name }); //$NON-NLS-1$
-				if (justOne)
-					return foundData;
-			}
-			// search node type
-			String type = record.getType();
-			if (type.toLowerCase().contains(toMatch)) {
-				foundData.add(new String[] { "type", type }); //$NON-NLS-1$
-				if (justOne)
-					return foundData;
-			}
-			// search metadata
-			Set<Metadata> metadata = record.getMetadata();
-			if (metadata != null) {
-				for (Metadata next : metadata) {
-					String key = next.getData()[0];
-					String value = next.getData()[1];
-					if (value.toLowerCase().indexOf(toMatch) > -1) {
-						foundData.add(new String[] { key, value });
-						if (justOne)
-							return foundData;
-					}
-				}
-			}
-			return foundData.isEmpty() ? null : foundData;
-		}
-
-		/**
-		 * Returns the phrase before the next AND or OR operator, the operator itself,
-		 * and the remainder of the phrase.
-		 *
-		 * @param phrase a search phrase
-		 * @return String[]
-		 */
-		protected String[] getNextSplit(String phrase) {
-			String[] and = phrase.split(AND, 2);
-			String[] or = phrase.split(OR, 2);
-			String[] open = phrase.split(Pattern.quote(OPENING), 2);
-			int which = and[0].length() <= or[0].length() ? and[0].length() <= open[0].length() ? 0 : 2
-					: or[0].length() <= open[0].length() ? 1 : 2;
-			if (which == 2 && open.length > 1) { // found opening parentheses
-
-				// split remainder into parenthesis contents and remainder
-				String[] split = getParenthesisSplit(open[1]);
-				if (split.length == 1) {
-					return new String[] { split[0] };
-				}
-				int n = split[1].indexOf(AND);
-				int m = split[1].indexOf(OR);
-				if (n == -1 && m == -1) {
-					return new String[] { open[1] };
-				}
-				if (n > -1 && (m == -1 || n < m)) { // AND
-					return new String[] { split[0], AND, split[1].substring(n + AND.length()) };
-				}
-				if (m > -1 && (n == -1 || m < n)) { // OR
-					return new String[] { split[0], OR, split[1].substring(m + OR.length()) };
-				}
-			}
-			switch (which) {
-			case 0:
-				if (and.length == 1)
-					return new String[] { and[0] };
-				return new String[] { and[0], AND, and[1] };
-			case 1:
-				if (or.length == 1)
-					return new String[] { or[0] };
-				return new String[] { or[0], OR, or[1] };
-			}
-			return new String[] { phrase };
-		}
-
-		/**
-		 * Returns the phrase enclosed in parentheses along with the remainder of a
-		 * phrase.
-		 *
-		 * @param phrase a phrase that starts immediately AFTER an opening parenthesis
-		 * @return String[] {the enclosed phrase, the remainder}
-		 */
-		private String[] getParenthesisSplit(String phrase) {
-
-			int index = 1; // index of closing parenthesis
-			int n = 1; // number of unpaired opening parentheses
-			int opening = phrase.indexOf(OPENING, index);
-			int closing = phrase.indexOf(CLOSING, index);
-			while (n > 0) {
-				if (opening > -1 && opening < closing) {
-					n++;
-					index = opening + 1;
-					opening = phrase.indexOf(OPENING, index);
-				} else if (closing > -1) {
-					n--;
-					index = closing + 1;
-					closing = phrase.indexOf(CLOSING, index);
-				} else
-					return new String[] { phrase };
-			}
-			String token = phrase.substring(0, index - 1);
-			String remainder = phrase.substring(index);
-			return remainder.trim().equals("") ? new String[] { token } : new String[] { token, remainder }; //$NON-NLS-1$
-		}
-
-		/**
-		 * Returns the resources that are contained in the keysets of both of two input
-		 * maps.
-		 * 
-		 * @param results1
-		 * @param results2
-		 * @return map of resources found in both keysets
-		 */
-		private Set<LibraryResource> applyAND(Set<LibraryResource> results1,
-				Set<LibraryResource> results2) {
-			Set<LibraryResource> result = new TreeSet<>(results1);
-			result.retainAll(results2);
-			return result;
-		}
-
-		/**
-		 * Returns the resources that are contained in the keysets of either of two
-		 * input maps.
-		 * 
-		 * @param results1
-		 * @param results2
-		 * @return map of resources found in either keyset
-		 */
-		private Set<LibraryResource> applyOR(Set<LibraryResource> results1,
-				Set<LibraryResource> results2) {
-			Set<LibraryResource> result = new TreeSet<>(results1);
-			result.addAll(results2);
-			return result;
-		}
-
     	/**
     	 * Loads search collections into the search resource map. Note this loads only
     	 * those collections NOT in the library.noSearchSet. Once a collection is added
@@ -4087,5 +4453,6 @@ public class LibraryBrowser extends JPanel {
 	}
 
 
+	static int test = 0;
 	
 }
