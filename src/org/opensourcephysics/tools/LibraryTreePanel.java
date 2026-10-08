@@ -172,6 +172,7 @@ class LibraryTreePanel extends JPanel {
 	private boolean clipboardAvailable;
 
 	private int myFontLevel;
+	private boolean showInfoEnabled;
 
 
 	/**
@@ -340,12 +341,18 @@ class LibraryTreePanel extends JPanel {
 		return isEditing;
 	}
 
+	protected void setShowInfoEnabled(boolean b) {
+		showInfoEnabled = b;
+	}
+	
 	/**
 	 * Displays the resource data for the specified node.
 	 *
 	 * @param node the LibraryTreeNode
 	 */
 	protected void showInfo(LibraryTreeNode node, String why) {
+		if (!showInfoEnabled)
+			return;
 		if (node == null) {
 			initGUI();
 			return;
@@ -1725,7 +1732,8 @@ class LibraryTreePanel extends JPanel {
 		model.reload();
 		if (node != null) {
 			setSelectedNode(node);
-			showInfo(node, "LibraryTreePanel.refreshModel");
+			//unnecessary -- called by tree.setSelectionPath in setSelectedNode();
+			//showInfo(node, "LibraryTreePanel.refreshModel");
 		}
 	}
 

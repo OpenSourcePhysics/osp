@@ -2712,6 +2712,7 @@ public class LibraryBrowser extends JPanel {
 	private LibraryTreePanel getSearchResultsTreePanel() {
 		if (searchResultsTreePanel == null) {
 			searchResultsTreePanel = createLibraryTreePanel();
+			searchResultsTreePanel.setShowInfoEnabled(false);
 			LibraryCollection collection = new LibraryCollection("");
 			searchResultsTreePanel.setRootResource(collection, "", false, false); //$NON-NLS-1$
 		}
@@ -3508,6 +3509,7 @@ public class LibraryBrowser extends JPanel {
     				return null;
     			TreeSet<LibraryResource> ordered = new TreeSet<>(found);
     			LibraryTreePanel treePanel = getSearchResultsTreePanel();
+    			treePanel.setShowInfoEnabled(false);
     			LibraryTreeNode resultsNode = treePanel.addOrReplaceCollectionByName("'" + searchPhrase.toLowerCase() + "' ("+found.size()+")");
     			// add ComPADRE results first
     			for (LibraryResource next : ordered) {
@@ -3527,7 +3529,6 @@ public class LibraryBrowser extends JPanel {
     			FontSizer.setFonts(treePanel);
     			treePanel.setSelectedNode(resultsNode);
     			rpnTokens = null;
-    			treePanel.refreshModel(resultsNode);
     			return resultsNode;
     		}
 
@@ -4280,6 +4281,7 @@ public class LibraryBrowser extends JPanel {
     	protected void searchDone(String searchTerm, LibraryTreeNode resultsTreeNode) {
     		if (resultsTreeNode == null) {
     			notifySearchNotFound(searchTerm);
+    			setShowInfoEnabled(true);      		
     			return;
     		}
     		LibraryTreePanel treePanel = getSearchResultsTreePanel();
@@ -4291,11 +4293,17 @@ public class LibraryBrowser extends JPanel {
     			tabbedPane.setSelectedComponent(treePanel);
     		}
     		LibraryTreePanel.removeHTMLPaneNode(resultsTreeNode);
-    		treePanel.refreshModel(resultsTreeNode);		
     		refreshGUI();
+			setShowInfoEnabled(true);      		
+    		treePanel.refreshModel(resultsTreeNode);		
     	}
 
-    	protected void notifySearchNotFound(String searchTerm) {
+    	private void setShowInfoEnabled(boolean b) {
+    		if (searchResultsTreePanel != null)
+    			searchResultsTreePanel.setShowInfoEnabled(b);
+		}
+
+		protected void notifySearchNotFound(String searchTerm) {
     		OSPRuntime.beep("LibraryBrowser " + searchTerm + " not found");
     		// give visual cue, too
     		setSearchText(ToolsRes.getString("LibraryBrowser.Search.NotFound"), "notifySearchNotFound"); //$NON-NLS-1$
