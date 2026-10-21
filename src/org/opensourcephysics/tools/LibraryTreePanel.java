@@ -172,7 +172,7 @@ class LibraryTreePanel extends JPanel {
 	private boolean clipboardAvailable;
 
 	private int myFontLevel;
-	private boolean showInfoEnabled;
+	private boolean showInfoEnabled = true;
 
 
 	/**
