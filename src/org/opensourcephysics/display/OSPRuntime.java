@@ -98,8 +98,8 @@ import javajs.async.SwingJSUtils.Timeout;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.3.5.261021"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "21 Oct 2026"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.5.261023"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "23 Oct 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
