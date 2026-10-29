@@ -57,16 +57,19 @@ public class MovieFactory {
 					Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
 					code = (Integer)m.invoke(type, (Object[])null);
 	
-					// try to load CVVideo class--will register video types
-					Class.forName(cvClassPath + "CVVideo"); //$NON-NLS-1$
-					cvIsPresent = true;
-					movieEngineName = ENGINE_CV;	
+					if (code == 0) {
+						// Register CV types only when diagnostics report a working engine.
+						Class.forName(cvClassPath + "CVVideo"); //$NON-NLS-1$
+						cvIsPresent = true;
+						movieEngineName = ENGINE_CV;
+					}
 				} catch (Throwable e) {			
 						// failed to load CV
 						OSPLog.config("CVVideo failed"); //$NON-NLS-1$ //$NON-NLS-2$
 				}
 				
-//				if (!cvIsPresent) {
+				// Prefer JavaCV; register Xuggle only as a fallback.
+				if (!cvIsPresent) {
 					// get xuggle status code by reflection
 					Class<?> type = Class.forName(xuggleClassPath + "DiagnosticsForXuggle"); //$NON-NLS-1$
 					Method m = type.getMethod("getStatusCode", (Class<?>[])null); //$NON-NLS-1$
@@ -77,7 +80,7 @@ public class MovieFactory {
 					xuggleIsPresent = true;
 					movieEngineName = ENGINE_XUGGLE;
 				}
-//			}
+			}
 		} catch (Throwable e) {			
 			/** @j2sIgnore */ {
 				// failed to load xuggle
@@ -158,6 +161,31 @@ public class MovieFactory {
 	 */
 	public static boolean hasVideoEngine() {
 		return movieEngineName != ENGINE_NONE;
+	}
+
+	/**
+	 * Checks an engine without registering its video types or changing the
+	 * selected engine. Diagnostics must distinguish availability from selection.
+	 *
+	 * @param engineName the engine to check
+	 * @return true when its diagnostics report a working engine
+	 */
+	public static boolean isVideoEngineAvailable(String engineName) {
+		if (OSPRuntime.isJS)
+			return ENGINE_JS.equals(engineName) && hasVideoEngine();
+		String diagnostics;
+		if (ENGINE_CV.equals(engineName))
+			diagnostics = cvClassPath + "CVDiagnostics"; //$NON-NLS-1$
+		else if (ENGINE_XUGGLE.equals(engineName))
+			diagnostics = xuggleClassPath + "DiagnosticsForXuggle"; //$NON-NLS-1$
+		else
+			return false;
+		try {
+			Class<?> type = Class.forName(diagnostics);
+			return ((Integer) type.getMethod("getStatusCode").invoke(null)).intValue() == 0; //$NON-NLS-1$
+		} catch (ReflectiveOperationException | LinkageError | SecurityException ex) {
+			return false;
+		}
 	}
 
 	/**
