@@ -1146,10 +1146,11 @@ public class LibraryBrowser extends JPanel {
 				// Touch selection in SwingJS does not always dismiss the menu chain.
 				javax.swing.MenuSelectionManager.defaultManager().clearSelectedPath();
 				collectionsMenu.setPopupMenuVisible(false);
-				/** @j2sNative
-				 * swingjs.plaf.JSPopupMenuUI.closeAllMenusNOW$();
-				 */
-				{}
+// BH AI suggestion incorporated into JSMeunUI.setVisible(b);				
+//				/** @j2sNative
+//				 * swingjs.plaf.JSPopupMenuUI.closeAllMenusNOW$();
+//				 */
+//				{}
 				loadTab(e.getActionCommand(), null);
 			}
 		};
