@@ -1538,7 +1538,7 @@ public class ResourceLoader {
 		OSPLog.finer("unzipping " + zipPath + " to " + targetDir); //$NON-NLS-1$ //$NON-NLS-2$
 		try {
 			URL url = getURLWithCachedBytes(zipPath);
-			ZipInputStream input = new ZipInputStream(ResourceLoader.openStream(url));
+			ZipInputStream input = new ZipInputStream(openStream(url));
 			ZipEntry zipEntry = null;
 			Set<File> fileSet = new HashSet<File>();
 			byte[] buffer = new byte[1024];
@@ -1677,7 +1677,7 @@ public class ResourceLoader {
 			InputStream is = null;
 			try {
 				Resource res = (fromZipURLsOK ? null : getResourceZipURLsOK(urlPath));
-				is = (res == null ? ResourceLoader.openStream(new URL(urlPath)) : res.openInputStream());
+				is = (res == null ? openStream(new URL(urlPath)) : res.openInputStream());
 				if (OSPRuntime.isJS) {
 					OSPRuntime.jsutil.streamToFile(is, target);
 					if (res != null && cacheEnabled) {
@@ -1840,7 +1840,7 @@ public class ResourceLoader {
 			// Java Only -- none of this is necessary in SwingJS, since we can
 			// directly access the ZipEntry data.
 			URL url = getURLWithCachedBytes(zipFile);
-			ZipInputStream input = new ZipInputStream(ResourceLoader.openStream(url));
+			ZipInputStream input = new ZipInputStream(openStream(url));
 			ZipEntry zipEntry = null;
 			while ((zipEntry = input.getNextEntry()) != null) {
 				// BH 2020.04.25 allow both a in b and b in a
@@ -1906,7 +1906,7 @@ public class ResourceLoader {
 	/**
 	 * Determines if a url path is available (ie both valid and connected).
 	 * 
-	 * Guarded by webTestOK == FALSE; to overrided, use ResourceLoader.clearWebTest();
+	 * Guarded by webTestOK == FALSE; to overrided, use clearWebTest();
 	 *
 	 * @param urlPath the path in URI form
 	 * @return true if available
@@ -1950,7 +1950,7 @@ public class ResourceLoader {
 	}
 
 	/**
-	 * Used by LibraryLoader, LibraryBrowser, and ResourceLoader.download() 
+	 * Used by LibraryLoader, LibraryBrowser, and download() 
 	 * 
 	 * @return
 	 */
@@ -2453,7 +2453,7 @@ public class ResourceLoader {
 	 * @return
 	 */
 	private static boolean streamExists(URL working) {
-		try (InputStream stream = ResourceLoader.openStream(working)){
+		try (InputStream stream = openStream(working)){
 			return (stream.read() > -1);
 		} catch (IOException e) {
 			return false;
@@ -2891,7 +2891,7 @@ public class ResourceLoader {
 	}
 
 	private static InputStream getAssetStream(String name) throws IOException {
-		return (OSPRuntime.useZipAssets ? Assets.getAssetStream(name) : ResourceLoader.openStream(getAssetURL(name)));
+		return (OSPRuntime.useZipAssets ? Assets.getAssetStream(name) : openStream(getAssetURL(name)));
 	}
 
 	private final static String latinChars = "á\u00e1Á\u00c1é\u00e9É\u00c9í\u00edÍ\u00cdó\u00f3Ó\u00d3ú\u00faÚ\u00dañ\u00f1Ñ\u00d1ü\u00fcÜ\u00dc¡\u00a1¿\u00bf"; 
@@ -3055,7 +3055,7 @@ public class ResourceLoader {
 			URL toOpen = (zipURL == null ? new URL(entryPath.substring(4, n)) : zipURL);
 			entryPath = entryPath.substring(n + 2);
 //			BufferedInputStream bufIn = new BufferedInputStream(toOpen.openStream());
-			ZipInputStream input = new ZipInputStream(ResourceLoader.openStream(toOpen));
+			ZipInputStream input = new ZipInputStream(openStream(toOpen));
 			ZipEntry zipEntry = null;
 			while ((zipEntry = input.getNextEntry()) != null) {
 				if (zipEntry.isDirectory())
@@ -3432,6 +3432,44 @@ public class ResourceLoader {
 		
 	}
 
+		/**
+		 * Downloads asynchronously into SwingJS's virtual file cache. The continuation
+		 * receives a local URI only after all bytes are available, or null on failure.
+		 * This is called only in JavaScript; desktop Java keeps its existing loader.
+		 *
+		 * 
+		 * @author AI
+		 */
+		public static void loadAsync(String target, String fileName, Function<String, Void> whenDone) {
+			if (fileName == null) {
+				fileName = XML.getName(getNonURIPath(target));
+			}
+			File localFile = getOSPCacheFile(target, fileName);
+			String localPath = localFile.getAbsolutePath();
+			String localURI = getURIPath(localPath);
+			byte[] cached = OSPRuntime.getCachedBytes(localPath);
+			if (cached != null && cached.length > 0) {
+				whenDone.apply(localURI);
+				return;
+			}
+			URL url;
+			try {
+				url = new URL(getURIPath(target));
+			} catch (MalformedURLException ex) {
+				whenDone.apply(null);
+				return;
+			}
+			getURLContentsAsync(url, (bytes) -> {
+				if (bytes == null || bytes.length == 0) {
+					whenDone.apply(null);
+					return null;
+				}
+				OSPRuntime.jsutil.setFileBytes(localFile, bytes);
+				OSPRuntime.cacheJSFile(localFile, true);
+				whenDone.apply(localURI);
+				return null;
+			});
+		}
 }
 
 /*
