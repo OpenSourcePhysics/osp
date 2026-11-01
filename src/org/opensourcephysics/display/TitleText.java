@@ -34,7 +34,7 @@ public class TitleText extends DrawableTextLine {
    */
   public TitleText(String text) {
     super(text, 0, 0);
-    setFont(new Font("TimesRoman", Font.BOLD, 14)); //$NON-NLS-1$
+    setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
     setJustification(TextLine.CENTER);
   }
 
