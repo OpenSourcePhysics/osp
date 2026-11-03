@@ -14,10 +14,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -44,6 +46,102 @@ public class AIPatch {
 
 	
 //	private static final String RESIZE_HANDLER_KEY = "TWindowResizeHandler_Installed"; //$NON-NLS-1$
+
+	/** 
+	 * Keeps the view list open through the release of its opening long press. 
+	 */
+	public static void keepPopupOpenUntilSelection(JButton button, JPopupMenu popup) {
+		/** @j2sNative
+			var node = popup.秘getUI$().domNode;
+			if (popup._trackerPopupCleanup) popup._trackerPopupCleanup();
+			var widget = popup.$ulTop && popup.$ulTop.data("ui-j2smenu");
+			var collapse = widget && widget.collapseAll;
+			// This list closes on selection or an outside press, not a hover/blur timer.
+			if (widget) widget.collapseAll = function() {};
+			// Window activation can schedule a global menu close after this list opens.
+			// Dismiss this list only through its explicit selection/outside-press handlers.
+			var popupUI = swingjs.plaf.JSPopupMenuUI;
+			var closeMenusNow = popupUI.closeAllMenusNOW$;
+			var keepViewListOpen = function() {};
+			popupUI.closeAllMenusNOW$ = keepViewListOpen;
+			var openingRelease = true;
+			var observer;
+			var cleanup = function() {
+			 document.removeEventListener("pointerdown", press, true);
+			 document.removeEventListener("mousedown", press, true);
+			 document.removeEventListener("touchstart", press, true);
+			 document.removeEventListener("pointerup", release, true);
+			 document.removeEventListener("mouseup", release, true);
+			 document.removeEventListener("touchend", release, true);
+			 document.removeEventListener("click", click, true);
+			 document.removeEventListener("keydown", key, true);
+			 if (observer) observer.disconnect();
+			 for (var i = 0; i < items.length; i++)
+			  if (items[i].removeActionListener$java_awt_event_ActionListener)
+			   items[i].removeActionListener$java_awt_event_ActionListener(itemListener);
+			 if (widget) widget.collapseAll = collapse;
+			 if (popupUI.closeAllMenusNOW$ === keepViewListOpen)
+			  popupUI.closeAllMenusNOW$ = closeMenusNow;
+			 delete popup._trackerPopupCleanup;
+			};
+			var close = function() {
+			 cleanup();
+			 button.hidePopup = false;
+			 popup.setVisible$Z(false);
+			 // Swing's visibility flag can already be false after touch activation.
+			 // Force the native menu to hide as well.
+			 if (J2S.Swing && J2S.Swing.hideMenu) J2S.Swing.hideMenu(popup, true);
+			};
+			var press = function(e) {
+			 openingRelease = false;
+			 if (!node.contains(e.target)) close();
+			};
+			var release = function(e) {
+			 if (!openingRelease) return;
+			 // Consume only the release of the press that opened this list.
+			 // Disarm first so releasing the Swing button cannot fire its normal action.
+			 var model = button.getModel$();
+			 model.setArmed$Z(false);
+			 model.setPressed$Z(false);
+			 if (e.cancelable) e.preventDefault();
+			 e.stopImmediatePropagation();
+			};
+			var click = function(e) {
+			 if (openingRelease) {
+			  e.stopImmediatePropagation();
+			  return;
+			 }
+			 var item = e.target.closest(".ui-j2smenu-item");
+			 if (item && node.contains(item) && !item.closest(".ui-state-disabled")) {
+			  // Let the menu item perform its action before dismissing the list.
+			  setTimeout(close, 0);
+			 }
+			};
+			var key = function(e) { if (e.key === "Escape") close(); };
+			// Touch menu items can fire their Swing action without a DOM click.
+			var items = popup.getComponents$();
+			var itemListener = {
+			 actionPerformed$java_awt_event_ActionEvent: function() { close(); },
+			 equals$O: function(other) { return this === other; }
+			};
+			for (var i = 0; i < items.length; i++)
+			 if (items[i].addActionListener$java_awt_event_ActionListener)
+			  items[i].addActionListener$java_awt_event_ActionListener(itemListener);
+			popup._trackerPopupCleanup = cleanup;
+			document.addEventListener("pointerdown", press, true);
+			document.addEventListener("mousedown", press, true);
+			document.addEventListener("touchstart", press, true);
+			document.addEventListener("pointerup", release, true);
+			document.addEventListener("mouseup", release, true);
+			document.addEventListener("touchend", release, true);
+			document.addEventListener("click", click, true);
+			document.addEventListener("keydown", key, true);
+			observer = new MutationObserver(function() {
+			 if (!node.isConnected || node.style.display === "none") cleanup();
+			});
+			observer.observe(node, {attributes:true, attributeFilter:["style"]});
+		 */
+	}
 
 	/**
 	 * Installs the window resize handler on the specified window.
