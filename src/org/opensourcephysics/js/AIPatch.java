@@ -44,9 +44,118 @@ import swingjs.api.js.DOMNode;
  */
 public class AIPatch {
 
+
+	
 	
 //	private static final String RESIZE_HANDLER_KEY = "TWindowResizeHandler_Installed"; //$NON-NLS-1$
 
+	
+	/**
+	 * Keeps browser context menus open through the release of their opening press.
+	 * Install on the actual menu, since marker menus may belong to a track rather
+	 * than this panel's background popup.
+	 */
+   static public void installContextPopupGuard(JPanel panel, JPopupMenu menu) {
+		if (!OSPRuntime.isJS || menu == null)
+			return;
+		@SuppressWarnings("unused")
+		Runnable onShow = () -> keepContextPopupOpen(panel, menu);
+		/** @j2sNative
+		 // A track can reuse its menu in another panel, so update the owner.
+		 menu._trackerContextPopupOnShow = onShow;
+		 if (menu._trackerContextPopupShowInstalled) return;
+		 menu._trackerContextPopupShowInstalled = true;
+		 var show = menu.show$java_awt_Component$I$I;
+		 menu.show$java_awt_Component$I$I = function(invoker, x, y) {
+		  var result = show.apply(this, arguments);
+		  // Arm after SwingJS has created and displayed the actual menu node.
+		  if (this.$ulTop && this.$ulTop[0].style.display !== "none")
+		   this._trackerContextPopupOnShow.run$();
+		  return result;
+		 };
+		 var setVisible = menu.setVisible$Z;
+		 menu.setVisible$Z = function(visible) {
+		  if (!visible && this._trackerContextPopupCleanup)
+		   this._trackerContextPopupCleanup();
+		  return setVisible.apply(this, arguments);
+		 };
+		 */
+	}
+
+	static private void keepContextPopupOpen(JPanel panel, JPopupMenu popup) {
+		/** @j2sNative
+		 if (popup._trackerContextPopupCleanup) popup._trackerContextPopupCleanup();
+		 var openingRelease = true;
+		 var touchReleaseTime = null;
+		 var observer;
+		 var cleanup = function() {
+		  document.removeEventListener("pointerdown", press, true);
+		  document.removeEventListener("mousedown", press, true);
+		  document.removeEventListener("touchstart", press, true);
+		  document.removeEventListener("pointerup", release, true);
+		  document.removeEventListener("pointercancel", release, true);
+		  document.removeEventListener("mouseup", release, true);
+		  document.removeEventListener("touchend", release, true);
+		  document.removeEventListener("touchcancel", release, true);
+		  document.removeEventListener("click", click, true);
+		  if (observer) observer.disconnect();
+		  delete popup._trackerContextPopupCleanup;
+		 };
+		 var press = function(e) {
+		  // Safari can synthesize a mouse press after the opening touch ends.
+		  // A genuine next touch/pointer press disarms this check first.
+		  if (openingRelease && e.type === "mousedown" && touchReleaseTime !== null
+		      && Date.now() - touchReleaseTime < 800) {
+		   if (e.cancelable) e.preventDefault();
+		   e.stopImmediatePropagation();
+		   return;
+		  }
+		  openingRelease = false;
+		  var node = popup.$ulTop && popup.$ulTop[0];
+		  if (!node) node = popup.秘getUI$().domNode;
+		  if (node && node.contains(e.target)) return;
+		  cleanup();
+		  panel.hidePopup$();
+		 };
+		 var release = function(e) {
+		  if (!openingRelease) return;
+		  if (e.type.indexOf("touch") === 0 || e.pointerType === "touch" || e.pointerType === "pen") {
+		   touchReleaseTime = Date.now();
+		  }
+		  // The context action already supplied its Java release. Consume the
+		  // physical release once, before duplicate SwingJS/document listeners.
+		  if (e.cancelable) e.preventDefault();
+		  e.stopImmediatePropagation();
+		 };
+		 var click = function(e) {
+		  if (!openingRelease) return;
+		  if (e.cancelable) e.preventDefault();
+		  e.stopImmediatePropagation();
+		 };
+		 popup._trackerContextPopupCleanup = cleanup;
+		 var capture = {capture:true, passive:false};
+		 document.addEventListener("pointerdown", press, capture);
+		 document.addEventListener("mousedown", press, capture);
+		 document.addEventListener("touchstart", press, capture);
+		 document.addEventListener("pointerup", release, capture);
+		 document.addEventListener("pointercancel", release, capture);
+		 document.addEventListener("mouseup", release, capture);
+		 document.addEventListener("touchend", release, capture);
+		 document.addEventListener("touchcancel", release, capture);
+		 document.addEventListener("click", click, capture);
+		 var node = popup.$ulTop && popup.$ulTop[0];
+		 if (node) {
+		  observer = new MutationObserver(function() {
+		   if (!node.isConnected || node.style.display === "none") cleanup();
+		  });
+		  observer.observe(node, {attributes:true, attributeFilter:["style"]});
+		 }
+		 */
+	}
+
+
+	
+	
 	/** 
 	 * Keeps the view list open through the release of its opening long press. 
 	 */
@@ -979,5 +1088,7 @@ public class AIPatch {
 		}
 		
 	}
+
+
 
 }
