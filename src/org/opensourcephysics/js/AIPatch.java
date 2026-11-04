@@ -51,8 +51,6 @@ public class AIPatch {
 	 * Keeps the view list open through the release of its opening long press. 
 	 */
 	public static void keepPopupOpenUntilSelection(JButton button, JPopupMenu popup) {
-		System.err.println("AIPatch not keepPopupOpen");
-			return;
 		/** @j2sNative
 			var node = popup.秘getUI$().domNode;
 			if (popup._trackerPopupCleanup) popup._trackerPopupCleanup();
