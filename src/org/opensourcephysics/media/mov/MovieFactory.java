@@ -127,12 +127,14 @@ public class MovieFactory {
 			if (OSPRuntime.isJS)
 				return JSMovieVideo.createThumbnailFile(defaultThumbnailDimension, sourcePath, thumbPath);
 
-			// video files: use Xuggle thumbnail tool, if available
-			String className = xuggleClassPath + "XuggleThumbnailTool"; //$NON-NLS-1$
+			// Loading another engine here can load a conflicting native FFmpeg.
+			String className = getThumbnailToolClassName();
+			if (className == null)
+				return null;
 			Class<?>[] types = new Class<?>[] { Dimension.class, String.class, String.class };
 			try {
-				Class<?> xuggleClass = Class.forName(className);
-				Method method = xuggleClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
+				Class<?> thumbnailClass = Class.forName(className);
+				Method method = thumbnailClass.getMethod("createThumbnailFile", types); //$NON-NLS-1$
 				return (File) method.invoke(null, new Object[] { defaultThumbnailDimension, sourcePath, thumbPath });
 			} catch (Exception ex) {
 				OSPLog.fine("failed to create thumbnail: " + ex.toString()); //$NON-NLS-1$
@@ -164,15 +166,18 @@ public class MovieFactory {
 	}
 
 	/**
-	 * Checks an engine without registering its video types or changing the
-	 * selected engine. Diagnostics must distinguish availability from selection.
+	 * Checks the selected engine without registering video types or loading a
+	 * competing native engine. Probing an unselected engine can load a second
+	 * FFmpeg library into this JVM.
 	 *
 	 * @param engineName the engine to check
-	 * @return true when its diagnostics report a working engine
+	 * @return true when the selected engine diagnostics report a working engine
 	 */
 	public static boolean isVideoEngineAvailable(String engineName) {
 		if (OSPRuntime.isJS)
 			return ENGINE_JS.equals(engineName) && hasVideoEngine();
+		if (!movieEngineName.equals(engineName))
+			return false;
 		String diagnostics;
 		if (ENGINE_CV.equals(engineName))
 			diagnostics = cvClassPath + "CVDiagnostics"; //$NON-NLS-1$
@@ -195,14 +200,24 @@ public class MovieFactory {
 		if (OSPRuntime.isJS) {
 			return; // ?? 
 		}
-		if (hasVideoEngine()) {
+		String className = getThumbnailToolClassName();
+		if (className != null) {
 			try {
-				Class.forName(xuggleClassPath + "XuggleThumbnailTool"); //$NON-NLS-1$
+				Class.forName(className);
 			} catch (ClassNotFoundException e) {
 			}
 		}
 	}
 	
+	/** Returns only the thumbnail tool belonging to the selected native engine. */
+	private static String getThumbnailToolClassName() {
+		if (ENGINE_CV.equals(movieEngineName))
+			return cvClassPath + "CVThumbnailTool"; //$NON-NLS-1$
+		if (ENGINE_XUGGLE.equals(movieEngineName))
+			return xuggleClassPath + "XuggleThumbnailTool"; //$NON-NLS-1$
+		return null;
+	}
+
 	/**
 	 * Updates video engine files if available
 	 * 

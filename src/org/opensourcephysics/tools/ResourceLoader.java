@@ -2840,9 +2840,12 @@ public class ResourceLoader {
 		public String getString(String key) throws MissingResourceException {
 			String ret = (props == null ? res.getString(key) : props.getProperty(key));
 			if (ret == null) {
-				String cname = (res == null ? props : res).getClass().getName();
-				throw new MissingResourceException("Can't find resource for bundle " + cname + ", key " + key, cname,
+				String cname = (res == null ? props : res).getClass().getName();				
+				String msg = "Can't find resource for bundle " + cname + ", key " + key;
+				MissingResourceException e = new MissingResourceException(msg, cname,
 						key);
+				e.printStackTrace(System.err);
+				throw e;
 			}
 			return ret;
 		}

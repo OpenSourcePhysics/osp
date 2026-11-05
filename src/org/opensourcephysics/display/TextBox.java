@@ -31,7 +31,7 @@ public class TextBox implements Drawable {
   public int xoffset = 0, yoffset = 0;
   protected String text = null;
   protected Font font;
-  protected String fontname = "TimesRoman";  // The logical name of the font to use //$NON-NLS-1$
+  protected String fontname = Font.SANS_SERIF;  // The logical name of the font to use
   protected int fontsize = 14;               // The font size
   protected int fontstyle = Font.PLAIN;      // The font style
   protected Color color = Color.black;

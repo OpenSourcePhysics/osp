@@ -48,7 +48,7 @@ public class MessageDrawable implements Drawable {
 	String brStr = null; // "bottom right";
 
 	protected Font font;
-	protected String fontname = "TimesRoman"; // The logical name of the font to use //$NON-NLS-1$
+	protected String fontname = Font.SANS_SERIF; // The logical name of the font to use
 	protected int fontsize = 12; // The font size
 	protected int fontstyle = Font.PLAIN; // The font style
 	protected boolean ignoreRepaint = false;

@@ -116,7 +116,7 @@ public class TextLine {
   /**
    * The logical name of the font to use
    */
-  protected String fontname = "TimesRoman"; //$NON-NLS-1$
+  protected String fontname = Font.SANS_SERIF;
 
   /**
    * The font size
