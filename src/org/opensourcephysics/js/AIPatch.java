@@ -58,8 +58,12 @@ public class AIPatch {
    static public void installContextPopupGuard(JPanel panel, JPopupMenu menu) {
 		if (!OSPRuntime.isJS || menu == null)
 			return;
+
 		@SuppressWarnings("unused")
 		Runnable onShow = () -> keepContextPopupOpen(panel, menu);
+
+		return;
+
 		/** @j2sNative
 		 // A track can reuse its menu in another panel, so update the owner.
 		 menu._trackerContextPopupOnShow = onShow;
@@ -82,7 +86,13 @@ public class AIPatch {
 		 */
 	}
 
+	/**
+	 * Keeps browser context menus open through the release of their opening press.
+	 * Install on the actual menu, since marker menus may belong to a track rather
+	 * than this panel's background popup.
+	 */
 	static private void keepContextPopupOpen(JPanel panel, JPopupMenu popup) {
+		return;
 		/** @j2sNative
 		 if (popup._trackerContextPopupCleanup) popup._trackerContextPopupCleanup();
 		 var openingRelease = true;
@@ -160,6 +170,7 @@ public class AIPatch {
 	 * Keeps the view list open through the release of its opening long press. 
 	 */
 	public static void keepPopupOpenUntilSelection(JButton button, JPopupMenu popup) {
+		return;
 		/** @j2sNative
 			var node = popup.秘getUI$().domNode;
 			if (popup._trackerPopupCleanup) popup._trackerPopupCleanup();
