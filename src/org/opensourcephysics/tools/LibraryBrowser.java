@@ -1143,14 +1143,8 @@ public class LibraryBrowser extends JPanel {
 		loadCollectionAction = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// Touch selection in SwingJS does not always dismiss the menu chain.
 				javax.swing.MenuSelectionManager.defaultManager().clearSelectedPath();
 				collectionsMenu.setPopupMenuVisible(false);
-				// Touch menu activation can leave the SwingJS submenu DOM visible.
-				/** @j2sNative
-				 * swingjs.plaf.JSPopupMenuUI.closeAllMenusNOW$();
-				 */
-				{}
 				loadTab(e.getActionCommand(), null);
 			}
 		};
