@@ -466,13 +466,33 @@ public class OSPRuntime {
 	private static boolean isiPad;
 	private static boolean isAndroid;	
   private static boolean isMobile;
-  public static boolean preferMobile, neverMobile;  // for testing WC
+  private static boolean isCompact;
+  public static boolean preferMobile, neverMobile;
   private static String userAgent;	//navigator user agent
     //skip loading for testing mobile devices
 	private static boolean skipDisplayOfPDF;// isMobile;// true;// isJS; // for TrackerIO, for now.
 	private static boolean askIfMobileKeyboard = true; // for now since Tracker is not connected to this; future might be false?
 	public static boolean useVirtualNumberPad;
 
+	/**
+	 * Determines if using compact mode. Used by TTrackBar.
+	 *
+	 * @param c a top-level Container like JFrame, etc
+	 * @return true if running in compact mode
+	 */
+	static public boolean isCompact(Container c) {
+		return isSmallScreen(c) || isCompact;
+	}
+	
+	/**
+	 * Sets compact mode.
+	 *
+	 * @param true to use compact mode
+	 */
+	static public void setCompact(boolean compact) {
+		isCompact = compact;
+	}
+	
 	/**
 	 * Determines if running on a mobile device.
 	 *
