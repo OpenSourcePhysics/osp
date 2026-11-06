@@ -49,7 +49,27 @@ public class AIPatch {
 	
 //	private static final String RESIZE_HANDLER_KEY = "TWindowResizeHandler_Installed"; //$NON-NLS-1$
 
-	
+
+	/**
+	 * Align a component's right edge with the reference component or within the
+	 * visible viewport. 
+	 * 
+	 * Note that this does NOT set Java values, only JavaScript. 
+	 * It is called just after menu.show().
+	 * 
+	 * Version 2 -- adjusts horizontal and vertical
+	 */
+	public static void alignComponentRight(JComponent c, JComponent ref) {
+		// SwingJS menus are rendered outside the frame. Constrain the actual
+		// DOM bounds because Swing popup sizes can differ from the rendered size.
+		// BH if that is the case, there is something wrong in the calculation
+		Window container = SwingUtilities.getWindowAncestor(ref);
+		if (container != null) {
+			OSPRuntime.jsutil.alignComponentToContainer(c, container, 1, 1);
+		}
+	}
+
+
 	/**
 	 * Keeps browser context menus open through the release of their opening press.
 	 * Install on the actual menu, since marker menus may belong to a track rather
@@ -1099,7 +1119,5 @@ public class AIPatch {
 		}
 		
 	}
-
-
 
 }

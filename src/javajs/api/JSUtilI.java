@@ -1,6 +1,7 @@
 package javajs.api;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
@@ -401,24 +402,8 @@ public interface JSUtilI {
      */
     void getMediaInfoAsync(byte[] videoData, String trackType, String path, Consumer<Map<String, Object>> success, Consumer<String> onError);
 
-    /**
-     * Calculate the distance from the right edge of the component to the right visual edge.
-     * 
-     * @param c
-     * @return Integer.MIN_VALUE if not applicable
-     */
-	int getComponentDistanceToRightEdge(JComponent c, JComponent ref);
-	
-    default void alignComponentRight(JComponent c, JComponent ref, int off) {
-		int offset = getComponentDistanceToRightEdge(c, ref);
-		if (offset == off)
-			return;
-		Rectangle r = new Rectangle();
-		c.getBounds(r);
-		r.x += offset + off;
-		c.setBounds(r);
-	}
-
 	Rectangle getMaximumViewport(int marginLeft, int marginTop);
+
+	void alignComponentToContainer(JComponent c, Container container, int insetX, int insetY);
 
 }
