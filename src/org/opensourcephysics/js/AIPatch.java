@@ -14,12 +14,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractButton;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JRootPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -1118,6 +1116,89 @@ public class AIPatch {
 			return (Window) panel.getTopLevelAncestor();
 		}
 		
+	}
+
+	/**
+	 * 
+	 * Install a local file save function for use in J2S when saving a file. 
+	 * 
+	 * The archive is ready only after compression. On iOS, use a Blob link and
+	 * a fresh user tap instead of the default asynchronous base64 download.
+	 * Temporary writes still go to the SwingJS cache; other saves are delegated.
+	 * 
+	 * Refined by Bob Hanson
+	 * 
+	 * @param targetPath
+	 * @param string
+	 * @return
+	 * 
+	 * @author ChatGPT+
+	 */
+	public static Runnable installJ2SFileSaveDialog(String targetPath, String mediaType) {
+		System.out.println("AIPatch.installJ2SFileSaveDialog " + targetPath + "  as " + mediaType);
+		/**
+		 * @j2sNative
+		 * var previousSave = J2S._localFileSaveFunction;
+		 * var projectSave = null;
+		 * var ua = navigator.userAgent || "";
+		 * if (/iPad|iPhone|iPod/.test(ua) ||
+		 *     (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) {
+		 *   projectSave = function(filename, data) {
+		 *     if (filename !== targetPath) {
+		 *       return previousSave ? previousSave.apply(this, arguments) : false;
+		 *     }
+		 *     var name = filename.substring(filename.lastIndexOf("/") + 1);
+		 *     var blob = new Blob([new Uint8Array(data)], {type: mediaType});
+		 *     var url = URL.createObjectURL(blob);
+		 *     var previousFocus = document.activeElement;
+		 *     var overlay = document.createElement("div");
+		 *     overlay.setAttribute("role", "dialog");
+		 *     overlay.setAttribute("aria-modal", "true");
+		 *     overlay.setAttribute("aria-label", "Save File");
+		 *     overlay.style.cssText = "position:fixed;inset:0;z-index:1000001;display:flex;align-items:center;justify-content:center;background:#0009";
+		 *     var panel = document.createElement("div");
+		 *     panel.style.cssText = "background:white;color:#222;padding:24px;border-radius:10px;max-width:85vw;font:16px/1.4 sans-serif";
+		 *     var message = document.createElement("p");
+		 *     message.textContent = "Your file is ready. Tap Download to save " + name + ".";
+		 *     var download = document.createElement("a");
+		 *     download.href = url;
+		 *     download.download = name;
+		 *     download.type = "application/zip";
+		 *     download.textContent = "Download " + name.substring(name.lastIndexOf(".") + 1).toUpperCase();
+		 *     download.style.cssText = "display:inline-block;padding:12px;margin-right:16px";
+		 *     var close = document.createElement("button");
+		 *     close.textContent = "Close";
+		 *     close.style.cssText = "font:inherit;padding:12px";
+		 *     var dismiss = function() {
+		 *       overlay.remove();
+		 *       // Do not revoke while Safari may still be starting the download.
+		 *       window.setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+		 *       if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+		 *     };
+		 *     close.addEventListener("click", dismiss);
+		 *     overlay.addEventListener("keydown", function(event) {
+		 *       if (event.key === "Escape") { event.stopPropagation(); dismiss(); }
+		 *       if (event.key === "Tab") {
+		 *         event.preventDefault();
+		 *         (document.activeElement === download ? close : download).focus();
+		 *       }
+		 *     });
+		 *     panel.appendChild(message);
+		 *     panel.appendChild(download);
+		 *     panel.appendChild(close);
+		 *     overlay.appendChild(panel);
+		 *     document.body.appendChild(overlay);
+		 *     download.focus();
+		 *     return true;
+		 *   };
+		 *   J2S._localFileSaveFunction = projectSave;
+		 * }
+		 * return {"run$":function() {
+		 *   if (projectSave && J2S._localFileSaveFunction === projectSave)
+		 *     J2S._localFileSaveFunction = previousSave;
+		 * }};
+		 */
+		return null;
 	}
 
 }
