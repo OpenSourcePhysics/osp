@@ -493,6 +493,11 @@ public class OSPRuntime {
 		isCompact = compact;
 	}
 	
+	public static void setMobile(boolean mobile) {
+		preferMobile = mobile;
+		neverMobile = !mobile;
+	}
+
 	/**
 	 * Determines if running on a mobile device.
 	 *
