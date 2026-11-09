@@ -399,7 +399,8 @@ public class OSPRuntime {
 		}
 		
 		public boolean isValid() {
-			String[] v = this.ver.trim().split("\\."); //$NON-NLS-1$
+			// split on period OR dash
+			String[] v = this.ver.trim().split("[.-]"); //$NON-NLS-1$
 			if (v.length >= 2 && v.length <= 4) {
 				for (int i = 0; i < v.length; i++) {
 					try {
@@ -415,12 +416,12 @@ public class OSPRuntime {
 
 		@Override
 		public int compareTo(Version o) {
-			// typical current versions (length 3-4): "6.1.2" or "6.1.2.220213"
+			// typical current versions (length 3-4): "6.1.2" or "6.1.2.220213" or "6.3.5-260929"
 			// typical older version (length 2): "4.97"
 
-			// split at decimal points
-			String[] v1 = this.ver.trim().split("\\."); //$NON-NLS-1$
-			String[] v2 = o.ver.trim().split("\\."); //$NON-NLS-1$
+			// split on period OR dash
+			String[] v1 = this.ver.trim().split("[.-]"); //$NON-NLS-1$
+			String[] v2 = o.ver.trim().split("[.-]"); //$NON-NLS-1$
 			
 			// pad versions to length 4	
 			if (v1.length == 2)
