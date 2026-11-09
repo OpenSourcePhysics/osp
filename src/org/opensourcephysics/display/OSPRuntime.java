@@ -98,8 +98,8 @@ import javajs.async.SwingJSUtils.Timeout;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.3.5.261026"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "26 Oct 2026"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.5-261109"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "9 Nov 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -724,7 +724,7 @@ public class OSPRuntime {
 		return (int)(FontSizer.getFactor() * (smallScreen));		
 	}
 	
-	public static int smallScreen = 480;
+	public static int smallScreen = 500;
 	
 	public static final char DECIMAL_SEPARATOR_COMMA = ',';
 	public static final char DECIMAL_SEPARATOR_PERIOD = '.';
