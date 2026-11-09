@@ -2872,7 +2872,7 @@ public class ResourceLoader {
 		Bundle b = bundleCache.get(key);
 		if (b != null)
 			return b;
-		if (resourceLocale.getLanguage() == "en" && !Assets.notFound(name) ) {
+		if ("en".equals(resourceLocale.getLanguage()) && !Assets.notFound(name) ) {
 			Properties p = new Properties();
 			try {
 				p.load(getAssetStream(name));
@@ -2885,9 +2885,17 @@ public class ResourceLoader {
 				Assets.setNotFound(name);
 			}
 		}
-		if (b == null)
-			b = new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
-				ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
+		if (b == null) {
+			try {
+				b = new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
+						ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
+			} catch (MissingResourceException e) {
+				if ("en".equals(resourceLocale.getLanguage()))
+					throw e;
+				// The PWA may have the default properties only in its asset archive.
+				b = getBundle(bundleName, Locale.ENGLISH);
+			}
+		}
 		bundleCache.put(key, b);
 		return b;
 
