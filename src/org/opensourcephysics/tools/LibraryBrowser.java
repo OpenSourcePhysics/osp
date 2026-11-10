@@ -704,6 +704,7 @@ public class LibraryBrowser extends JPanel {
 			if (isConstructor) {
 				// just do this once
 				window = frame = new JFrame();
+				frame.setName("LibraryBrowser");
 			}
 		} else if (parent instanceof JFrame) {
 			window = frame = (JFrame) parent;
