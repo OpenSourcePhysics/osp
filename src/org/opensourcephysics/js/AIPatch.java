@@ -37,43 +37,604 @@ import swingjs.api.js.DOMNode;
 
 /**
  * A static class for collecting AI-generated j2sNative code
- * @author hanso
+ * 
+ * Reviewed and revised by Bob Hanson
+ * 
+ * Many of these features are good general solutions. They have been ported to
+ * SwingJS JSUtil.java
+ * 
+ * @author ChatGP+
+ * @author Bob Hanson
  *
  */
 public class AIPatch {
 
-
-	
-	
-//	private static final String RESIZE_HANDLER_KEY = "TWindowResizeHandler_Installed"; //$NON-NLS-1$
-
+	private static final int MIN_WIDTH = 320;
+	private static final int MIN_HEIGHT = 220;
 
 	/**
 	 * Align a component's right edge with the reference component or within the
-	 * visible viewport. 
+	 * visible viewport.
 	 * 
-	 * Note that this does NOT set Java values, only JavaScript. 
-	 * It is called just after menu.show().
+	 * Note that this does NOT set Java values, only JavaScript. It is called just
+	 * after menu.show().
 	 * 
 	 * Version 2 -- adjusts horizontal and vertical
+	 * 
+	 * @author Bob Hanson
 	 */
 	public static void alignComponentRight(JComponent c, JComponent ref) {
-		// SwingJS menus are rendered outside the frame. Constrain the actual
-		// DOM bounds because Swing popup sizes can differ from the rendered size.
-		// BH if that is the case, there is something wrong in the calculation
+		// offloaded to JSUtil.java
 		Window container = SwingUtilities.getWindowAncestor(ref);
 		if (container != null) {
 			OSPRuntime.jsutil.alignComponentToContainer(c, container, 1, 1);
 		}
 	}
 
+	/**
+	 * Installs the window resize handler on the specified window.
+	 *
+	 * @param window the top-level Window (TFrame or JDialog)
+	 */
+	public static void installResizeHandler(JFrame window) {
 
+		window.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				setupResizer(window);
+			}
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				setupResizer(window);
+			}
+		});
+	}
+
+	/**
+	 * Installs the window resize handler on the specified window.
+	 *
+	 * @param window the top-level Window (TFrame or JDialog)
+	 * 
+	 * @author Bob Hanson
+	 */
+	public static void installGestureHandler(Window window) {
+
+		window.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				isolateWindowGestures(window);
+			}
+
+			@Override
+			public void componentResized(ComponentEvent e) {
+				isolateWindowGestures(window);
+			}
+		});
+	}
+
+	/**
+	 * Isolates the window DOM node from propagating gestures to the host HTML page
+	 * in SwingJS. Prevents pinch-to-zoom, two-finger pan, overscroll
+	 * rubber-banding, and touch drag bubbling from escaping the Tracker window to
+	 * the surrounding webpage.
+	 *
+	 * @param window the top-level Window (TFrame)
+	 * 
+	 * @author ChatGPT+
+	 */
+	public static void isolateWindowGestures(Window w) {
+		OSPRuntime.jsutil.isolateWindowGestures(w);
+	}
+
+	public static void disposeElement(String id) {
+		DOMNode.dispose(DOMNode.getElement(id));
+	}
+
+	public static void addWindowOrientationChangeListener(Runnable onOrient) {
+		/**
+		 * @j2sNative window.addEventListener(window.onorientationchange ?
+		 *            "orientationchange" : "resize", function() {
+		 *            console.log("Orientation changed"); onOrient.run$(); }, false);
+		 */
+	}
+
+	public static void virtualNumberPad(NumberField nf, String action) {
+		switch (action) {
+		case "add":
+			/**
+			 * @j2sNative
+			 * 
+			 * 			J2S.Mobile.addNumberPad(nf);
+			 */
+			//$FALL-THROUGH$
+		case "show":
+			/**
+			 * @j2sNative
+			 * 
+			 * 			J2S.Mobile.showNumberPad(nf);
+			 */
+		}
+	}
+
+	/**
+	 * Configures the SwingJS window resizer DOM element for touch responsiveness
+	 * and visual affordance.
+	 *
+	 * @param window the window whose resizer should be configured
+	 */
+	@SuppressWarnings("unused")
+	public static void setupResizer(Window window) {
+		if (window == null || !OSPRuntime.isJS)
+			return;
+		int minw = MIN_WIDTH;
+		int minh = MIN_HEIGHT;
+		/**
+		 * @j2sNative try { var frame = window; var viewer = (frame.getFrameViewer$ ?
+		 *            frame.getFrameViewer$() : (frame.秘frameViewer || null)); if
+		 *            (!viewer && window.getRootPane$) { var rp = window.getRootPane$();
+		 *            viewer = (rp && rp.getFrameViewer$ ? rp.getFrameViewer$() : (rp ?
+		 *            rp.秘frameViewer : null)); } var resizer = (viewer &&
+		 *            viewer.getResizer$ ? viewer.getResizer$() : null); if (!resizer &&
+		 *            viewer && viewer.newResizer) { resizer = viewer.newResizer(); } if
+		 *            (resizer && resizer.show$) { resizer.show$(); } if (!resizer)
+		 *            return;
+		 * 
+		 *            var resizerNode = (resizer.getDOMNode$ ? resizer.getDOMNode$() :
+		 *            (resizer.resizer || null)); if (!resizerNode && resizer.rootPane)
+		 *            { var id = resizer.rootPane.秘htmlName + "_resizer"; resizerNode =
+		 *            document.getElementById(id); } if (!resizerNode) return;
+		 * 
+		 *            var rubberBandNode = resizer.rubberBand; if (!rubberBandNode &&
+		 *            resizer.rootPane) { var rbid = resizer.rootPane.秘htmlName +
+		 *            "_resizer_rb"; rubberBandNode = document.getElementById(rbid); }
+		 * 
+		 *            // Ensure rubberBand does not block touch / pointer interactions
+		 * 
+		 *            if (rubberBandNode) { rubberBandNode.style.pointerEvents = "none";
+		 *            }
+		 * 
+		 *            // 1. Keep the 20x20 hotspot inside the frame 
+		 *            //    to avoid page overflow
+		 * 
+		 *            resizerNode.style.width = "20px"; resizerNode.style.height =
+		 *            "20px"; resizerNode.style.marginLeft = "-15px";
+		 *            resizerNode.style.marginTop = "-15px";
+		 *            resizerNode.style.touchAction = "none"; resizerNode.style.zIndex =
+		 *            "100002"; resizerNode.style.userSelect = "none";
+		 *            resizerNode.style.webkitUserSelect = "none";
+		 *            resizerNode.style.cursor = "nwse-resize";
+		 * 
+		 *            // 2. Visible diagonal corner grip lines 
+		 *            //    for clear visual feedback on touch screens 
+		 *            
+		 *            resizerNode.style.opacity = "0.75";
+		 *            resizerNode.style.backgroundImage = "linear-gradient(135deg,
+		 *            transparent 0%, transparent 50%, #888888 50%, #888888 56%,
+		 *            transparent 56%, transparent 68%, #888888 68%, #888888 74%,
+		 *            transparent 74%, transparent 86%, #888888 86%, #888888 92%,
+		 *            transparent 92%)"; resizerNode.style.backgroundRepeat =
+		 *            "no-repeat"; resizerNode.style.backgroundPosition = "right
+		 *            bottom"; resizerNode.style.backgroundSize = "10px 10px";
+		 * 
+		 *            // 3. Attach dedicated touch listeners with 
+		 *            //    passive: false to prevent iOS Safari scrolling 
+		 *            
+		 *            if (!resizerNode._tTouchAttached) {
+		 *            resizerNode._tTouchAttached = true;
+		 * 
+		 *            resizerNode.addEventListener("touchstart", function(e) { if
+		 *            (!e.touches || e.touches.length === 0) return; e.preventDefault();
+		 *            e.stopPropagation();
+		 * 
+		 *            var touch0 = e.touches[0]; var startX = touch0.pageX; var startY =
+		 *            touch0.pageY; var startW = frame.getWidth$ ? frame.getWidth$() :
+		 *            (frame.width || 800); var startH = frame.getHeight$ ?
+		 *            frame.getHeight$() : (frame.height || 600); var startLoc =
+		 *            frame.getLocation$ ? frame.getLocation$() : { x: 0, y: 0 };
+		 * 
+		 *            resizerNode.style.opacity = "1.0"; if (rubberBandNode) {
+		 *            rubberBandNode.style.width = startW + "px";
+		 *            rubberBandNode.style.height = startH + "px";
+		 *            rubberBandNode.style.display = "block";
+		 *            rubberBandNode.style.pointerEvents = "none"; }
+		 * 
+		 *            var onTouchMove = function(me) { if (!me.touches ||
+		 *            me.touches.length === 0) return; me.preventDefault();
+		 *            me.stopPropagation(); var t = me.touches[0]; var dx = t.pageX -
+		 *            startX; var dy = t.pageY - startY; var curW = Math.max(minw,
+		 *            Math.round(startW + dx)); var curH = Math.max(minh,
+		 *            Math.round(startH + dy)); if (rubberBandNode) {
+		 *            rubberBandNode.style.width = curW + "px";
+		 *            rubberBandNode.style.height = curH + "px"; }
+		 *            resizerNode.style.left = (curW - 4) + "px"; resizerNode.style.top
+		 *            = (curH - 4) + "px"; };
+		 * 
+		 *            var onTouchEnd = function(ue) { ue.preventDefault();
+		 *            ue.stopPropagation(); window.removeEventListener("touchmove",
+		 *            onTouchMove, { passive: false, capture: true });
+		 *            window.removeEventListener("touchend", onTouchEnd, { passive:
+		 *            false, capture: true }); window.removeEventListener("touchcancel",
+		 *            onTouchEnd, { passive: false, capture: true });
+		 * 
+		 *            resizerNode.style.opacity = "0.75"; if (rubberBandNode) {
+		 *            rubberBandNode.style.display = "none"; }
+		 * 
+		 *            var endTouch = (ue.changedTouches && ue.changedTouches.length > 0
+		 *            ? ue.changedTouches[0] : touch0); var dx = endTouch.pageX -
+		 *            startX; var dy = endTouch.pageY - startY; var finalW =
+		 *            Math.max(minw, Math.round(startW + dx)); var finalH =
+		 *            Math.max(minh, Math.round(startH + dy));
+		 * 
+		 *            if (frame.setSize$I$I) { frame.setSize$I$I(finalW, finalH); } else
+		 *            if (frame.setBounds$I$I$I$I) { frame.setBounds$I$I$I$I(startLoc.x,
+		 *            startLoc.y, finalW, finalH); } if
+		 *            (frame.setPreferredSize$java_awt_Dimension) {
+		 *            frame.setPreferredSize$java_awt_Dimension(Clazz.new_(java.awt.Dimension.c$$I$I,
+		 *            [finalW, finalH])); } if (frame.validate$) { frame.validate$(); }
+		 *            if (frame.repaint$) { frame.repaint$(); } if (resizer &&
+		 *            resizer.setPosition$I$I) { resizer.setPosition$I$I(0, 0); } else {
+		 *            resizerNode.style.left = (finalW - 4) + "px";
+		 *            resizerNode.style.top = (finalH - 4) + "px"; } if
+		 *            (frame.frameResized$) { frame.frameResized$(); } if
+		 *            (frame.getSelectedPanel$) { var tp = frame.getSelectedPanel$(); if
+		 *            (tp && org.opensourcephysics.cabrillo.tracker.TFrame &&
+		 *            org.opensourcephysics.cabrillo.tracker.TFrame.repaintT) {
+		 *            org.opensourcephysics.cabrillo.tracker.TFrame.repaintT(tp); } } };
+		 * 
+		 *            window.addEventListener("touchmove", onTouchMove, { passive:
+		 *            false, capture: true }); window.addEventListener("touchend",
+		 *            onTouchEnd, { passive: false, capture: true });
+		 *            window.addEventListener("touchcancel", onTouchEnd, { passive:
+		 *            false, capture: true }); }, { passive: false }); } } catch (ex) {}
+		 */
+	}
+
+	/**
+	 * Installs mouse and touch dragging on the Library Browser dialog/window.
+	 * 
+	 * Allows dragging the dialog by dragging anywhere inside the dialog (including
+	 * empty dialog frame, welcome message pane, and empty tree background), while
+	 * preserving interactive controls (buttons, editable text fields, scrollbars,
+	 * and tree node selection / folder expansion).
+	 * 
+	 * Also guarantees the Welcome screen content is rendered with proper styling
+	 * the very first time the Library Browser is displayed and on any subsequent
+	 * display, in both desktop Java and transpiled SwingJS on iPad.
+	 */
+	public static class FullFrameDragHandler {
+
+		private static String DRAG_LISTENER_KEY = "Full_Frame_Drag_Listener_Installed"; 
+		private static String WINDOW_LISTENER_KEY = "Full_Frame_Drag_WindowListener_Attached";
+
+		/**
+		 * Installs the drag handler and welcome screen renderer on the given JPanel
+		 * instance.
+		 * 
+		 * @param panel the JPanel instance
+		 */
+		public static void installFullFrameDragHandler(JPanel panel, boolean hasResizer) {
+
+			// Attach to panel and all existing components in the dialog
+			attachToHierarchy(panel, panel);
+
+			// Also attach to the top-level window / root pane if available
+			attachToWindow(panel, hasResizer);
+
+			// Listen for tab changes
+			attachTabListeners(panel, panel);
+		}
+
+		/**
+		 * Attaches drag listeners and window listeners to the window, root pane, and
+		 * layered pane.
+		 */
+		private static void attachToWindow(JPanel panel, boolean hasResizer) {
+			Window w = (Window) panel.getTopLevelAncestor();
+			if (w != null) {
+				attachDragAdapter(w, panel);
+				if (w instanceof RootPaneContainer) {
+					JRootPane rp = ((RootPaneContainer) w).getRootPane();
+					if (rp != null) {
+						if (rp.getClientProperty(WINDOW_LISTENER_KEY) != null) {
+							return; // already attached
+						}
+						rp.putClientProperty(WINDOW_LISTENER_KEY, Boolean.TRUE);
+
+						attachDragAdapter(rp, panel);
+						if (rp.getLayeredPane() != null) {
+							attachDragAdapter(rp.getLayeredPane(), panel);
+						}
+						if (rp.getContentPane() != null) {
+							attachDragAdapter(rp.getContentPane(), panel);
+						}
+					}
+				}
+			}
+		}
+
+		private static void attachTabListeners(Container root, JPanel panel) {
+			if (root == null)
+				return;
+			if (root instanceof JTabbedPane) {
+				JTabbedPane tabbedPane = (JTabbedPane) root;
+				if (tabbedPane.getClientProperty(DRAG_LISTENER_KEY) == null) {
+					tabbedPane.putClientProperty(DRAG_LISTENER_KEY, Boolean.TRUE);
+					tabbedPane.addChangeListener(new ChangeListener() {
+						@Override
+						public void stateChanged(ChangeEvent e) {
+							attachToHierarchy(tabbedPane.getSelectedComponent(), panel);
+						}
+					});
+					tabbedPane.addContainerListener(new ContainerAdapter() {
+						@Override
+						public void componentAdded(ContainerEvent e) {
+							attachToHierarchy(e.getChild(), panel);
+						}
+					});
+				}
+			}
+			for (Component child : root.getComponents()) {
+				if (child instanceof Container) {
+					attachTabListeners((Container) child, panel);
+				}
+			}
+		}
+
+		/**
+		 * Recursively finds components in the container and attaches the drag adapter
+		 * to them.
+		 */
+		public static void attachToHierarchy(Component comp) {
+			attachToHierarchy(comp, null);
+		}
+
+		public static void attachToHierarchy(Component comp, JPanel panel) {
+			if (comp == null)
+				return;
+
+			// Attach to this component if eligible
+			attachDragAdapter(comp, panel);
+
+			if (comp instanceof JScrollPane) {
+				JScrollPane sp = (JScrollPane) comp;
+				if (sp.getViewport() != null) {
+					attachDragAdapter(sp.getViewport(), panel);
+					if (sp.getViewport().getView() != null) {
+						attachToHierarchy(sp.getViewport().getView(), panel);
+					}
+				}
+			}
+
+			if (comp instanceof Container) {
+				Container cont = (Container) comp;
+				for (Component child : cont.getComponents()) {
+					attachToHierarchy(child, panel);
+				}
+			}
+		}
+
+		/**
+		 * Determines whether a component should receive the window drag listener.
+		 * Interactive components (buttons, editable text fields, dropdowns, scrollbars)
+		 * are excluded so their primary interactions are preserved.
+		 */
+		private static boolean isEligibleForDrag(Component comp) {
+			if (comp == null)
+				return false;
+			// Skip buttons and menu items so clicking them still functions
+			if (comp instanceof AbstractButton)
+				return false;
+			// Skip combo boxes and scroll bars
+			if (comp instanceof JComboBox)
+				return false;
+			if (comp instanceof JScrollBar)
+				return false;
+			// Skip editable text fields (allow user to type in search/command fields)
+			if (comp instanceof JTextComponent && ((JTextComponent) comp).isEditable()) {
+				return false;
+			}
+			// Skip split pane divider so column resizing still works
+			if (comp.getClass().getName().contains("Divider"))
+				return false;
+
+			return true;
+		}
+
+		private static void attachDragAdapter(Component comp, JPanel panel) {
+			if (!isEligibleForDrag(comp))
+				return;
+
+			if (comp instanceof JComponent) {
+				JComponent jc = (JComponent) comp;
+				if (jc.getClientProperty(DRAG_LISTENER_KEY) != null) {
+					return; // already attached
+				}
+				jc.putClientProperty(DRAG_LISTENER_KEY, Boolean.TRUE);
+			}
+			DragMouseAdapter adapter = new DragMouseAdapter(comp, panel);
+			comp.addMouseListener(adapter);
+			comp.addMouseMotionListener(adapter);
+		}
+
+		/**
+		 * MouseAdapter that implements dragging of the top-level window when pressing
+		 * on empty space of the dialog, tree, or viewports.
+		 */
+		private static class DragMouseAdapter extends MouseAdapter {
+			private Component component;
+			private JPanel panel;
+			private Point mouseLoc = new Point();
+			private Point windowLoc = new Point();
+			private Dimension windowDim = new Dimension();
+			private boolean isDragging = false;
+			private boolean isResizing = false;
+
+			public DragMouseAdapter(Component comp, JPanel panel) {
+				this.component = comp;
+				this.panel = panel;
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				isDragging = false;
+				if (SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
+					return;
+				}
+
+				// If event is on a JTree, hit-test to see if user clicked a node
+				if (component instanceof JTree) {
+					JTree tree = (JTree) component;
+					TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+					if (path != null) {
+						return; // Clicked on a node -> normal tree selection / open
+					}
+					int row = tree.getClosestRowForLocation(e.getX(), e.getY());
+					if (row >= 0) {
+						Rectangle bounds = tree.getRowBounds(row);
+						if (bounds != null && e.getY() >= bounds.y && e.getY() <= bounds.y + bounds.height
+								&& e.getX() <= bounds.x + bounds.width) {
+							return; // Clicked near row expander handle or node text
+						}
+					}
+				}
+				Window w = getWindowForPanel(component, panel);
+				if (w != null) {
+					Point startPt = e.getLocationOnScreen();
+					if (startPt != null) {
+						Point ptInWindow = SwingUtilities.convertPoint(component, e.getPoint(), w);
+						int cornerSize = 20;
+						if (ptInWindow.x >= w.getWidth() - cornerSize && ptInWindow.y >= w.getHeight() - cornerSize) {
+							mouseLoc.setLocation(startPt);
+							windowDim.setSize(w.getSize());
+							isResizing = true;
+							isDragging = false;
+						} else {
+							mouseLoc.setLocation(startPt);
+							windowLoc.setLocation(w.getLocation());
+							isDragging = true;
+							isResizing = false;
+						}
+					}
+				}
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if (!isDragging && !isResizing)
+					return;
+				Window w = getWindowForPanel(component, panel);
+				if (w != null) {
+					Point curPt = e.getLocationOnScreen();
+					if (curPt != null) {
+						int dx = curPt.x - mouseLoc.x;
+						int dy = curPt.y - mouseLoc.y;
+						if (isResizing) {
+							int newW = Math.max(400, windowDim.width + dx);
+							int newH = Math.max(300, windowDim.height + dy);
+							w.setSize(newW, newH);
+							w.validate();
+							w.repaint();
+							// setupResizer(w);
+						} else {
+							w.setLocation(windowLoc.x + dx, windowLoc.y + dy);
+							w.repaint();
+						}
+					}
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				isDragging = false;
+				isResizing = false;
+			}
+		}
+
+		public static Window getWindowForPanel(Component component, JPanel panel) {
+			return (Window) panel.getTopLevelAncestor();
+		}
+
+	}
+
+	/**
+	 * 
+	 * Install a local file save function for use in J2S when saving a file.
+	 * 
+	 * The archive is ready only after compression. On iOS, use a Blob link and a
+	 * fresh user tap instead of the default asynchronous base64 download. Temporary
+	 * writes still go to the SwingJS cache; other saves are delegated.
+	 * 
+	 * Refined by Bob Hanson
+	 * 
+	 * @param targetPath
+	 * @param string
+	 * @return
+	 * 
+	 * @author ChatGPT+
+	 */
+	public static Runnable installJ2SFileSaveDialog(String targetPath, String mediaType) {
+		System.out.println("AIPatch.installJ2SFileSaveDialog " + targetPath + "  as " + mediaType);
+		/**
+		 * @j2sNative var previousSave = J2S._localFileSaveFunction; var projectSave =
+		 *            null; var ua = navigator.userAgent || ""; if
+		 *            (/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) &&
+		 *            navigator.maxTouchPoints > 1)) { projectSave = function(filename,
+		 *            data) { if (filename !== targetPath) { return previousSave ?
+		 *            previousSave.apply(this, arguments) : false; } var name =
+		 *            filename.substring(filename.lastIndexOf("/") + 1); var blob = new
+		 *            Blob([new Uint8Array(data)], {type: mediaType}); var url =
+		 *            URL.createObjectURL(blob); var previousFocus =
+		 *            document.activeElement; var overlay =
+		 *            document.createElement("div"); overlay.setAttribute("role",
+		 *            "dialog"); overlay.setAttribute("aria-modal", "true");
+		 *            overlay.setAttribute("aria-label", "Save File");
+		 *            overlay.style.cssText =
+		 *            "position:fixed;inset:0;z-index:1000001;display:flex;align-items:center;justify-content:center;background:#0009";
+		 *            var panel = document.createElement("div"); panel.style.cssText =
+		 *            "background:white;color:#222;padding:24px;border-radius:10px;max-width:85vw;font:16px/1.4
+		 *            sans-serif"; var message = document.createElement("p");
+		 *            message.textContent = "Your file is ready. Tap Download to save "
+		 *            + name + "."; var download = document.createElement("a");
+		 *            download.href = url; download.download = name; download.type =
+		 *            "application/zip"; download.textContent = "Download " +
+		 *            name.substring(name.lastIndexOf(".") + 1).toUpperCase();
+		 *            download.style.cssText =
+		 *            "display:inline-block;padding:12px;margin-right:16px"; var close =
+		 *            document.createElement("button"); close.textContent = "Close";
+		 *            close.style.cssText = "font:inherit;padding:12px"; var dismiss =
+		 *            function() { overlay.remove();
+		 * 
+		 *            // Do not revoke while Safari may still be starting the download.
+		 * 
+		 *            window.setTimeout(function() { URL.revokeObjectURL(url); },
+		 *            60000); if (previousFocus && previousFocus.isConnected)
+		 *            previousFocus.focus(); }; close.addEventListener("click",
+		 *            dismiss); overlay.addEventListener("keydown", function(event) { if
+		 *            (event.key === "Escape") { event.stopPropagation(); dismiss(); }
+		 *            if (event.key === "Tab") { event.preventDefault();
+		 *            (document.activeElement === download ? close : download).focus();
+		 *            } }); panel.appendChild(message); panel.appendChild(download);
+		 *            panel.appendChild(close); overlay.appendChild(panel);
+		 *            document.body.appendChild(overlay); download.focus(); return true;
+		 *            }; J2S._localFileSaveFunction = projectSave; } return
+		 *            {"run$":function() { if (projectSave && J2S._localFileSaveFunction
+		 *            === projectSave) J2S._localFileSaveFunction = previousSave; }};
+		 */
+		return null;
+	}
+
+	/// unused; adapted
+
+	// BH: Much more sensible to just use Java override and JavaScript UI
+	// clientProperties to do this.
+//  See TButton.TStickyMenuItem and TButton.TStickyPopupButton -- very simple there!
 //	/**
 //	 * Keeps browser context menus open through the release of their opening press.
 //	 * Install on the actual menu, since marker menus may belong to a track rather
 //	 * than this panel's background popup.
 //	 */
-//   static public void installContextPopupGuard(JPanel panel, JPopupMenu menu) {
+//static public void installContextPopupGuard(JPanel panel, JPopupMenu menu) {
 //		if (!OSPRuntime.isJS || menu == null)
 //			return;
 //
@@ -281,25 +842,10 @@ public class AIPatch {
 //		 */
 //	}
 
-	/**
-	 * Installs the window resize handler on the specified window.
-	 *
-	 * @param window the top-level Window (TFrame or JDialog)
-	 */
-	public static void installResizeHandler(JFrame window) {
+//	private static final String RESIZE_HANDLER_KEY = "TWindowResizeHandler_Installed"; //$NON-NLS-1$
 
-		window.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentShown(ComponentEvent e) {
-				setupResizer(window);
-			}
-
-			@Override
-			public void componentResized(ComponentEvent e) {
-				setupResizer(window);
-			}
-		});
-
+//	public static void installResizeHandler(JFrame window) {
+//		window.addComponentListener(new ComponentAdapter() {
 //		setupResizer(window);
 //
 //		// BH This is a hack
@@ -316,392 +862,54 @@ public class AIPatch {
 //				setupResizer(window);
 //			});
 //		}
-	}
+//	}
 
-	/**
-	 * Installs the window resize handler on the specified window.
-	 *
-	 * @param window the top-level Window (TFrame or JDialog)
-	 */
-	public static void installGestureHandler(JFrame window) {
-
-		window.addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentShown(ComponentEvent e) {
-				isolateWindowGestures(window);
-			}
-
-			@Override
-			public void componentResized(ComponentEvent e) {
-				isolateWindowGestures(window);
-			}
-		});
-//		isolateWindowGestures(window);
+//	public static void closeAllMenus() {
+//	// BH NOT ACCEPTABLE?
+//	/**
+//	 * @j2sNative
+//	 * try {
+//	 *   if (swingjs && swingjs.plaf && swingjs.plaf.JSPopupMenuUI) {
+//	 *     swingjs.plaf.JSPopupMenuUI.closeAllMenus$();
+//	 *   }
+//	 *   if (swingjs && swingjs.plaf && swingjs.plaf.JSComponentUI) {
+//	 *     swingjs.plaf.JSComponentUI.hideMenusAndToolTip$();
+//	 *   }
+//	 *   var applet = this.getFrameViewer$ ? (this.getFrameViewer$() && this.getFrameViewer$().applet) : null;
+//	 *   if (!applet && window.J2S && J2S._applets) {
+//	 *     for (var a in J2S._applets) {
+//	 *       applet = J2S._applets[a];
+//	 *       if (applet && applet._menus) break;
+//	 *     }
+//	 *   }
+//	 *   if (applet && applet._menus && window.J2S && J2S.Swing && J2S.Swing.hideMenu) {
+//	 *     for (var i in applet._menus) {
+//	 *       J2S.Swing.hideMenu(applet._menus[i], true);
+//	 *     }
+//	 *   }
+//	 *   if (window.$) {
+//	 *     $(".ui-j2smenu:visible, .swingjsPopupMenu:visible").hide().attr("aria-hidden", "true").attr("aria-expanded", "false");
+//	 *     $(".ui-j2smenu-node").removeClass("ui-state-active").removeClass("ui-state-focus");
+//	 *   }
+//	 * } catch (e) {}
+//	 */
+//}
 //
-//		// BH This is a hack
 //
-//		// In SwingJS, Resizer DOM node may be created asynchronously when window peer finishes initializing
-//		if (OSPRuntime.isJS) {
-//			OSPRuntime.trigger(100, (e) -> {
-//				isolateWindowGestures(window);
-//			});
-//			OSPRuntime.trigger(500, (e) -> {
-//				isolateWindowGestures(window);
-//			});
-//			OSPRuntime.trigger(1500, (e) -> {
-//				isolateWindowGestures(window);
-//			});
-//		}
-	}
-
-	
-	/**
-	 * Isolates the window DOM node from propagating gestures to the host HTML page in SwingJS.
-	 * Prevents pinch-to-zoom, two-finger pan, overscroll rubber-banding, and touch drag bubbling
-	 * from escaping the Tracker window to the surrounding webpage.
-	 *
-	 * @param window the top-level Window (TFrame or JDialog)
-	 */
-	public static void isolateWindowGestures(final Window window) {
-		if (window == null) return;
-		/**
-		 * @j2sNative
-		 * try {
-		 *   var frame = window;
-		 *   var viewer = (frame.getFrameViewer$ ? frame.getFrameViewer$() : (frame.秘frameViewer || null));
-		 *   if (!viewer && window.getRootPane$) {
-		 *     var rp = window.getRootPane$();
-		 *     viewer = (rp && rp.getFrameViewer$ ? rp.getFrameViewer$() : (rp ? rp.秘frameViewer : null));
-		 *   }
-		 *   
-		 *   var frameNode = (frame.ui && frame.ui.frameNode ? frame.ui.frameNode : (frame.ui && frame.ui.domNode ? frame.ui.domNode : null));
-		 *   if (!frameNode && frame.秘htmlName) {
-		 *     frameNode = document.getElementById(frame.秘htmlName + "_frame") || document.getElementById(frame.秘htmlName);
-		 *   }
-		 *   if (!frameNode && window.getRootPane$) {
-		 *     var rp = window.getRootPane$();
-		 *     frameNode = (rp && rp.ui && rp.ui.domNode ? rp.ui.domNode : (rp && rp.秘htmlName ? document.getElementById(rp.秘htmlName) : null));
-		 *   }
-		 *   
-		 *   var rp = (window.getRootPane$ ? window.getRootPane$() : null);
-		 *   var rpNode = (rp ? (rp.ui && rp.ui.domNode ? rp.ui.domNode : (rp.秘htmlName ? document.getElementById(rp.秘htmlName) : null)) : null);
-		 *   
-		 *   var isolate = function(node) {
-		 *     if (!node || node._tGestureIsolated) return;
-		 *     node._tGestureIsolated = true;
-		 *     
-		 *     // 1. CSS Touch & Overscroll Containment
-		 *     node.style.touchAction = "none";
-		 *     node.style.overscrollBehavior = "none";
-		 *     node.style.webkitUserSelect = "none";
-		 *     node.style.userSelect = "none";
-		 *     node.style.webkitTouchCallout = "none";
-		 *     
-		 *     // 2. Suppress iOS Safari gesture events (pinch zoom & rotate)
-		 *     var killGesture = function(e) {
-		 *       e.preventDefault();
-		 *       e.stopPropagation();
-		 *     };
-		 *     node.addEventListener("gesturestart", killGesture, { passive: false });
-		 *     node.addEventListener("gesturechange", killGesture, { passive: false });
-		 *     node.addEventListener("gestureend", killGesture, { passive: false });
-		 *     
-		 *     // 3. Prevent multi-touch pinch/pan & stop bubbling to host HTML page
-		 *     node.addEventListener("touchmove", function(e) {
-		 *       if (e.touches && e.touches.length > 1) {
-		 *         e.preventDefault();
-		 *       }
-		 *       e.stopPropagation();
-		 *     }, { passive: false });
-		 *     
-		 *     node.addEventListener("touchstart", function(e) {
-		 *       e.stopPropagation();
-		 *     }, { passive: false });
-		 *     
-		 *     node.addEventListener("touchend", function(e) {
-		 *       e.stopPropagation();
-		 *     }, { passive: false });
-		 *     
-		 *     // 4. Suppress trackpad pinch-to-zoom (ctrl + wheel)
-		 *     node.addEventListener("wheel", function(e) {
-		 *       if (e.ctrlKey) {
-		 *         e.preventDefault();
-		 *         e.stopPropagation();
-		 *       }
-		 *     }, { passive: false });
-		 *   };
-		 *   
-		 *   isolate(frameNode);
-		 *   if (rpNode && rpNode !== frameNode) {
-		 *     isolate(rpNode);
-		 *   }
-		 *   
-		 *   var appletViewer = (viewer && viewer.appletViewer ? viewer.appletViewer : null);
-		 *   if (appletViewer && appletViewer.fullName) {
-		 *     var appletNode = document.getElementById(appletViewer.fullName + "_appletdiv");
-		 *     if (appletNode && !appletNode._tGestureIsolated) {
-		 *       appletNode._tGestureIsolated = true;
-		 *       appletNode.style.touchAction = "none";
-		 *       appletNode.style.overscrollBehavior = "none";
-		 *       var killGesture = function(e) {
-		 *         e.preventDefault();
-		 *         e.stopPropagation();
-		 *       };
-		 *       appletNode.addEventListener("gesturestart", killGesture, { passive: false });
-		 *       appletNode.addEventListener("gesturechange", killGesture, { passive: false });
-		 *       appletNode.addEventListener("gestureend", killGesture, { passive: false });
-		 *       appletNode.addEventListener("touchmove", function(e) {
-		 *         if (e.touches && e.touches.length > 1) {
-		 *           e.preventDefault();
-		 *         }
-		 *         e.stopPropagation();
-		 *       }, { passive: false });
-		 *     }
-		 *   }
-		 * } catch (ex) {}
-		 */
-		{
-		}
-	}
-
-	private static final int MIN_WIDTH = 320;
-	private static final int MIN_HEIGHT = 220;
-
-	/**
-	 * Configures the SwingJS window resizer DOM element for touch responsiveness and visual affordance.
-	 *
-	 * @param window the window whose resizer should be configured
-	 */
-	@SuppressWarnings("unused")
-	public static void setupResizer(Window window) {
-		if (window == null || !OSPRuntime.isJS) 
-			return;
-		int minw = MIN_WIDTH;
-		int minh = MIN_HEIGHT;
-		/**
-		 * @j2sNative
-		 * try {
-		 *   var frame = window;
-		 *   var viewer = (frame.getFrameViewer$ ? frame.getFrameViewer$() : (frame.秘frameViewer || null));
-		 *   if (!viewer && window.getRootPane$) {
-		 *     var rp = window.getRootPane$();
-		 *     viewer = (rp && rp.getFrameViewer$ ? rp.getFrameViewer$() : (rp ? rp.秘frameViewer : null));
-		 *   }
-		 *   var resizer = (viewer && viewer.getResizer$ ? viewer.getResizer$() : null);
-		 *   if (!resizer && viewer && viewer.newResizer) {
-		 *     resizer = viewer.newResizer();
-		 *   }
-		 *   if (resizer && resizer.show$) {
-		 *     resizer.show$();
-		 *   }
-		 *   if (!resizer) return;
-		 *   
-		 *   var resizerNode = (resizer.getDOMNode$ ? resizer.getDOMNode$() : (resizer.resizer || null));
-		 *   if (!resizerNode && resizer.rootPane) {
-		 *     var id = resizer.rootPane.秘htmlName + "_resizer";
-		 *     resizerNode = document.getElementById(id);
-		 *   }
-		 *   if (!resizerNode) return;
-		 *   
-		 *   var rubberBandNode = resizer.rubberBand;
-		 *   if (!rubberBandNode && resizer.rootPane) {
-		 *     var rbid = resizer.rootPane.秘htmlName + "_resizer_rb";
-		 *     rubberBandNode = document.getElementById(rbid);
-		 *   }
-		 *   
-		 *   // Ensure rubberBand does not block touch / pointer interactions
-		 *   if (rubberBandNode) {
-		 *     rubberBandNode.style.pointerEvents = "none";
-		 *   }
-		 *   
-		 *   // 1. Keep the 20x20 hotspot inside the frame to avoid page overflow
-		 *   resizerNode.style.width = "20px";
-		 *   resizerNode.style.height = "20px";
-		 *   resizerNode.style.marginLeft = "-15px";
-		 *   resizerNode.style.marginTop = "-15px";
-		 *   resizerNode.style.touchAction = "none";
-		 *   resizerNode.style.zIndex = "100002";
-		 *   resizerNode.style.userSelect = "none";
-		 *   resizerNode.style.webkitUserSelect = "none";
-		 *   resizerNode.style.cursor = "nwse-resize";
-		 *   
-		 *   // 2. Visible diagonal corner grip lines for clear visual feedback on touch screens
-		 *   resizerNode.style.opacity = "0.75";
-		 *   resizerNode.style.backgroundImage = "linear-gradient(135deg, transparent 0%, transparent 50%, #888888 50%, #888888 56%, transparent 56%, transparent 68%, #888888 68%, #888888 74%, transparent 74%, transparent 86%, #888888 86%, #888888 92%, transparent 92%)";
-		 *   resizerNode.style.backgroundRepeat = "no-repeat";
-		 *   resizerNode.style.backgroundPosition = "right bottom";
-		 *   resizerNode.style.backgroundSize = "10px 10px";
-		 *   
-		 *   // 3. Attach dedicated touch listeners with passive: false to prevent iOS Safari scrolling
-		 *   if (!resizerNode._tTouchAttached) {
-		 *     resizerNode._tTouchAttached = true;
-		 *     
-		 *     resizerNode.addEventListener("touchstart", function(e) {
-		 *       if (!e.touches || e.touches.length === 0) return;
-		 *       e.preventDefault();
-		 *       e.stopPropagation();
-		 *       
-		 *       var touch0 = e.touches[0];
-		 *       var startX = touch0.pageX;
-		 *       var startY = touch0.pageY;
-		 *       var startW = frame.getWidth$ ? frame.getWidth$() : (frame.width || 800);
-		 *       var startH = frame.getHeight$ ? frame.getHeight$() : (frame.height || 600);
-		 *       var startLoc = frame.getLocation$ ? frame.getLocation$() : { x: 0, y: 0 };
-		 *       
-		 *       resizerNode.style.opacity = "1.0";
-		 *       if (rubberBandNode) {
-		 *         rubberBandNode.style.width = startW + "px";
-		 *         rubberBandNode.style.height = startH + "px";
-		 *         rubberBandNode.style.display = "block";
-		 *         rubberBandNode.style.pointerEvents = "none";
-		 *       }
-		 *       
-		 *       var onTouchMove = function(me) {
-		 *         if (!me.touches || me.touches.length === 0) return;
-		 *         me.preventDefault();
-		 *         me.stopPropagation();
-		 *         var t = me.touches[0];
-		 *         var dx = t.pageX - startX;
-		 *         var dy = t.pageY - startY;
-		 *         var curW = Math.max(minw, Math.round(startW + dx));
-		 *         var curH = Math.max(minh, Math.round(startH + dy));
-		 *         if (rubberBandNode) {
-		 *           rubberBandNode.style.width = curW + "px";
-		 *           rubberBandNode.style.height = curH + "px";
-		 *         }
-		 *         resizerNode.style.left = (curW - 4) + "px";
-		 *         resizerNode.style.top = (curH - 4) + "px";
-		 *       };
-		 *       
-		 *       var onTouchEnd = function(ue) {
-		 *         ue.preventDefault();
-		 *         ue.stopPropagation();
-		 *         window.removeEventListener("touchmove", onTouchMove, { passive: false, capture: true });
-		 *         window.removeEventListener("touchend", onTouchEnd, { passive: false, capture: true });
-		 *         window.removeEventListener("touchcancel", onTouchEnd, { passive: false, capture: true });
-		 *         
-		 *         resizerNode.style.opacity = "0.75";
-		 *         if (rubberBandNode) {
-		 *           rubberBandNode.style.display = "none";
-		 *         }
-		 *         
-		 *         var endTouch = (ue.changedTouches && ue.changedTouches.length > 0 ? ue.changedTouches[0] : touch0);
-		 *         var dx = endTouch.pageX - startX;
-		 *         var dy = endTouch.pageY - startY;
-		 *         var finalW = Math.max(minw, Math.round(startW + dx));
-		 *         var finalH = Math.max(minh, Math.round(startH + dy));
-		 *         
-		 *         if (frame.setSize$I$I) {
-		 *           frame.setSize$I$I(finalW, finalH);
-		 *         } else if (frame.setBounds$I$I$I$I) {
-		 *           frame.setBounds$I$I$I$I(startLoc.x, startLoc.y, finalW, finalH);
-		 *         }
-		 *         if (frame.setPreferredSize$java_awt_Dimension) {
-		 *           frame.setPreferredSize$java_awt_Dimension(Clazz.new_(java.awt.Dimension.c$$I$I, [finalW, finalH]));
-		 *         }
-		 *         if (frame.validate$) {
-		 *           frame.validate$();
-		 *         }
-		 *         if (frame.repaint$) {
-		 *           frame.repaint$();
-		 *         }
-		 *         if (resizer && resizer.setPosition$I$I) {
-		 *           resizer.setPosition$I$I(0, 0);
-		 *         } else {
-		 *           resizerNode.style.left = (finalW - 4) + "px";
-		 *           resizerNode.style.top = (finalH - 4) + "px";
-		 *         }
-		 *         if (frame.frameResized$) {
-		 *           frame.frameResized$();
-		 *         }
-		 *         if (frame.getSelectedPanel$) {
-		 *           var tp = frame.getSelectedPanel$();
-		 *           if (tp && org.opensourcephysics.cabrillo.tracker.TFrame && org.opensourcephysics.cabrillo.tracker.TFrame.repaintT) {
-		 *             org.opensourcephysics.cabrillo.tracker.TFrame.repaintT(tp);
-		 *           }
-		 *         }
-		 *       };
-		 *       
-		 *       window.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
-		 *       window.addEventListener("touchend", onTouchEnd, { passive: false, capture: true });
-		 *       window.addEventListener("touchcancel", onTouchEnd, { passive: false, capture: true });
-		 *     }, { passive: false });
-		 *   }
-		 * } catch (ex) {}
-		 */
-		{
-		}
-	}
-
-
-	public static void closeAllMenus() {
-		// BH NOT ACCEPTABLE?
-		/**
-		 * @j2sNative
-		 * try {
-		 *   if (swingjs && swingjs.plaf && swingjs.plaf.JSPopupMenuUI) {
-		 *     swingjs.plaf.JSPopupMenuUI.closeAllMenus$();
-		 *   }
-		 *   if (swingjs && swingjs.plaf && swingjs.plaf.JSComponentUI) {
-		 *     swingjs.plaf.JSComponentUI.hideMenusAndToolTip$();
-		 *   }
-		 *   var applet = this.getFrameViewer$ ? (this.getFrameViewer$() && this.getFrameViewer$().applet) : null;
-		 *   if (!applet && window.J2S && J2S._applets) {
-		 *     for (var a in J2S._applets) {
-		 *       applet = J2S._applets[a];
-		 *       if (applet && applet._menus) break;
-		 *     }
-		 *   }
-		 *   if (applet && applet._menus && window.J2S && J2S.Swing && J2S.Swing.hideMenu) {
-		 *     for (var i in applet._menus) {
-		 *       J2S.Swing.hideMenu(applet._menus[i], true);
-		 *     }
-		 *   }
-		 *   if (window.$) {
-		 *     $(".ui-j2smenu:visible, .swingjsPopupMenu:visible").hide().attr("aria-hidden", "true").attr("aria-expanded", "false");
-		 *     $(".ui-j2smenu-node").removeClass("ui-state-active").removeClass("ui-state-focus");
-		 *   }
-		 * } catch (e) {}
-		 */
-	}
-
-
-	public static boolean haveAnyVisibleMenusInAnyApplication() {
-		// BH NOT ACCEPTABLE?
-		/**
-		 * @j2sNative
-		 * return (window.$ && $(".ui-j2smenu:visible, .swingjsPopupMenu:visible").length > 0);
-		 */
-		return false;
-	}
-
-
-	public static void hackUIDOMNodeStyle(JComponent jc, String... styles) {
-		DOMNode node = /** @j2sNative jc.ui.domNode || */null;
-		DOMNode.setStyles(node, styles);
-	}
-
-
-	public static void disposeElement(String id) {
-		DOMNode.dispose(DOMNode.getElement(id));
-//		/**
-//		 * @-j2sNative
-//		 * var splash = document.getElementById();
-//		 * if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
-//		 */
-//		{}
-	}
-
-
-	public static void addWindowOrientationChangeListener(Runnable onOrient) {
-		/**
-		 * @j2sNative window.addEventListener(window.onorientationchange ?
-		 *            "orientationchange" : "resize", function() {
-		 *              console.log("Orientation changed"); 
-		 *              onOrient.run$(); 
-		 *            }, false);
-		 */
-	}
+//public static boolean haveAnyVisibleMenusInAnyApplication() {
+//	// BH NOT ACCEPTABLE?
+//	/**
+//	 * @j2sNative
+//	 * return (window.$ && $(".ui-j2smenu:visible, .swingjsPopupMenu:visible").length > 0);
+//	 */
+//	return false;
+//}
+//
+//
+//public static void hackUIDOMNodeStyle(JComponent jc, String... styles) {
+//	DOMNode node = /** @j2sNative jc.ui.domNode || */null;
+//	DOMNode.setStyles(node, styles);
+//}
 
 //	public static void hackWelcomePane(JEditorPane ep, String rawHTML) {
 //		// BH NOT ACCEPTABLE?
@@ -782,423 +990,5 @@ public class AIPatch {
 //		 */
 //	}
 //
-
-	/**
-	 * BH this does not look right to me
-	 * 
-	 * Gets the screen or page location of a mouse event, compatible with desktop Java
-	 * and touch events in SwingJS on iPad.
-	 */
-	public static Point getScreenLocation(MouseEvent e, Component comp, String from) {
-		Point p = e.getLocationOnScreen();
-//		System.err.println("\nAIP getScLoc testing simple: " + p + " from " + from);
-//		int[] pt = null;
-//		if (false) {
-//		/**
-//		 * @j2sNative
-//		 * try {
-//		 *   var je = (e && e.bdata ? e.bdata.jqevent : null);
-//		 *   if (je) {
-//		 *     var oe = je.originalEvent || je;
-//		 *     var t = (oe.targetTouches && oe.targetTouches.length > 0 ? oe.targetTouches[0] : null);
-//		 *     var px = (t ? t.pageX : (je.pageX != null ? je.pageX : null));
-//		 *     var py = (t ? t.pageY : (je.pageY != null ? je.pageY : null));
-//		 *     if (px == null && window.J2S && J2S._mousePageX != null) {
-//		
-//			System.err.println("AIP getScLoc using J2S._mousePageX/Y ");
-//		 
-//		 *       px = J2S._mousePageX;
-//		 *       py = J2S._mousePageY;
-//		 *     }
-//		 *     if (px != null && isFinite(px) && py != null && isFinite(py)) {
-//		 *       pt = [Math.round(px), Math.round(py)];
-//		 *     }
-//		 *   }
-//		 * } catch (ex) {}
-//		 */
-//		}
-//		if (pt != null) {
-//			p = new Point(pt[0], pt[1]);
-//			System.err.println("AIP getScLoc AI calc " + p);
-//			return p;
-//		}
-//		if (p != null && (p.x != 0 || p.y != 0)) {
-//			return p;
-//		}
-//		if (comp != null && comp.isShowing()) {
-//			try {
-//				p = comp.getLocationOnScreen();
-//				p = new Point(p.x + e.getX(), p.y + e.getY());
-//				System.err.println("AIP getScLoc returning component offset " + p);
-//			} catch (Throwable t) {
-//			}
-//		}
-//		
-//		p = e.getPoint();
-//		System.err.println("AIP getScLoc returning e.getPoint() " + p);
-		return p;
-	}
-
-	public static void virtualNumberPad(NumberField nf, String action) {
-		switch (action) {
-		case "add":
-		/**
-		 * @j2sNative
-		 * 
-		 * 			J2S.Mobile.addNumberPad(nf);
-		 */
-		{
-		}
-		//$FALL-THROUGH$
-		case "show":
-		/**
-		 * @j2sNative
-		 * 
-		 * 			J2S.Mobile.showNumberPad(nf);
-		 */
-		{
-		}
-		}
-	}
-	
-	
-	/**
-	 * Installs mouse and touch dragging on the Library Browser dialog/window.
-	 * 
-	 * Allows dragging the dialog by dragging anywhere inside the dialog (including
-	 * empty dialog frame, welcome message pane, and empty tree background), while
-	 * preserving interactive controls (buttons, editable text fields, scrollbars, and tree
-	 * node selection / folder expansion).
-	 * 
-	 * Also guarantees the Welcome screen content is rendered with proper styling
-	 * the very first time the Library Browser is displayed and on any subsequent display,
-	 * in both desktop Java and transpiled SwingJS on iPad.
-	 */
-	public static class FullFrameDragHandler {
-
-		private static String DRAG_LISTENER_KEY = "Full_Frame_Drag_Listener_Installed"; //$NON-NLS-1$
-		private static String WINDOW_LISTENER_KEY = "Full_Frame_Drag_WindowListener_Attached"; //$NON-NLS-1$
-
-		/**
-		 * Installs the drag handler and welcome screen renderer on the given JPanel instance.
-		 * 
-		 * @param panel the JPanel instance
-		 */
-		public static void installFullFrameDragHandler(JPanel panel, boolean hasResizer) {
-
-			// Attach to panel and all existing components in the dialog
-			attachToHierarchy(panel, panel);
-
-			// Also attach to the top-level window / root pane if available
-			attachToWindow(panel, hasResizer);
-
-			// Listen for tab changes
-			attachTabListeners(panel, panel);
-		}
-
-		/**
-		 * Attaches drag listeners and window listeners to the window, root pane, and layered pane.
-		 */
-		private static void attachToWindow(JPanel panel, boolean hasResizer) {
-			Window w = (Window) panel.getTopLevelAncestor();
-			if (w != null) {
-				attachDragAdapter(w, panel);
-				if (w instanceof RootPaneContainer) {
-					JRootPane rp = ((RootPaneContainer) w).getRootPane();
-					if (rp != null) {
-						if (rp.getClientProperty(WINDOW_LISTENER_KEY) != null) {
-							return; // already attached
-						}
-						rp.putClientProperty(WINDOW_LISTENER_KEY, Boolean.TRUE);
-
-						attachDragAdapter(rp, panel);
-						if (rp.getLayeredPane() != null) {
-							attachDragAdapter(rp.getLayeredPane(), panel);
-						}
-						if (rp.getContentPane() != null) {
-							attachDragAdapter(rp.getContentPane(), panel);
-						}
-					}
-				}
-			}
-		}
-
-		private static void attachTabListeners(Container root, JPanel panel) {
-			if (root == null)
-				return;
-			if (root instanceof JTabbedPane) {
-				JTabbedPane tabbedPane = (JTabbedPane) root;
-				if (tabbedPane.getClientProperty(DRAG_LISTENER_KEY) == null) {
-					tabbedPane.putClientProperty(DRAG_LISTENER_KEY, Boolean.TRUE);
-					tabbedPane.addChangeListener(new ChangeListener() {
-						@Override
-						public void stateChanged(ChangeEvent e) {
-							attachToHierarchy(tabbedPane.getSelectedComponent(), panel);
-						}
-					});
-					tabbedPane.addContainerListener(new ContainerAdapter() {
-						@Override
-						public void componentAdded(ContainerEvent e) {
-							attachToHierarchy(e.getChild(), panel);
-						}
-					});
-				}
-			}
-			for (Component child : root.getComponents()) {
-				if (child instanceof Container) {
-					attachTabListeners((Container) child, panel);
-				}
-			}
-		}
-
-		/**
-		 * Recursively finds components in the container and attaches the drag adapter to them.
-		 */
-		public static void attachToHierarchy(Component comp) {
-			attachToHierarchy(comp, null);
-		}
-
-		public static void attachToHierarchy(Component comp, JPanel panel) {
-			if (comp == null) return;
-
-			// Attach to this component if eligible
-			attachDragAdapter(comp, panel);
-
-			if (comp instanceof JScrollPane) {
-				JScrollPane sp = (JScrollPane) comp;
-				if (sp.getViewport() != null) {
-					attachDragAdapter(sp.getViewport(), panel);
-					if (sp.getViewport().getView() != null) {
-						attachToHierarchy(sp.getViewport().getView(), panel);
-					}
-				}
-			}
-
-			if (comp instanceof Container) {
-				Container cont = (Container) comp;
-				for (Component child : cont.getComponents()) {
-					attachToHierarchy(child, panel);
-				}
-			}
-		}
-
-		/**
-		 * Determines whether a component should receive the window drag listener.
-		 * Interactive components (buttons, editable text fields, dropdowns, scrollbars)
-		 * are excluded so their primary interactions are preserved.
-		 */
-		private static boolean isEligibleForDrag(Component comp) {
-			if (comp == null) return false;
-			// Skip buttons and menu items so clicking them still functions
-			if (comp instanceof AbstractButton) return false;
-			// Skip combo boxes and scroll bars
-			if (comp instanceof JComboBox) return false;
-			if (comp instanceof JScrollBar) return false;
-			// Skip editable text fields (allow user to type in search/command fields)
-			if (comp instanceof JTextComponent && ((JTextComponent) comp).isEditable()) {
-				return false;
-			}
-			// Skip split pane divider so column resizing still works
-			if (comp.getClass().getName().contains("Divider")) return false;
-
-			return true;
-		}
-
-		private static void attachDragAdapter(Component comp, JPanel panel) {
-			if (!isEligibleForDrag(comp)) return;
-
-			if (comp instanceof JComponent) {
-				JComponent jc = (JComponent) comp;
-				if (jc.getClientProperty(DRAG_LISTENER_KEY) != null) {
-					return; // already attached
-				}
-				jc.putClientProperty(DRAG_LISTENER_KEY, Boolean.TRUE);
-			}
-			DragMouseAdapter adapter = new DragMouseAdapter(comp, panel);
-			comp.addMouseListener(adapter);
-			comp.addMouseMotionListener(adapter);
-		}
-
-		/**
-		 * MouseAdapter that implements dragging of the top-level window when pressing
-		 * on empty space of the dialog, tree, or viewports.
-		 */
-		private static class DragMouseAdapter extends MouseAdapter {
-			private Component component;
-			private JPanel panel;
-			private Point mouseLoc = new Point();
-			private Point windowLoc = new Point();
-			private Dimension windowDim = new Dimension();
-			private boolean isDragging = false;
-			private boolean isResizing = false;
-
-			public DragMouseAdapter(Component comp, JPanel panel) {
-				this.component = comp;
-				this.panel = panel;
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				isDragging = false;
-				if (SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
-					return;
-				}
-
-				// If event is on a JTree, hit-test to see if user clicked a node
-				if (component instanceof JTree) {
-					JTree tree = (JTree) component;
-					TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-					if (path != null) {
-						return; // Clicked on a node -> normal tree selection / open
-					}
-					int row = tree.getClosestRowForLocation(e.getX(), e.getY());
-					if (row >= 0) {
-						Rectangle bounds = tree.getRowBounds(row);
-						if (bounds != null && e.getY() >= bounds.y && e.getY() <= bounds.y + bounds.height
-								&& e.getX() <= bounds.x + bounds.width) {
-							return; // Clicked near row expander handle or node text
-						}
-					}
-				}
-				Window w = getWindowForPanel(component, panel);
-				if (w != null) {
-					Point startPt = getScreenLocation(e, component, "LB mouse pressed");
-					if (startPt != null) {
-						Point ptInWindow = SwingUtilities.convertPoint(component, e.getPoint(), w);
-						int cornerSize = 20;
-						if (ptInWindow.x >= w.getWidth() - cornerSize && ptInWindow.y >= w.getHeight() - cornerSize) {
-							mouseLoc.setLocation(startPt);
-							windowDim.setSize(w.getSize());
-							isResizing = true;
-							isDragging = false;
-						} else {
-							mouseLoc.setLocation(startPt);
-							windowLoc.setLocation(w.getLocation());
-							isDragging = true;
-							isResizing = false;
-						}
-					}
-				}
-			}
-
-			@Override
-			public void mouseDragged(MouseEvent e) {
-				if (!isDragging && !isResizing) return;
-				Window w = getWindowForPanel(component, panel);
-				if (w != null) {
-					Point curPt = getScreenLocation(e, component, "LB mouseDragged");
-					if (curPt != null) {
-						int dx = curPt.x - mouseLoc.x;
-						int dy = curPt.y - mouseLoc.y;
-						if (isResizing) {
-							int newW = Math.max(400, windowDim.width + dx);
-							int newH = Math.max(300, windowDim.height + dy);
-							w.setSize(newW, newH);
-							w.validate();
-							w.repaint();
-							//setupResizer(w);
-						} else {
-							w.setLocation(windowLoc.x + dx, windowLoc.y + dy);
-							w.repaint();
-						}
-					}
-				}
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				isDragging = false;
-				isResizing = false;
-			}
-		}
-
-		public static Window getWindowForPanel(Component component, JPanel panel) {
-			return (Window) panel.getTopLevelAncestor();
-		}
-		
-	}
-
-	/**
-	 * 
-	 * Install a local file save function for use in J2S when saving a file. 
-	 * 
-	 * The archive is ready only after compression. On iOS, use a Blob link and
-	 * a fresh user tap instead of the default asynchronous base64 download.
-	 * Temporary writes still go to the SwingJS cache; other saves are delegated.
-	 * 
-	 * Refined by Bob Hanson
-	 * 
-	 * @param targetPath
-	 * @param string
-	 * @return
-	 * 
-	 * @author ChatGPT+
-	 */
-	public static Runnable installJ2SFileSaveDialog(String targetPath, String mediaType) {
-		System.out.println("AIPatch.installJ2SFileSaveDialog " + targetPath + "  as " + mediaType);
-		/**
-		 * @j2sNative
-		 * var previousSave = J2S._localFileSaveFunction;
-		 * var projectSave = null;
-		 * var ua = navigator.userAgent || "";
-		 * if (/iPad|iPhone|iPod/.test(ua) ||
-		 *     (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) {
-		 *   projectSave = function(filename, data) {
-		 *     if (filename !== targetPath) {
-		 *       return previousSave ? previousSave.apply(this, arguments) : false;
-		 *     }
-		 *     var name = filename.substring(filename.lastIndexOf("/") + 1);
-		 *     var blob = new Blob([new Uint8Array(data)], {type: mediaType});
-		 *     var url = URL.createObjectURL(blob);
-		 *     var previousFocus = document.activeElement;
-		 *     var overlay = document.createElement("div");
-		 *     overlay.setAttribute("role", "dialog");
-		 *     overlay.setAttribute("aria-modal", "true");
-		 *     overlay.setAttribute("aria-label", "Save File");
-		 *     overlay.style.cssText = "position:fixed;inset:0;z-index:1000001;display:flex;align-items:center;justify-content:center;background:#0009";
-		 *     var panel = document.createElement("div");
-		 *     panel.style.cssText = "background:white;color:#222;padding:24px;border-radius:10px;max-width:85vw;font:16px/1.4 sans-serif";
-		 *     var message = document.createElement("p");
-		 *     message.textContent = "Your file is ready. Tap Download to save " + name + ".";
-		 *     var download = document.createElement("a");
-		 *     download.href = url;
-		 *     download.download = name;
-		 *     download.type = "application/zip";
-		 *     download.textContent = "Download " + name.substring(name.lastIndexOf(".") + 1).toUpperCase();
-		 *     download.style.cssText = "display:inline-block;padding:12px;margin-right:16px";
-		 *     var close = document.createElement("button");
-		 *     close.textContent = "Close";
-		 *     close.style.cssText = "font:inherit;padding:12px";
-		 *     var dismiss = function() {
-		 *       overlay.remove();
-		 *       // Do not revoke while Safari may still be starting the download.
-		 *       window.setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
-		 *       if (previousFocus && previousFocus.isConnected) previousFocus.focus();
-		 *     };
-		 *     close.addEventListener("click", dismiss);
-		 *     overlay.addEventListener("keydown", function(event) {
-		 *       if (event.key === "Escape") { event.stopPropagation(); dismiss(); }
-		 *       if (event.key === "Tab") {
-		 *         event.preventDefault();
-		 *         (document.activeElement === download ? close : download).focus();
-		 *       }
-		 *     });
-		 *     panel.appendChild(message);
-		 *     panel.appendChild(download);
-		 *     panel.appendChild(close);
-		 *     overlay.appendChild(panel);
-		 *     document.body.appendChild(overlay);
-		 *     download.focus();
-		 *     return true;
-		 *   };
-		 *   J2S._localFileSaveFunction = projectSave;
-		 * }
-		 * return {"run$":function() {
-		 *   if (projectSave && J2S._localFileSaveFunction === projectSave)
-		 *     J2S._localFileSaveFunction = previousSave;
-		 * }};
-		 */
-		return null;
-	}
 
 }
