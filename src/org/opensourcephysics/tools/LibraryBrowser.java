@@ -2889,7 +2889,7 @@ public class LibraryBrowser extends JPanel {
 	private static String getAboutLibraryBrowserText() {
 		String path = "/org/opensourcephysics/resources/tools/images/compadre_banner.jpg"; //$NON-NLS-1$
 		Resource res = ResourceLoader.getResource(path);
-		return (res == null ? "" : "<p align=\"center\"><img src=\"" + res.getURL() + "\"></p>")
+		return (res == null ? "" : "<p align=\"center\"><img style=\"max-width:100%;height:auto\" src=\"" + res.getURL() + "\"></p>")
 				+ "<div style=\"font-family:'Verdana'\"><h1 align=\"center\">Open Source Physics Library Browser</h1>"
 				+ "<p>Use the OSP Library Browser to browse online collections of Tracker projects, EJS simulations and other learning resources.</p><ul> <li>Open a collection by choosing from the Collections menu or entering a URL directly in the toolbar as with a web browser.</li>"
 				+ "<li>Collections are organized and displayed in a tree. Each tree node is a resource or sub-collection. Click a node to learn about the resource or double-click to download and/or open it in Tracker, EJS, DataTool or your web browser.</li>"
