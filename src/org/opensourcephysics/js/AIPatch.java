@@ -99,6 +99,8 @@ public class AIPatch {
 	 * @author Bob Hanson
 	 */
 	public static void installGestureHandler(Window window) {
+		if (window == null || !OSPRuntime.isJS)
+			return;
 
 		window.addComponentListener(new ComponentAdapter() {
 			@Override
