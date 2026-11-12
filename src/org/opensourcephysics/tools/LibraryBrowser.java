@@ -244,6 +244,8 @@ public class LibraryBrowser extends JPanel {
 	 * can set or change the shared singleton browser in the provided JDialog or JFrame, or, if
 	 * none is given, in a shared JFrame.
 	 * 
+	 * Currently only used privately, with null
+	 * 
 	 * If the window is not a JFrame, JDialog, or null, a RuntimeException is
 	 * thrown.
 	 * 
@@ -654,16 +656,17 @@ public class LibraryBrowser extends JPanel {
 		setFields();
 		setWindow(parent, true);
 		createGUI();
-		refreshGUI(true);
 		editButton.requestFocusInWindow();
+		refreshGUI(true);
 		ToolsRes.addPropertyChangeListener(ToolsRes.OSP_PROPERTY_LOCALE, new PropertyChangeListener() { // $NON-NLS-1$
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				refreshLocale();
 			}
 		});
-		FileDropHandler handler = new FileDropHandler();
-		setTransferHandler(handler);
+		setTransferHandler(new FileDropHandler());
+		GUIUtils.FullFrameDragHandler.installFullFrameDragHandler(window, this);
+		GUIUtils.FullFrameDragHandler.attachThis(tabbedPane, window);
 	}
 
 	protected void refreshLocale() {
@@ -1517,7 +1520,8 @@ public class LibraryBrowser extends JPanel {
 		helpMenu.add(aboutItem);
 
 		// create html about-browser pane
-		htmlAboutPane = LibraryTreePanel.newHTMLPane();
+		htmlAboutPane = LibraryTreePanel.newHTMLPane("about");
+		htmlAboutPane.setName("BH_test_htmlAbout");
 		htmlScroller = new JScrollPane(htmlAboutPane);
 		htmlAboutPane.setText(getAboutLibraryBrowserText());
 //		HTMLDocument document = (HTMLDocument) htmlAboutPane.getDocument();

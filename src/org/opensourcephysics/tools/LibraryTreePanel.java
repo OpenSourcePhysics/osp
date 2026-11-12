@@ -762,7 +762,7 @@ class LibraryTreePanel extends JPanel {
 		editorbar.add(metadataButton);
 
 		// create default html pane
-		emptyHTMLPane = new HTMLPane();
+		emptyHTMLPane = newHTMLPane("empty");
 		// create display panel for right side of split pane
 		displayPanel = new JPanel(new BorderLayout());
 		displayPanel.add(htmlScroller, BorderLayout.CENTER);
@@ -1678,8 +1678,8 @@ class LibraryTreePanel extends JPanel {
 		return true;
 	}
 
-	protected static JEditorPane newHTMLPane() {
-		return new HTMLPane();
+	protected static HTMLPane newHTMLPane(String name) {
+		return new HTMLPane(name);
 	}
 
 	/**
@@ -1811,7 +1811,7 @@ class LibraryTreePanel extends JPanel {
 	
 	protected void refreshNode(LibraryTreeNode node) {
 		// for other nodes delete cached files and reload the node
-		HTMLPane pane = new HTMLPane();
+		HTMLPane pane = newHTMLPane("refreshNode");
 		pane.setText("<h2>" + ToolsRes.getString("LibraryBrowser.Info.Refreshing") + " '" + node + "'</h2>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 		htmlScroller.setViewportView(pane);
 		URL url = node.getHTMLURL(); // returns cached file URL, if any
@@ -2296,12 +2296,12 @@ class LibraryTreePanel extends JPanel {
 			URL url = node.getHTMLURL();
 			// returns URL of original (if available) or cached (if it exists) HTML file
 			if (url == null) {
-				htmlPane = new HTMLPane();
+				htmlPane = newHTMLPane("LTN-nullURL");
 				htmlStr = node.getHTMLString();
 			} else {
 				htmlPane = htmlPanesByURL.get(url);
 				if (htmlPane == null) {
-					htmlPane = new HTMLPane();
+					htmlPane = newHTMLPane("LTN-" + url);
 					htmlPanesByURL.put(url, htmlPane);
 					// DB added 2020/09/26 to display zipped html files correctly in Java
 					if (!OSPRuntime.isJS) {
@@ -2540,12 +2540,17 @@ class LibraryTreePanel extends JPanel {
 		}
 
 	}
+	
 
 	/**
 	 * A JTextPane that displays html pages for LibraryTreeNodes.
 	 */
 	private static class HTMLPane extends JEditorPane {
 
+		private static int test = 0;
+		
+		private int index;
+		
 		final static HyperlinkListener hyperlinkListener = new HyperlinkListener() {
 			@Override
 			public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -2555,7 +2560,12 @@ class LibraryTreePanel extends JPanel {
 			}
 		};
 
-		public HTMLPane() {
+		public String toString() {
+			return "[HTMLPane " + index + " " + getName().substring(getName().lastIndexOf("/")+1) + "]";			
+		}
+		public HTMLPane(String name) {
+			index = ++test;
+			setName(name);
 			setEditable(false);
 			setFocusable(false);
 			setContentType("text/html; charset=UTF-8"); //$NON-NLS-1$
@@ -2570,6 +2580,8 @@ class LibraryTreePanel extends JPanel {
 				}
 			});
 		}
+		
+
 
 		@Override
 		public void paintComponent(Graphics g) {

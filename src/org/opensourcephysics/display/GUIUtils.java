@@ -11,14 +11,21 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.ContainerAdapter;
+import java.awt.event.ContainerEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,22 +33,299 @@ import java.io.IOException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JRootPane;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.JViewport;
+import javax.swing.RootPaneContainer;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.text.JTextComponent;
+import javax.swing.tree.TreePath;
 
 import org.jibble.epsgraphics.EpsGraphics2D;
 import org.opensourcephysics.controls.XML;
 
 public class GUIUtils {
+
+	/**
+	 * Installs mouse and touch dragging on a panel within a JFrame or JDialog.
+	 * 
+	 * Allows dragging the window by dragging anywhere inside the dialog while
+	 * preserving interactive controls (buttons, editable text fields, scrollbars,
+	 * and tree node selection / folder expansion).
+	 * 
+	 * This includes resizing along edges if the frame or dialog is resizable
+	 * 
+	 * @author ChatGPT+, adapted by Bob Hanson
+	 */
+	public static class FullFrameDragHandler {
+	
+		private static String DRAG_LISTENER_KEY = "Full_Frame_Drag_Listener_Installed"; 
+		private static String WINDOW_LISTENER_KEY = "Full_Frame_Drag_WindowListener_Attached";
+		private static String STATE_CHANGED_KEY = "Full_Frame_Drag_Tab_State_Listenerer_Installed"; 
+	
+		/**
+		 * Installs the drag handler and welcome screen renderer on the given JPanel
+		 * instance.
+		 * 
+		 * @param c the JPanel instance
+		 */
+		public static void installFullFrameDragHandler(Window window, JComponent c) {
+			if (window == null)
+				window = (Window) c.getTopLevelAncestor();
+			if (!(window instanceof JFrame) && !(window instanceof JDialog))
+				return;
+			attachToWindow(window);			
+			attachThis(c, window);
+		}
+	
+		public static void attachThis(JComponent c, Window window) {
+			// Attach to panel and all existing chidren in the window
+			attachThisAndChildHierarchy(c, window);
+			// Listen for tab changes 
+			attachStateListeners(c, window);
+		}
+
+		private static void attachThisAndChildHierarchy(JComponent comp, Window w) {
+			if (comp == null)
+				return;
+	
+			// Attach to this component if eligible
+			attachFullFrameDragAdapter(comp, w);
+	
+			if (comp instanceof JScrollPane) {
+				JScrollPane sp = (JScrollPane) comp;
+				JViewport vp = sp.getViewport();
+				if (vp != null) {
+					attachThis(vp, w);
+					if (vp.getView() != null) {
+						attachThisAndChildHierarchy((JComponent) vp.getView(), w);
+					}
+				}
+			} 
+			if (comp instanceof Container) {
+				Container c = (Container) comp;
+				boolean isSplitPane = (c instanceof JSplitPane);
+				// BH the first component of a JSplitPane is always its UI-based divider
+				for (Component child : c.getComponents()) {
+					if ((child instanceof JComponent) &&  (!isSplitPane || child.getClass().getName().indexOf("Divider") < 0))
+						attachThisAndChildHierarchy((JComponent) child, w);
+				}
+			}
+		}
+	
+		/**
+		 * Attaches drag listeners and window listeners to the window, root pane, and
+		 * layered pane.
+		 */
+		private static void attachToWindow(Window w) {
+			// exclude JApplet, JInternalFrame, JLightweightFrame, JWindow
+			if (w instanceof RootPaneContainer) {
+				JRootPane rp = ((RootPaneContainer) w).getRootPane();
+				if (rp != null) {
+					if (rp.getClientProperty(WINDOW_LISTENER_KEY) != null) {
+						return; // already attached
+					}
+					rp.putClientProperty(WINDOW_LISTENER_KEY, Boolean.TRUE);
+	
+					attachFullFrameDragAdapter(rp, w);
+					if (rp.getLayeredPane() != null) {
+						attachFullFrameDragAdapter(rp.getLayeredPane(), w);
+					}
+					if (rp.getContentPane() != null) {
+						attachFullFrameDragAdapter((JComponent)rp.getContentPane(), w);
+					}
+				}
+			}
+		}
+	
+		private static void attachStateListeners(JComponent root, Window w) {
+			if (root == null)
+				return;
+			boolean isTabbedPane = false;
+			if (root instanceof JViewport || (isTabbedPane = (root instanceof JTabbedPane))) {
+				if (root.getClientProperty(STATE_CHANGED_KEY) == null) {
+					root.putClientProperty(STATE_CHANGED_KEY, Boolean.TRUE);
+					root.addContainerListener(new ContainerAdapter() {
+						@Override
+						public void componentAdded(ContainerEvent e) {
+							attachThisAndChildHierarchy((JComponent) e.getChild(), w);
+						}
+					});
+					if (isTabbedPane) {
+						JTabbedPane tabbedPane = (JTabbedPane) root;
+						tabbedPane.addChangeListener(new ChangeListener() {
+							@Override
+							public void stateChanged(ChangeEvent e) {
+								attachThisAndChildHierarchy((JComponent) tabbedPane.getSelectedComponent(), w);
+							}
+						});
+					} else {
+						JViewport vp = (JViewport) root;
+						vp.addChangeListener(new ChangeListener() {
+							@Override
+							public void stateChanged(ChangeEvent e) {
+								attachThisAndChildHierarchy((JComponent) vp.getView(), w);
+							}
+						});						
+					}
+				}
+			}
+			for (Component child : root.getComponents()) {
+				if (child instanceof JComponent) {
+					attachStateListeners((JComponent) child, w);
+				}
+			}
+		}
+	
+		/**
+		 * Determines whether a component should receive the window drag listener.
+		 * Interactive components (buttons, editable text fields, dropdowns, scrollbars,
+		 * and UI-based SplitPaneDividers [excluded already])
+		 * are excluded already so their primary interactions are preserved.
+		 */
+		private static boolean isEligibleForDrag(Component comp) {
+			return (comp != null 
+					&& !(comp instanceof AbstractButton)
+					&& !(comp instanceof JComboBox)
+					&& !(comp instanceof JScrollBar)
+					&& !(comp instanceof JEditorPane 
+							&& ((JTextComponent) comp).isEditable())
+					&& !(comp instanceof JTextComponent 
+							&& ((JTextComponent) comp).isEditable())
+					
+					);
+		}
+	
+		private static void attachFullFrameDragAdapter(JComponent comp, Window window) {
+			if (!isEligibleForDrag(comp))
+				return;
+
+			JComponent jc = (JComponent) comp;
+			if (jc.getClientProperty(DRAG_LISTENER_KEY) != null) {
+				return; // already attached
+			}
+			jc.putClientProperty(DRAG_LISTENER_KEY, Boolean.TRUE);
+			FullFrameDragMouseAdapter adapter = new FullFrameDragMouseAdapter(window);
+			comp.addMouseListener(adapter);
+			comp.addMouseMotionListener(adapter);
+		}
+	
+		/**
+		 * MouseAdapter that implements dragging of the top-level window when pressing
+		 * on empty space of the dialog, tree, or viewports.
+		 * 
+		 * This includes resizing along edges.
+		 * 
+		 */
+		private static class FullFrameDragMouseAdapter extends MouseAdapter {
+			private Window window;
+			private Point mouseLoc = new Point();
+			private Point windowLoc = new Point();
+			private Dimension windowDim = new Dimension();
+			private boolean isDragging = false;
+			private boolean isResizing = false;
+	
+			public FullFrameDragMouseAdapter(Window w) {
+				this.window = w;
+			}
+	
+			@Override
+			public void mousePressed(MouseEvent e) {
+				isDragging = false;
+				if (SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
+					return;
+				}
+				Component component = (Component) e.getSource();
+				// If event is on a JTree, hit-test to see if user clicked a node
+				if (component instanceof JTree) {
+					JTree tree = (JTree) component;
+					TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+					if (path != null) {
+						return; // Clicked on a node -> normal tree selection / open
+					}
+					int row = tree.getClosestRowForLocation(e.getX(), e.getY());
+					if (row >= 0) {
+						Rectangle bounds = tree.getRowBounds(row);
+						if (bounds != null && e.getY() >= bounds.y && e.getY() <= bounds.y + bounds.height
+								&& e.getX() <= bounds.x + bounds.width) {
+							return; // Clicked near row expander handle or node text
+						}
+					}
+				}
+				if (window == null)
+					return;
+				Point startPt = e.getLocationOnScreen();
+				// BH added: Don't allow resizing if window is not resizable 
+				if ((window instanceof JFrame) && ((JFrame) window).isResizable()
+						|| (window instanceof JDialog) && ((JDialog) window).isResizable()) {
+					Point ptInWindow = SwingUtilities.convertPoint(component, e.getPoint(), window);
+					int cornerSize = 20;
+					if (ptInWindow.x >= window.getWidth() - cornerSize && ptInWindow.y >= window.getHeight() - cornerSize) {
+						mouseLoc.setLocation(startPt);
+						windowDim.setSize(window.getSize());
+						isResizing = true;
+						isDragging = false;
+						return;
+					}
+				}
+				mouseLoc.setLocation(startPt);
+				windowLoc.setLocation(window.getLocation());
+				isDragging = true;
+				isResizing = false;
+			}
+	
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if (!isDragging && !isResizing)
+					return;
+				if (window != null) {
+					Point curPt = e.getLocationOnScreen();
+					if (curPt != null) {
+						int dx = curPt.x - mouseLoc.x;
+						int dy = curPt.y - mouseLoc.y;
+						if (isResizing) {
+							int newW = Math.max(400, windowDim.width + dx);
+							int newH = Math.max(300, windowDim.height + dy);
+							window.setSize(newW, newH);
+							window.validate();
+							window.repaint();
+							// setupResizer(w);
+						} else {
+							window.setLocation(windowLoc.x + dx, windowLoc.y + dy);
+							window.repaint();
+						}
+					}
+				}
+			}
+	
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				isDragging = false;
+				isResizing = false;
+			}
+		}
+	
+	}
 
 	// colors used to "disable/enable" TitledBorders and other non-Components
 	private static Color enabledColor, disabledColor;
@@ -394,14 +678,14 @@ public class GUIUtils {
 		if (g2 == null) {
 			return;
 		}
-		long startTime = System.currentTimeMillis();
+		//long startTime = System.currentTimeMillis();
 		drawable.draw(dp, g2); // first drawing often takes longer because of initialization
-		System.out.print("first drawing=" + (System.currentTimeMillis() - startTime)); //$NON-NLS-1$
-		startTime = System.currentTimeMillis(); // reset the time
+		//System.out.print("first drawing=" + (System.currentTimeMillis() - startTime)); //$NON-NLS-1$
+		//startTime = System.currentTimeMillis(); // reset the time
 		for (int i = 0; i < 5; i++) {
 			drawable.draw(dp, g2);
 		}
-		System.out.println("  avg time/drawing=" + ((System.currentTimeMillis() - startTime) / 5)); //$NON-NLS-1$
+		//System.out.println("  avg time/drawing=" + ((System.currentTimeMillis() - startTime) / 5)); //$NON-NLS-1$
 		g2.dispose();
 	}
 
