@@ -2828,17 +2828,29 @@ public class ResourceLoader {
 
 		private ResourceBundle res;
 		private Properties props;
+		private final String fallbackBundleName;
 
-		Bundle(ResourceBundle res) {
+		Bundle(ResourceBundle res, String fallbackBundleName) {
 			this.res = res;
+			this.fallbackBundleName = fallbackBundleName;
 		}
 
 		Bundle(Properties props) {
 			this.props = props;
+			fallbackBundleName = null;
 		}
 
 		public String getString(String key) throws MissingResourceException {
-			String ret = (props == null ? res.getString(key) : props.getProperty(key));
+			String ret = null;
+			try {
+				ret = (props == null ? res.getString(key) : props.getProperty(key));
+			} catch (MissingResourceException e) {
+				if (fallbackBundleName == null)
+					throw e;
+			}
+			// SwingJS may load the default properties from a separate asset archive.
+			if (ret == null && fallbackBundleName != null)
+				return getBundle(fallbackBundleName, Locale.ENGLISH).getString(key);
 			if (ret == null) {
 				String cname = (res == null ? props : res).getClass().getName();				
 				String msg = "Can't find resource for bundle " + cname + ", key " + key;
@@ -2872,7 +2884,8 @@ public class ResourceLoader {
 		Bundle b = bundleCache.get(key);
 		if (b != null)
 			return b;
-		if ("en".equals(resourceLocale.getLanguage()) && !Assets.notFound(name) ) {
+		boolean english = "en".equals(resourceLocale.getLanguage());
+		if (english && !Assets.notFound(name)) {
 			Properties p = new Properties();
 			try {
 				p.load(getAssetStream(name));
@@ -2888,9 +2901,10 @@ public class ResourceLoader {
 		if (b == null) {
 			try {
 				b = new Bundle(ResourceBundle.getBundle(bundleName, resourceLocale,
-						ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)));
+						ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_PROPERTIES)),
+						english ? null : bundleName);
 			} catch (MissingResourceException e) {
-				if ("en".equals(resourceLocale.getLanguage()))
+				if (english)
 					throw e;
 				// The PWA may have the default properties only in its asset archive.
 				b = getBundle(bundleName, Locale.ENGLISH);

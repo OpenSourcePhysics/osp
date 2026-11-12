@@ -98,8 +98,8 @@ import javajs.async.SwingJSUtils.Timeout;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.3.5-261109"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "9 Nov 2026"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.5-261111"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "11 Nov 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	/**
@@ -467,7 +467,7 @@ public class OSPRuntime {
 	private static boolean isiPad;
 	private static boolean isAndroid;	
   private static boolean isMobile;
-  private static boolean isCompact;
+  private static boolean isCompact = true;
   public static boolean preferMobile, neverMobile;
   private static String userAgent;	//navigator user agent
     //skip loading for testing mobile devices

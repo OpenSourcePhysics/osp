@@ -89,6 +89,7 @@ import org.opensourcephysics.display.OSPButton;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
+import org.opensourcephysics.js.AIPatch;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.Library.ListMap;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
@@ -208,6 +209,7 @@ public class LibraryBrowser extends JPanel {
 	private int myFontLevel;
 
 	private boolean exitOnClose;
+	private boolean viewportListenerInstalled;
 	private boolean fireHelpEvent;
 	private boolean isResourcePathXML;
 	private boolean keyPressed;
@@ -549,10 +551,31 @@ public class LibraryBrowser extends JPanel {
 		if (c != null) {
 			c.setVisible(vis);
 			if (vis) {
+				if (OSPRuntime.isJS) {
+					fitToViewport();
+					if (!viewportListenerInstalled) {
+						AIPatch.addWindowOrientationChangeListener(this::fitToViewport);
+						viewportListenerInstalled = true;
+					}
+				}
 				SwingUtilities.invokeLater(() -> {
 					c.toFront();
 				});
 			}
+		}
+	}
+
+	private void fitToViewport() {
+		Window browserWindow = (Window) getTopLevelAncestor();
+		if (browserWindow == null || !browserWindow.isVisible())
+			return;
+
+		Dimension viewport = OSPRuntime.getHTMLPageSize();
+		int width = Math.min(900, (int) (viewport.width * 0.9));
+		int height = Math.min(560, (int) (viewport.height * 0.9));
+		if (width > 0 && height > 0) {
+			browserWindow.setBounds((viewport.width - width) / 2, (viewport.height - height) / 2, width, height);
+			browserWindow.validate();
 		}
 	}
 
@@ -747,17 +770,7 @@ public class LibraryBrowser extends JPanel {
 				exit();
 			}
 		});
-		if (newFrame) {
-			// if isJS, reduce the browser preferred height
-			// this will only be done once
-			if (OSPRuntime.isJS) {
-				int dh = frame.getHeight() - getHeight();
-				double factor = 1 + (FontSizer.getFactor() - 1) * 0.5;
-				int w = (int) (factor * width);
-				int h = (int) (factor * hight);
-				setPreferredSize(new Dimension(w, h - dh));
-				frame.pack();
-			}
+		if (newFrame && !OSPRuntime.isJS) {
 			// center on screen
 			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 			int x = (dim.width - frame.getBounds().width) / 2;
@@ -2876,8 +2889,8 @@ public class LibraryBrowser extends JPanel {
 	private static String getAboutLibraryBrowserText() {
 		String path = "/org/opensourcephysics/resources/tools/images/compadre_banner.jpg"; //$NON-NLS-1$
 		Resource res = ResourceLoader.getResource(path);
-		return (res == null ? "" : "<p align=\"center\"><img src=\"" + res.getURL() + "\"></p>")
-				+ "<div style=\"font-family:'Verdana'\"><h1 align=\"center\">Open Source Physics Library Browser</h1>"
+		return (res == null ? "" : "<p align=\"center\"><img style=\"max-width:100%;height:auto\" src=\"" + res.getURL() + "\"></p>")
+				+ "<div style=\"font-family:'Verdana';container-type:inline-size\"><h1 align=\"center\" style=\"font-size:min(2em,4cqw);white-space:nowrap\">Open Source Physics Library Browser</h1>"
 				+ "<p>Use the OSP Library Browser to browse online collections of Tracker projects, EJS simulations and other learning resources.</p><ul> <li>Open a collection by choosing from the Collections menu or entering a URL directly in the toolbar as with a web browser.</li>"
 				+ "<li>Collections are organized and displayed in a tree. Each tree node is a resource or sub-collection. Click a node to learn about the resource or double-click to download and/or open it in Tracker, EJS, DataTool or your web browser.</li>"
 				+ "<li>To build your own collection choose File|New Collection. Add your own resources or copy and paste from other collections. Collections are saved as xml documents that contain references to the actual resource files. For more information, choose Help.</li>"

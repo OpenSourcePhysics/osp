@@ -1586,7 +1586,18 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			vidPanel.setMessage(null);
 			e.consume();
 		}
-		getVideoClip().setAdjusting(false);
+		VideoClip clip = getVideoClip();
+		clip.setAdjusting(false);
+		Video video = clip.getVideo();
+		if (OSPRuntime.isJS && video != null) {
+			// Let the final debounced slider seek run before refreshing the image.
+			OSPRuntime.setTimeout("VP-sliderRefresh-" + slider.getName(), 50, true, () -> {
+				if (disabled || clip != getVideoClip() || clipControl.isPlaying())
+					return;
+				video.invalidateVideoAndFilter();
+				vidPanel.repaint();
+			});
+		}
 	}
 
 
