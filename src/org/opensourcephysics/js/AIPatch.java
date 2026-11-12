@@ -49,9 +49,6 @@ import swingjs.api.js.DOMNode;
  */
 public class AIPatch {
 
-	private static final int MIN_WIDTH = 320;
-	private static final int MIN_HEIGHT = 220;
-
 	/**
 	 * Align a component's right edge with the reference component or within the
 	 * visible viewport.
@@ -158,6 +155,37 @@ public class AIPatch {
 			 */
 		}
 	}
+	
+	private final static String[] resizerNodeStyles = new String[] {
+//			"background-color", "red", 
+			 "z-index", "1000002",
+			 "cursor", "nwse-resize",
+			   "width", "30px",
+			   "height", "30px",
+			   "margin-left", "-15px",
+			   "margin-top", "-15px",					
+			   "background-image", "linear-gradient(red, red)",
+			   "background-repeat", "no-repeat",
+			   "background-position", "center",
+			   "background-size", "10px 10px"
+			};
+	
+	private final static String[] rubberBandStyles = new String[] {
+			"border", "2px dashed #FF00FF", 
+			"z-index", "1000002", 
+			"position", "absolute",
+			"left", "0px", 
+			"top", "0px", 
+			"display", "none", 
+			"pointer-events", "none",
+			"touch-action", "none",
+			"user-select", "none",
+			"webkit-user-select", "none",
+			"cursor", "nwse-resize"			};
+
+	
+	private static final int MIN_WIDTH = 320;
+	private static final int MIN_HEIGHT = 220;
 
 	/**
 	 * Configures the SwingJS window resizer DOM element for touch responsiveness
@@ -165,131 +193,12 @@ public class AIPatch {
 	 *
 	 * @param window the window whose resizer should be configured
 	 */
-	@SuppressWarnings("unused")
-	public static void setupResizer(Window window) {
-		if (window == null || !OSPRuntime.isJS)
+	public static void setupResizer(Window frame) {
+		if (frame == null || !OSPRuntime.isJS)
 			return;
-		int minw = MIN_WIDTH;
-		int minh = MIN_HEIGHT;
-		/**
-		 * @j2sNative try { var frame = window; var viewer = (frame.getFrameViewer$ ?
-		 *            frame.getFrameViewer$() : (frame.秘frameViewer || null)); if
-		 *            (!viewer && window.getRootPane$) { var rp = window.getRootPane$();
-		 *            viewer = (rp && rp.getFrameViewer$ ? rp.getFrameViewer$() : (rp ?
-		 *            rp.秘frameViewer : null)); } var resizer = (viewer &&
-		 *            viewer.getResizer$ ? viewer.getResizer$() : null); if (!resizer &&
-		 *            viewer && viewer.newResizer) { resizer = viewer.newResizer(); } if
-		 *            (resizer && resizer.show$) { resizer.show$(); } if (!resizer)
-		 *            return;
-		 * 
-		 *            var resizerNode = (resizer.getDOMNode$ ? resizer.getDOMNode$() :
-		 *            (resizer.resizer || null)); if (!resizerNode && resizer.rootPane)
-		 *            { var id = resizer.rootPane.秘htmlName + "_resizer"; resizerNode =
-		 *            document.getElementById(id); } if (!resizerNode) return;
-		 * 
-		 *            var rubberBandNode = resizer.rubberBand; if (!rubberBandNode &&
-		 *            resizer.rootPane) { var rbid = resizer.rootPane.秘htmlName +
-		 *            "_resizer_rb"; rubberBandNode = document.getElementById(rbid); }
-		 * 
-		 *            // Ensure rubberBand does not block touch / pointer interactions
-		 * 
-		 *            if (rubberBandNode) { rubberBandNode.style.pointerEvents = "none";
-		 *            }
-		 * 
-		 *            // 1. Keep the 20x20 hotspot inside the frame 
-		 *            //    to avoid page overflow
-		 * 
-		 *            resizerNode.style.width = "20px"; resizerNode.style.height =
-		 *            "20px"; resizerNode.style.marginLeft = "-15px";
-		 *            resizerNode.style.marginTop = "-15px";
-		 *            resizerNode.style.touchAction = "none"; resizerNode.style.zIndex =
-		 *            "100002"; resizerNode.style.userSelect = "none";
-		 *            resizerNode.style.webkitUserSelect = "none";
-		 *            resizerNode.style.cursor = "nwse-resize";
-		 * 
-		 *            // 2. Visible diagonal corner grip lines 
-		 *            //    for clear visual feedback on touch screens 
-		 *            
-		 *            resizerNode.style.opacity = "0.75";
-		 *            resizerNode.style.backgroundImage = "linear-gradient(135deg,
-		 *            transparent 0%, transparent 50%, #888888 50%, #888888 56%,
-		 *            transparent 56%, transparent 68%, #888888 68%, #888888 74%,
-		 *            transparent 74%, transparent 86%, #888888 86%, #888888 92%,
-		 *            transparent 92%)"; resizerNode.style.backgroundRepeat =
-		 *            "no-repeat"; resizerNode.style.backgroundPosition = "right
-		 *            bottom"; resizerNode.style.backgroundSize = "10px 10px";
-		 * 
-		 *            // 3. Attach dedicated touch listeners with 
-		 *            //    passive: false to prevent iOS Safari scrolling 
-		 *            
-		 *            if (!resizerNode._tTouchAttached) {
-		 *            resizerNode._tTouchAttached = true;
-		 * 
-		 *            resizerNode.addEventListener("touchstart", function(e) { if
-		 *            (!e.touches || e.touches.length === 0) return; e.preventDefault();
-		 *            e.stopPropagation();
-		 * 
-		 *            var touch0 = e.touches[0]; var startX = touch0.pageX; var startY =
-		 *            touch0.pageY; var startW = frame.getWidth$ ? frame.getWidth$() :
-		 *            (frame.width || 800); var startH = frame.getHeight$ ?
-		 *            frame.getHeight$() : (frame.height || 600); var startLoc =
-		 *            frame.getLocation$ ? frame.getLocation$() : { x: 0, y: 0 };
-		 * 
-		 *            resizerNode.style.opacity = "1.0"; if (rubberBandNode) {
-		 *            rubberBandNode.style.width = startW + "px";
-		 *            rubberBandNode.style.height = startH + "px";
-		 *            rubberBandNode.style.display = "block";
-		 *            rubberBandNode.style.pointerEvents = "none"; }
-		 * 
-		 *            var onTouchMove = function(me) { if (!me.touches ||
-		 *            me.touches.length === 0) return; me.preventDefault();
-		 *            me.stopPropagation(); var t = me.touches[0]; var dx = t.pageX -
-		 *            startX; var dy = t.pageY - startY; var curW = Math.max(minw,
-		 *            Math.round(startW + dx)); var curH = Math.max(minh,
-		 *            Math.round(startH + dy)); if (rubberBandNode) {
-		 *            rubberBandNode.style.width = curW + "px";
-		 *            rubberBandNode.style.height = curH + "px"; }
-		 *            resizerNode.style.left = (curW - 4) + "px"; resizerNode.style.top
-		 *            = (curH - 4) + "px"; };
-		 * 
-		 *            var onTouchEnd = function(ue) { ue.preventDefault();
-		 *            ue.stopPropagation(); window.removeEventListener("touchmove",
-		 *            onTouchMove, { passive: false, capture: true });
-		 *            window.removeEventListener("touchend", onTouchEnd, { passive:
-		 *            false, capture: true }); window.removeEventListener("touchcancel",
-		 *            onTouchEnd, { passive: false, capture: true });
-		 * 
-		 *            resizerNode.style.opacity = "0.75"; if (rubberBandNode) {
-		 *            rubberBandNode.style.display = "none"; }
-		 * 
-		 *            var endTouch = (ue.changedTouches && ue.changedTouches.length > 0
-		 *            ? ue.changedTouches[0] : touch0); var dx = endTouch.pageX -
-		 *            startX; var dy = endTouch.pageY - startY; var finalW =
-		 *            Math.max(minw, Math.round(startW + dx)); var finalH =
-		 *            Math.max(minh, Math.round(startH + dy));
-		 * 
-		 *            if (frame.setSize$I$I) { frame.setSize$I$I(finalW, finalH); } else
-		 *            if (frame.setBounds$I$I$I$I) { frame.setBounds$I$I$I$I(startLoc.x,
-		 *            startLoc.y, finalW, finalH); } if
-		 *            (frame.setPreferredSize$java_awt_Dimension) {
-		 *            frame.setPreferredSize$java_awt_Dimension(Clazz.new_(java.awt.Dimension.c$$I$I,
-		 *            [finalW, finalH])); } if (frame.validate$) { frame.validate$(); }
-		 *            if (frame.repaint$) { frame.repaint$(); } if (resizer &&
-		 *            resizer.setPosition$I$I) { resizer.setPosition$I$I(0, 0); } else {
-		 *            resizerNode.style.left = (finalW - 4) + "px";
-		 *            resizerNode.style.top = (finalH - 4) + "px"; } if
-		 *            (frame.frameResized$) { frame.frameResized$(); } if
-		 *            (frame.getSelectedPanel$) { var tp = frame.getSelectedPanel$(); if
-		 *            (tp && org.opensourcephysics.cabrillo.tracker.TFrame &&
-		 *            org.opensourcephysics.cabrillo.tracker.TFrame.repaintT) {
-		 *            org.opensourcephysics.cabrillo.tracker.TFrame.repaintT(tp); } } };
-		 * 
-		 *            window.addEventListener("touchmove", onTouchMove, { passive:
-		 *            false, capture: true }); window.addEventListener("touchend",
-		 *            onTouchEnd, { passive: false, capture: true });
-		 *            window.addEventListener("touchcancel", onTouchEnd, { passive:
-		 *            false, capture: true }); }, { passive: false }); } } catch (ex) {}
-		 */
+		// note that we can change these styles to anything we want
+		boolean useAI = false;
+        OSPRuntime.jsutil.setFrameResizer(frame, MIN_WIDTH, MIN_HEIGHT, resizerNodeStyles, rubberBandStyles, useAI);
 	}
 
 	/**
@@ -578,50 +487,66 @@ public class AIPatch {
 	public static Runnable installJ2SFileSaveDialog(String targetPath, String mediaType) {
 		System.out.println("AIPatch.installJ2SFileSaveDialog " + targetPath + "  as " + mediaType);
 		/**
-		 * @j2sNative var previousSave = J2S._localFileSaveFunction; var projectSave =
-		 *            null; var ua = navigator.userAgent || ""; if
-		 *            (/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) &&
-		 *            navigator.maxTouchPoints > 1)) { projectSave = function(filename,
-		 *            data) { if (filename !== targetPath) { return previousSave ?
-		 *            previousSave.apply(this, arguments) : false; } var name =
-		 *            filename.substring(filename.lastIndexOf("/") + 1); var blob = new
-		 *            Blob([new Uint8Array(data)], {type: mediaType}); var url =
-		 *            URL.createObjectURL(blob); var previousFocus =
-		 *            document.activeElement; var overlay =
-		 *            document.createElement("div"); overlay.setAttribute("role",
-		 *            "dialog"); overlay.setAttribute("aria-modal", "true");
-		 *            overlay.setAttribute("aria-label", "Save File");
-		 *            overlay.style.cssText =
-		 *            "position:fixed;inset:0;z-index:1000001;display:flex;align-items:center;justify-content:center;background:#0009";
-		 *            var panel = document.createElement("div"); panel.style.cssText =
-		 *            "background:white;color:#222;padding:24px;border-radius:10px;max-width:85vw;font:16px/1.4
-		 *            sans-serif"; var message = document.createElement("p");
-		 *            message.textContent = "Your file is ready. Tap Download to save "
-		 *            + name + "."; var download = document.createElement("a");
-		 *            download.href = url; download.download = name; download.type =
-		 *            "application/zip"; download.textContent = "Download " +
-		 *            name.substring(name.lastIndexOf(".") + 1).toUpperCase();
-		 *            download.style.cssText =
-		 *            "display:inline-block;padding:12px;margin-right:16px"; var close =
-		 *            document.createElement("button"); close.textContent = "Close";
-		 *            close.style.cssText = "font:inherit;padding:12px"; var dismiss =
-		 *            function() { overlay.remove();
-		 * 
-		 *            // Do not revoke while Safari may still be starting the download.
-		 * 
-		 *            window.setTimeout(function() { URL.revokeObjectURL(url); },
-		 *            60000); if (previousFocus && previousFocus.isConnected)
-		 *            previousFocus.focus(); }; close.addEventListener("click",
-		 *            dismiss); overlay.addEventListener("keydown", function(event) { if
-		 *            (event.key === "Escape") { event.stopPropagation(); dismiss(); }
-		 *            if (event.key === "Tab") { event.preventDefault();
-		 *            (document.activeElement === download ? close : download).focus();
-		 *            } }); panel.appendChild(message); panel.appendChild(download);
-		 *            panel.appendChild(close); overlay.appendChild(panel);
-		 *            document.body.appendChild(overlay); download.focus(); return true;
-		 *            }; J2S._localFileSaveFunction = projectSave; } return
-		 *            {"run$":function() { if (projectSave && J2S._localFileSaveFunction
-		 *            === projectSave) J2S._localFileSaveFunction = previousSave; }};
+		 * @j2sNative
+		 * var previousSave = J2S._localFileSaveFunction;
+		 * var projectSave = null;
+		 * var ua = navigator.userAgent || "";
+		 * if (/iPad|iPhone|iPod/.test(ua) ||
+		 *     (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) {
+		 *   projectSave = function(filename, data) {
+		 *     if (filename !== targetPath) {
+		 *       return previousSave ? previousSave.apply(this, arguments) : false;
+		 *     }
+		 *     var name = filename.substring(filename.lastIndexOf("/") + 1);
+		 *     var blob = new Blob([new Uint8Array(data)], {type: mediaType});
+		 *     var url = URL.createObjectURL(blob);
+		 *     var previousFocus = document.activeElement;
+		 *     var overlay = document.createElement("div");
+		 *     overlay.setAttribute("role", "dialog");
+		 *     overlay.setAttribute("aria-modal", "true");
+		 *     overlay.setAttribute("aria-label", "Save File");
+		 *     overlay.style.cssText = "position:fixed;inset:0;z-index:1000001;display:flex;align-items:center;justify-content:center;background:#0009";
+		 *     var panel = document.createElement("div");
+		 *     panel.style.cssText = "background:white;color:#222;padding:24px;border-radius:10px;max-width:85vw;font:16px/1.4 sans-serif";
+		 *     var message = document.createElement("p");
+		 *     message.textContent = "Your file is ready. Tap Download to save " + name + ".";
+		 *     var download = document.createElement("a");
+		 *     download.href = url;
+		 *     download.download = name;
+		 *     download.type = "application/zip";
+		 *     download.textContent = "Download " + name.substring(name.lastIndexOf(".") + 1).toUpperCase();
+		 *     download.style.cssText = "display:inline-block;padding:12px;margin-right:16px";
+		 *     var close = document.createElement("button");
+		 *     close.textContent = "Close";
+		 *     close.style.cssText = "font:inherit;padding:12px";
+		 *     var dismiss = function() {
+		 *       overlay.remove();
+		 *       // Do not revoke while Safari may still be starting the download.
+		 *       window.setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+		 *       if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+		 *     };
+		 *     close.addEventListener("click", dismiss);
+		 *     overlay.addEventListener("keydown", function(event) {
+		 *       if (event.key === "Escape") { event.stopPropagation(); dismiss(); }
+		 *       if (event.key === "Tab") {
+		 *         event.preventDefault();
+		 *         (document.activeElement === download ? close : download).focus();
+		 *       }
+		 *     });
+		 *     panel.appendChild(message);
+		 *     panel.appendChild(download);
+		 *     panel.appendChild(close);
+		 *     overlay.appendChild(panel);
+		 *     document.body.appendChild(overlay);
+		 *     download.focus();
+		 *     return true;
+		 *   };
+		 *   J2S._localFileSaveFunction = projectSave;
+		 * }
+		 * return {"run$":function() {
+		 *   if (projectSave && J2S._localFileSaveFunction === projectSave)
+		 *     J2S._localFileSaveFunction = previousSave;
+		 * }};
 		 */
 		return null;
 	}

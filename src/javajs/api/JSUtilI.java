@@ -18,7 +18,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.TransferHandler;
 
 import javajs.api.js.HTML5Applet;
@@ -418,5 +417,7 @@ public interface JSUtilI {
 	 * @author ChatGPT+
 	 */
 	void isolateWindowGestures(Window frame);
+
+	void setFrameResizer(Window frame, int minWidth, int minHeight, String[] resizerNodeStyles, String[] rubberBandStyles, boolean useAI);
 
 }
