@@ -22,6 +22,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import java.awt.event.MouseAdapter;
@@ -63,6 +65,9 @@ import javax.swing.tree.TreePath;
 
 import org.jibble.epsgraphics.EpsGraphics2D;
 import org.opensourcephysics.controls.XML;
+import org.opensourcephysics.media.core.NumberField;
+
+import swingjs.api.js.DOMNode;
 
 public class GUIUtils {
 
@@ -953,6 +958,158 @@ public class GUIUtils {
 		// we force no listener for JavaScript -- simple prompt.
 		return (String) JOptionPane.showInputDialog(OSPRuntime.isJS ? null : c, message, title, messageType, null, null,
 				value);
+	}
+
+	/**
+	 * Align a component's right edge with the reference component or within the
+	 * visible viewport.
+	 * 
+	 * Note that this does NOT set Java values, only JavaScript. It is called just
+	 * after menu.show().
+	 * 
+	 * Version 2 -- adjusts horizontal and vertical
+	 * 
+	 * @author Bob Hanson
+	 */
+	public static void alignComponentRight(JComponent c, JComponent ref) {
+		// offloaded to JSUtil.java
+		Window container = SwingUtilities.getWindowAncestor(ref);
+		if (container != null) {
+			OSPRuntime.jsutil.alignComponentToContainer(c, container, 1, 1);
+		}
+	}
+
+	/**
+	 * Installs the window resize handler on the specified window.
+	 *
+	 * @param window the top-level Window (TFrame or JDialog)
+	 */
+	public static void installResizeHandler(JFrame window) {
+	
+		window.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				GUIUtils.setupResizer(window);
+			}
+	
+			@Override
+			public void componentResized(ComponentEvent e) {
+				GUIUtils.setupResizer(window);
+			}
+		});
+	}
+
+	/**
+	 * Installs the window resize handler on the specified window.
+	 *
+	 * @param window the top-level Window (TFrame or JDialog)
+	 * 
+	 * @author Bob Hanson
+	 */
+	public static void installGestureHandler(Window window) {
+		if (window == null || !OSPRuntime.isJS)
+			return;
+	
+		window.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				GUIUtils.isolateWindowGestures(window);
+			}
+	
+			@Override
+			public void componentResized(ComponentEvent e) {
+				GUIUtils.isolateWindowGestures(window);
+			}
+		});
+	}
+
+	/**
+	 * Isolates the window DOM node from propagating gestures to the host HTML page
+	 * in SwingJS. Prevents pinch-to-zoom, two-finger pan, overscroll
+	 * rubber-banding, and touch drag bubbling from escaping the Tracker window to
+	 * the surrounding webpage.
+	 *
+	 * @param window the top-level Window (TFrame)
+	 * 
+	 * @author ChatGPT+
+	 */
+	public static void isolateWindowGestures(Window w) {
+		OSPRuntime.jsutil.isolateWindowGestures(w);
+	}
+
+	public static void disposeElement(String id) {
+		DOMNode.dispose(DOMNode.getElement(id));
+	}
+
+	public static void addWindowOrientationChangeListener(Runnable onOrient) {
+		/**
+		 * @j2sNative window.addEventListener(window.onorientationchange ?
+		 *            "orientationchange" : "resize", function() {
+		 *            console.log("Orientation changed"); onOrient.run$(); }, false);
+		 */
+	}
+
+	public static void virtualNumberPad(NumberField nf, String action) {
+		switch (action) {
+		case "add":
+			/**
+			 * @j2sNative
+			 * 
+			 * 			J2S.Mobile.addNumberPad(nf);
+			 */
+			//$FALL-THROUGH$
+		case "show":
+			/**
+			 * @j2sNative
+			 * 
+			 * 			J2S.Mobile.showNumberPad(nf);
+			 */
+		}
+	}
+
+	private final static String[] resizerNodeStyles = new String[] {
+//			"background-color", "red", 
+			 "z-index", "1000002",
+			 "cursor", "nwse-resize",
+			   "width", "30px",
+			   "height", "30px",
+			   "margin-left", "-15px",
+			   "margin-top", "-15px",					
+			   "background-image", "linear-gradient(red, red)",
+			   "background-repeat", "no-repeat",
+			   "background-position", "center",
+			   "background-size", "10px 10px"
+			};
+	
+	private final static String[] rubberBandStyles = new String[] {
+			"border", "2px dashed #FF00FF", 
+			"z-index", "1000002", 
+			"position", "absolute",
+			"left", "0px", 
+			"top", "0px", 
+			"display", "none", 
+			"pointer-events", "none",
+			"touch-action", "none",
+			"user-select", "none",
+			"webkit-user-select", "none",
+			"cursor", "nwse-resize"			};
+
+	
+	private static final int MIN_WIDTH = 320;
+	private static final int MIN_HEIGHT = 220;
+
+	/**
+	 * Configures the SwingJS window resizer DOM element for touch responsiveness
+	 * and visual affordance.
+	 *
+	 * @param window the window whose resizer should be configured
+	 */
+	public static void setupResizer(Window frame) {
+		if (frame == null || !OSPRuntime.isJS)
+			return;
+		// note that we can change these styles to anything we want
+		boolean useAI = false;
+	    OSPRuntime.jsutil.setFrameResizer(frame, MIN_WIDTH, MIN_HEIGHT, resizerNodeStyles, rubberBandStyles, useAI);
 	}
 
 }

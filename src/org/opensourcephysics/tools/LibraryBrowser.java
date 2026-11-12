@@ -89,7 +89,6 @@ import org.opensourcephysics.display.OSPButton;
 import org.opensourcephysics.display.OSPRuntime;
 import org.opensourcephysics.display.ResizableIcon;
 import org.opensourcephysics.display.TextFrame;
-import org.opensourcephysics.js.AIPatch;
 import org.opensourcephysics.media.core.VideoIO;
 import org.opensourcephysics.tools.Library.ListMap;
 import org.opensourcephysics.tools.LibraryResource.Metadata;
@@ -556,7 +555,7 @@ public class LibraryBrowser extends JPanel {
 				if (OSPRuntime.isJS) {
 					fitToViewport();
 					if (!viewportListenerInstalled) {
-						AIPatch.addWindowOrientationChangeListener(this::fitToViewport);
+						GUIUtils.addWindowOrientationChangeListener(this::fitToViewport);
 						viewportListenerInstalled = true;
 					}
 				}

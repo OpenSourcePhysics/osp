@@ -52,8 +52,8 @@ import java.util.Map;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import org.opensourcephysics.display.GUIUtils;
 import org.opensourcephysics.display.OSPRuntime;
-import org.opensourcephysics.js.AIPatch;
 
 /**
  * A NumberField is a JTextField that formats and displays numbers. This default
@@ -655,10 +655,10 @@ public class NumberField extends JTextField {
 
 	public void addVirtualNumberPad() {
 		if (!haveVirtualNumberPad) {
-			AIPatch.virtualNumberPad(this,"add");
+			GUIUtils.virtualNumberPad(this,"add");
 			haveVirtualNumberPad = true;
 		}
-		AIPatch.virtualNumberPad(this,"show");
+		GUIUtils.virtualNumberPad(this,"show");
 	}
 
 	public char getDecimalSeparator() {
