@@ -682,7 +682,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		fileMenu = new JMenu(DisplayRes.getString("DrawingFrame.File_menu_item")); //$NON-NLS-1$
 		JMenu printMenu = new JMenu(DisplayRes.getString("DrawingFrame.Print_menu_title")); //$NON-NLS-1$
 		JMenuItem printItem = new JMenuItem(DisplayRes.getString("DrawingFrame.Print_menu_item")); //$NON-NLS-1$
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{ // cannot print from within browser
 			printMenu.add(printItem);
 			printItem.setAccelerator(KeyStroke.getKeyStroke('P', MENU_SHORTCUT_KEY_MASK));
@@ -915,7 +915,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 		if (!OSPRuntime.isApplet && !OSPRuntime.isJS) {
 			toolsMenu.add(snapshotItem);
 		}
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{
 			snapshotItem.addActionListener(new ActionListener() {
 				@Override
@@ -1002,7 +1002,7 @@ public class DrawingFrame extends OSPFrame implements ClipboardOwner {
 				fileName += ".xml";
 				file = new File(fileName);
 			}
-			/** j2sIgnore */
+			/** @j2sIgnore */
 			{
 				if (file.exists()) {
 					int selected = JOptionPane.showConfirmDialog(null, "Replace existing " + file.getName() + "?",

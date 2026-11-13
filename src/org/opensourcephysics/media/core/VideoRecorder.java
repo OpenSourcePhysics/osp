@@ -100,7 +100,7 @@ public interface VideoRecorder {
 
   /**
    * Saves the video to the specified file.
-   * @param fileName the file name to be saved
+   * @param fileName the file name to be saved or null to pull up a dialog
    * @return the full path of the saved file
    * @throws IOException
    */
@@ -115,12 +115,12 @@ public interface VideoRecorder {
 
   /**
    * Gets the current file name. May be null.
-   * @return the path of the current destination video file
+   * @return the path of the current destination video file (e.g. ScratchVideo.saveFile)
    */
   public String getFileName();
 
   /**
-   * Sets the file name. May be null.
+   * Sets the file name. May NOT be null.
    * @param path the file name
    */
   public void setFileName(String path);

@@ -712,7 +712,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 
 	private String writePvt(String fileName, boolean addSearchPath) {	
 		canWrite = true;
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{ // BH 2022.03.19 skip checks in JS
 			int n = fileName.lastIndexOf("/"); //$NON-NLS-1$
 			if (n < 0) {

@@ -123,7 +123,7 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 			}
 
 		});
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{
 			try {
 				setIconImage(ResourceLoader.getImageIcon(OSP_ICON_FILE).getImage());

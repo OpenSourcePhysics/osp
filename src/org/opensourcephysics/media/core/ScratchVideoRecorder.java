@@ -271,7 +271,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	}
 
 	/**
-	 * Saves the scratch video to the current file or chooser file.
+	 * Saves the scratch video to the current file if not null
+	 * or sets field saveFile from a chooser dialog.
 	 *
 	 * @return the full path to the saved file
 	 * @throws IOException
@@ -345,7 +346,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	/**
 	 * Gets the file name of the destination video.
 	 * 
-	 * @return the file name
+	 * @return the file name or null
 	 */
 	@Override
 	public String getFileName() {
@@ -353,7 +354,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	}
 
 	/**
-	 * Sets the file name. May be null.
+	 * Sets the file name. May NOT be null.
 	 * 
 	 * @param path the file name
 	 */
@@ -363,11 +364,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			return;
 		}
 		File file = new File(path);
-		if (file.exists() && !file.canWrite()) {
-			saveFile = null;
-		} else {
-			saveFile = file;
-		}
+	    saveFile = (OSPRuntime.isJS || !file.exists() || file.canWrite() ? file : null);
 	}
 
 	/**
@@ -458,6 +455,8 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 	/**
 	 * Shows a save dialog used to set the output movie file.
 	 * 
+	 * This method is not JavaScript-safe. It uses the standard synchronous file save dialog, not AsyncFileDialog
+	 * 
 	 * @return the movie file, or none if canceled by user
 	 */
 	protected File selectFile() {
@@ -503,7 +502,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			file = chooser.getSelectedFile();
 			file = getFileToBeSaved(file);
 			chosenExtension = XML.getExtension(file.getName());
-			if (file.exists()) {
+			if (!OSPRuntime.isJS && file.exists()) {
 				if (file.canWrite()) {
 					int selected = JOptionPane.showConfirmDialog(null, " \"" + file.getName() + "\" " //$NON-NLS-1$ //$NON-NLS-2$
 							+ MediaRes.getString("VideoIO.Dialog.FileExists.Message"), //$NON-NLS-1$

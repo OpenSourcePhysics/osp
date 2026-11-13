@@ -420,4 +420,6 @@ public interface JSUtilI {
 
 	void setFrameResizer(Window frame, int minWidth, int minHeight, String[] resizerNodeStyles, String[] rubberBandStyles, boolean useAI);
 
+	void setSaveFileSafelyFunction(String filePath, String mediaType);
+
 }

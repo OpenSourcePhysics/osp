@@ -66,7 +66,7 @@ public class ControlsRes {
 //  }
 
 	public static void setLocale(Locale locale) {
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{
 			res = ResourceLoader.getBundle(BUNDLE_NAME, locale);
 			setLocalStrings();

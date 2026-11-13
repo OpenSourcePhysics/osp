@@ -468,6 +468,7 @@ public class VideoGrabber extends VideoCaptureTool {
 			public void actionPerformed(ActionEvent e) {
 				if (recorder != null) {
 					try {
+						// not JavaScript ready
 						String name = recorder.saveVideoAs();
 						if (name != null) {
 							Video video = videoType.getVideo(name);
