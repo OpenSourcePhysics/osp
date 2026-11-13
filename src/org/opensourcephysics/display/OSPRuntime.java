@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -446,7 +447,7 @@ public class OSPRuntime {
 	}
 
 	private static boolean isMac;
-	
+
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
 
@@ -454,9 +455,12 @@ public class OSPRuntime {
 	// the transpiler ever sees it.
 	public static boolean isJS = /** @j2sNative true || */
 			false;
-	public static boolean cssCursor =
-			/** @j2sNative /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || */
-			/** @j2sNative /Macintosh/.test(navigator.userAgent) && 'ontouchend' in document || */
+	
+	public static boolean isMacTouch = /** @j2sNative /iPhone|iPad|iPod/i.test(navigator.userAgent)  || 
+	(/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) || */ false;
+
+	public static boolean cssCursor = isMacTouch ||
+			/** @j2sNative /Mobi|Android/i.test(navigator.userAgent) || */
 			false;
 	
 	public static boolean hasKeyboard = !cssCursor;
@@ -524,6 +528,7 @@ public class OSPRuntime {
 			isOSX = (userAgent.indexOf("OS X") >= 0);
 			isiOS = (userAgent.indexOf("iOS") >= 0);
 			isiPad = (userAgent.indexOf("iPad") >= 0);
+			
 			isAndroid = (userAgent.indexOf("Android") >= 0);
 			if (isOSX) {
 				// check for iPadPro
@@ -2578,6 +2583,41 @@ public class OSPRuntime {
 		Toolkit.getDefaultToolkit().beep();
 		OSPLog.finer(msg);
 
+	}
+
+	/**
+	 * 
+	 * Install a local file save function for use in J2S when saving a file.
+	 * 
+	 * The function created is saved in J2S._macFileSaveFunction[filePath].
+	 * 
+	 * On iOS, use a Blob link and a fresh user tap instead of the default
+	 * asynchronous base64 download.
+	 * 
+	 * Temporary writes still go to the SwingJS cache; other saves are delegated.
+	 * 
+	 * Refined by Bob Hanson
+	 * 
+	 * @param targetPath
+	 * @param string
+	 * @return cleanup runnable
+	 * 
+	 * @author ChatGPT+
+	 */
+	public static Object saveFileSafely(String filePath, String mediaType, Supplier<Object> writer) {
+		if (!isJS || !isMacTouch)
+			return writer.get();
+		if (mediaType == null)
+			mediaType = "application/octet-stream";
+		jsutil.setSaveFileSafelyFunction(filePath, mediaType);
+		Object o = null;
+		try {
+		  o = writer.get();
+		} catch (Throwable t) {
+			o = t;
+		}
+		jsutil.setSaveFileSafelyFunction(filePath, null);
+		return o;
 	}
 
 
