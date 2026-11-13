@@ -3130,7 +3130,7 @@ public class LibraryBrowser extends JPanel {
 	 * @return the path
 	 */
 	protected static String getOSPPath() {
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{
 			if (ospPath == null) {
 				String userHome = OSPRuntime.getUserHome().replace('\\', '/');
@@ -4173,7 +4173,7 @@ public class LibraryBrowser extends JPanel {
     	private void loadSearchResourceMap() {
     		loadSearchPathMap();
     		// add local search cache files first when running in Java
-    		/** j2sIgnore */
+    		/** @j2sIgnore */
     		{
     			List<File> cacheFiles = ResourceLoader.getSearchFileList();
     			for (String nextPath : searchPathMap.values()) {
@@ -4452,7 +4452,7 @@ public class LibraryBrowser extends JPanel {
     					// tab is editable only if it is a local XML file
     					// and if running in Java, not the recent collection and not in the search cache
     					boolean editable = !ResourceLoader.isHTTP(path) && path.toLowerCase().endsWith(".xml"); //$NON-NLS-1$
-    					/** j2sIgnore */
+    					/** @j2sIgnore */
     					{
     						if (path.equals(getOSPPath() + RECENT_COLLECTION_NAME)) {
     							editable = false;

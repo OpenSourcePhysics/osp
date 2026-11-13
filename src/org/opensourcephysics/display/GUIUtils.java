@@ -613,7 +613,7 @@ public class GUIUtils {
 		}
 		OSPRuntime.chooserDir = fileChooser.getCurrentDirectory().toString();
 		File file = fileChooser.getSelectedFile();
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{
 			if (file.exists()) {
 				int selected = JOptionPane.showConfirmDialog(parent,
@@ -784,7 +784,7 @@ public class GUIUtils {
 			return;
 		}
 		File file = fixExtension(new File(fileName), extensions[0]);
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{
 			if (file.exists()) { // BH 2020.02.25
 				int selected = JOptionPane.showConfirmDialog(null,

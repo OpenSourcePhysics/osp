@@ -476,7 +476,7 @@ public class EjsControlFrame extends ParsedEjsControl implements RootPaneContain
 			}
 
 		});
-		/** j2sIgnore */
+		/** @j2sIgnore */
 		{
 			aliasMenu.addChangeListener(new ChangeListener() {
 				@Override

@@ -358,7 +358,7 @@ abstract public class ControlFrame extends OSPFrame implements Control {
 				fileName += ".xml"; //$NON-NLS-1$
 				file = new File(fileName);
 			}
-			/** j2sIgnore */
+			/** @j2sIgnore */
 			{
 				if (file.exists()) {
 					int selected = JOptionPane.showConfirmDialog(null, "Replace existing " + file.getName() + "?",

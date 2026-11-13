@@ -364,7 +364,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			return;
 		}
 		File file = new File(path);
-	    saveFile = (!file.exists() || file.canWrite() ? file : null);
+	    saveFile = (OSPRuntime.isJS || !file.exists() || file.canWrite() ? file : null);
 	}
 
 	/**
@@ -502,7 +502,7 @@ public abstract class ScratchVideoRecorder implements VideoRecorder {
 			file = chooser.getSelectedFile();
 			file = getFileToBeSaved(file);
 			chosenExtension = XML.getExtension(file.getName());
-			if (file.exists()) {
+			if (!OSPRuntime.isJS && file.exists()) {
 				if (file.canWrite()) {
 					int selected = JOptionPane.showConfirmDialog(null, " \"" + file.getName() + "\" " //$NON-NLS-1$ //$NON-NLS-2$
 							+ MediaRes.getString("VideoIO.Dialog.FileExists.Message"), //$NON-NLS-1$

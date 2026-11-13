@@ -2605,8 +2605,8 @@ public class OSPRuntime {
 	 * @author ChatGPT+
 	 */
 	public static Object saveFileSafely(String filePath, String mediaType, Supplier<Object> writer) {
-		if (!isJS || !isMacTouch)
-			return writer.get();
+//		if (!isJS || !isMacTouch)
+//			return writer.get();
 		if (mediaType == null)
 			mediaType = "application/octet-stream";
 		jsutil.setSaveFileSafelyFunction(filePath, mediaType);
