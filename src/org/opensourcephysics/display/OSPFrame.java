@@ -12,8 +12,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
@@ -144,47 +142,48 @@ public class OSPFrame extends JFrame implements Hidable, AppFrame {
 		}
 	}
 	
-	protected String action=null;
-	private ComponentAdapter adapter=null;
-	
-	/**
-	 * Sets the window resize action for JavaScript implementation.
-	 * 
-	 * @j2sAlias
-	 * 
-	 */
-	public void setResizeAction(String o) {
-		if (o == null) { // remove existing adapter if o=null
-			if (adapter != null) {
-				removeComponentListener(adapter);
-			}
-			action = o;
-			return;
-		}
-		// BH 2021.09.11 could fail if o == null and adapter == null
-		if (o.equals(action))
-			return; // no change in action
-		removeComponentListener(adapter); // action changed so remove old adapter
-		action = o;
-		addComponentListener(adapter = new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				// This is called when the user resized the main frame
-				// changeSize(); // direct call works
-				/**
-				 * @j2sNative
-				 *
-				 * 			// find object
-				 * 
-				 *            var fn = window[o];
-				 * 
-				 *            // is object a function?
-				 * 
-				 *            if (typeof fn === "function") fn();
-				 */
-			}
-		});
-	}
+
+// deprecated - not referenced	
+//	protected String action=null;
+//	private ComponentAdapter adapter=null;
+//	/**
+//	 * Sets the window resize action for JavaScript implementation.
+//	 * 
+//	 * -j2sAlias
+//	 * 
+//	 */
+//	public void setResizeAction(String o) {
+//		if (o == null) { // remove existing adapter if o=null
+//			if (adapter != null) {
+//				removeComponentListener(adapter);
+//			}
+//			action = o;
+//			return;
+//		}
+//		// BH 2021.09.11 could fail if o == null and adapter == null
+//		if (o.equals(action))
+//			return; // no change in action
+//		removeComponentListener(adapter); // action changed so remove old adapter
+//		action = o;
+//		addComponentListener(adapter = new ComponentAdapter() {
+//			@Override
+//			public void componentResized(ComponentEvent e) {
+//				// This is called when the user resized the main frame
+//				// changeSize(); // direct call works
+//				/**
+//				 * -j2sNative
+//				 *
+//				 * 			// find object
+//				 * 
+//				 *            var fn = window[o];
+//				 * 
+//				 *            // is object a function?
+//				 * 
+//				 *            if (typeof fn === "function") fn();
+//				 */
+//			}
+//		});
+//	}
 
 	void disposeChildWindows() {
 		// if(OSPRuntime.applet!=null) return; // applets do not have a main window so

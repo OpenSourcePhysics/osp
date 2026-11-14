@@ -1,5 +1,13 @@
 package org.opensourcephysics.js;
 
+import java.awt.Rectangle;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+
+import org.opensourcephysics.display.OSPRuntime;
+
 /**
  * A static class for collecting AI-generated j2sNative code
  * 
@@ -13,6 +21,124 @@ package org.opensourcephysics.js;
  *
  */
 public class AIPatch {
+
+	@Deprecated
+	public static void addButtonTouchListeners(JButton button, Runnable onBegin, Runnable onEnd, Runnable onCancel) {
+		return;
+		/**
+		 * ???
+		 * 
+		 * @j2sNative
+		 * var node = button.getUI$().getDOMNode$();
+		 * if (!node || node._trackerViewTouch) 
+		 *   return;
+		 * 
+		 * node._trackerViewTouch = true;
+		 * node.style.touchAction = "none";
+		 * node.style.webkitTouchCallout = "none";
+		 * var pointer = null, startX, startY, suppressClickUntil = 0;
+		 * function consume(event) {
+		 *   event.preventDefault();
+		 *   event.stopImmediatePropagation();
+		 * }
+		 * node.addEventListener("pointerdown", function(event) {
+		 *   if (event.pointerType !== "touch" && event.pointerType !== "pen") {
+		 *     suppressClickUntil = 0;
+		 *     return;
+		 *   }
+		 *   if (!event.isPrimary || !button.isEnabled$()) return;
+		 *   pointer = event.pointerId;
+		 *   startX = event.clientX;
+		 *   startY = event.clientY;
+		 *   if (event.isTrusted) node.setPointerCapture(pointer);
+		 *   consume(event);
+		 *   onBegin.run$();
+		 * }, true);
+		 * node.addEventListener("pointermove", function(event) {
+		 *   if (event.pointerId !== pointer) return;
+		 *   var dx = event.clientX - startX, dy = event.clientY - startY;
+		 *   if (dx * dx + dy * dy > 144) onCancel.run$();
+		 *   consume(event);
+		 * }, true);
+		 * function end(event) {
+		 *   if (event.pointerId !== pointer) return;
+		 *   pointer = null;
+		 *   suppressClickUntil = Date.now() + 500;
+		 *   consume(event);
+		 *   switch (event.type) {
+		 *   case "pointerup":
+		 *      onEnd.run$();
+		 *      break;
+		 *   case "pointercancel":
+		 *      onCancel.run$();
+		 *      break;
+		 *   }
+		 * }
+		 * node.addEventListener("pointerup", end, true);
+		 * node.addEventListener("pointercancel", end, true);
+		 * ["touchstart", "touchmove", "touchend", "touchcancel", "contextmenu"].forEach(function(type) {
+		 *   node.addEventListener(type, function(event) {
+		 *     if (pointer !== null || Date.now() < suppressClickUntil) consume(event);
+		 *   }, {capture: true, passive: false});
+		 * });
+		 * node.addEventListener("click", function(event) {
+		 *   if (event.detail && Date.now() < suppressClickUntil) consume(event);
+		 * }, true);
+		 */
+	}
+
+	@SuppressWarnings("unused")
+	@Deprecated
+	private static void moveFromMenuBar(JFrame frame, int x, int y) {
+		Rectangle viewport = OSPRuntime.jsutil.getMaximumViewport(2, 2);
+		int minX = viewport.x + Math.min(48, frame.getWidth()) - frame.getWidth();
+		int maxX = viewport.x + viewport.width - Math.min(48, frame.getWidth());
+		int maxY = viewport.y + Math.max(0, viewport.height - 30);
+		frame.setLocation(Math.max(minX, Math.min(x, maxX)), Math.max(viewport.y, Math.min(y, maxY)));
+	}
+
+
+	@Deprecated
+	public static void installWindowDrag(JFrame frame, JComponent bar) {
+		System.err.println("AIPatch.installWindowDrag disabled");
+		return;
+		/**
+		 * 
+		 * Huh?? Why?? Why JavaScript only??
+		 * 
+		 * @j2sNative
+		 * var node = bar.getUI$().getDOMNode$();
+		 * if (!node || node._trackerWindowDrag) return;
+		 * node._trackerWindowDrag = true;
+		 * node.style.touchAction = "none";
+		 * var pointer = null, startX, startY, frameX, frameY;
+		 * node.addEventListener("pointerdown", function(e) {
+		 *   if (!e.isPrimary || e.button !== 0 || !bar.isEnabled$() || frame.maximized) return;
+		 *   // SwingJS menu labels can be plain DOM nodes with no button role.
+		 *   // Capture gestures only on the bar background.
+		 *   if (e.target !== node) return;
+		 *   pointer = e.pointerId;
+		 *   startX = e.clientX;
+		 *   startY = e.clientY;
+		 *   frameX = frame.getX$();
+		 *   frameY = frame.getY$();
+		 *   node.setPointerCapture(pointer);
+		 *   e.preventDefault();
+		 *   e.stopPropagation();
+		 * }, true);
+		 * node.addEventListener("pointermove", function(e) {
+		 *   if (e.pointerId !== pointer) return;
+		 *   var dx = e.clientX - startX, dy = e.clientY - startY;
+		 *   if (Math.abs(dx) + Math.abs(dy) >= 4)
+		 *     C$.moveFromMenuBar$I$I(Math.round(frameX + dx), Math.round(frameY + dy));
+		 *   e.stopPropagation();
+		 * }, true);
+		 * node.addEventListener("lostpointercapture", function(e) {
+		 *   if (e.pointerId === pointer) pointer = null;
+		 * });
+		 */
+	}
+
 
 	/// unused; adapted
 
@@ -33,7 +159,7 @@ public class AIPatch {
 //
 //		return;
 //
-//		/** @j2sNative
+//		/** -j2sNative
 //		 // A track can reuse its menu in another panel, so update the owner.
 //		 menu._trackerContextPopupOnShow = onShow;
 //		 if (menu._trackerContextPopupShowInstalled) return;
@@ -62,7 +188,7 @@ public class AIPatch {
 //	 */
 //	static private void keepContextPopupOpen(JPanel panel, JPopupMenu popup) {
 //		return;
-//		/** @j2sNative
+//		/** =j2sNative
 //		 if (popup._trackerContextPopupCleanup) popup._trackerContextPopupCleanup();
 //		 var openingRelease = true;
 //		 var touchReleaseTime = null;
@@ -140,7 +266,7 @@ public class AIPatch {
 //	 */
 //	public static void keepPopupOpenUntilSelection(JButton button, JPopupMenu popup) {
 //		return;
-//		/** @j2sNative
+//		/** -j2sNative
 //			var node = popup.秘getUI$().domNode;
 //			if (popup._trackerPopupCleanup) popup._trackerPopupCleanup();
 //			var widget = popup.$ulTop && popup.$ulTop.data("ui-j2smenu");
@@ -257,7 +383,7 @@ public class AIPatch {
 //	public static void closeAllMenus() {
 //	// BH NOT ACCEPTABLE?
 //	/**
-//	 * @j2sNative
+//	 * -j2sNative
 //	 * try {
 //	 *   if (swingjs && swingjs.plaf && swingjs.plaf.JSPopupMenuUI) {
 //	 *     swingjs.plaf.JSPopupMenuUI.closeAllMenus$();
@@ -289,7 +415,7 @@ public class AIPatch {
 //public static boolean haveAnyVisibleMenusInAnyApplication() {
 //	// BH NOT ACCEPTABLE?
 //	/**
-//	 * @j2sNative
+//	 * -j2sNative
 //	 * return (window.$ && $(".ui-j2smenu:visible, .swingjsPopupMenu:visible").length > 0);
 //	 */
 //	return false;
@@ -297,7 +423,7 @@ public class AIPatch {
 //
 //
 //public static void hackUIDOMNodeStyle(JComponent jc, String... styles) {
-//	DOMNode node = /** @j2sNative jc.ui.domNode || */null;
+//	DOMNode node = /** -j2sNative jc.ui.domNode || */null;
 //	DOMNode.setStyles(node, styles);
 //}
 
@@ -308,19 +434,19 @@ public class AIPatch {
 //		@SuppressWarnings("unused")
 //		TextUI ui = thePane.getUI();
 //		@SuppressWarnings("unused")
-//		DOMNode domNode = (/** @j2sNative ui.domNode || */
+//		DOMNode domNode = (/** -j2sNative ui.domNode || */
 //		null);
 //		Runnable injectDOM = () -> {
 //			System.err.println("!!!AIP inject");
 //			// make explicitly final in JavaScript as well
 //			// we do not want to use Java's this.$finals$ here.
-//			DOMNode dnode = (/** @j2sNative domNode || */ null);
-//			DOMNode rHTML = (/** @j2sNative rawHTML || */ null);
+//			DOMNode dnode = (/** -j2sNative domNode || */ null);
+//			DOMNode rHTML = (/** -j2sNative rawHTML || */ null);
 //			/**
-//			 * @j2sNative ui.mytext = null; ui.rawHTML = null; ui.currentHTML = null;
+//			 * -j2sNative ui.mytext = null; ui.rawHTML = null; ui.currentHTML = null;
 //			 *            ui.setText$S(rHTML);
 //			 */
-//			DOMNode target = (/** @j2sNative ui.bodyNode ||*/ dnode);
+//			DOMNode target = (/** -j2sNative ui.bodyNode ||*/ dnode);
 //			String html = (String) DOMNode.getAttr(target, "innerHTML");
 //			if (html.indexOf("Open Source Physics") < 0) {
 //				DOMNode.setAttr(target, "innerHTML", rHTML);
@@ -359,7 +485,7 @@ public class AIPatch {
 //		};
 //		injectDOM.run();
 //		/**
-//		 * @j2sNative
+//		 * -j2sNative
 //		 * 
 //		 * 			if (window.requestAnimationFrame) {
 //		 *            window.requestAnimationFrame(injectDOM.run$); }
@@ -374,7 +500,7 @@ public class AIPatch {
 //
 //	private static void setTimeout(Runnable r, int ms) {
 //		/**
-//		 * @j2sNative
+//		 * -j2sNative
 //		 * 
 //		 * setTimeout(r.run$, ms); 
 //		 */

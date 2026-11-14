@@ -103,6 +103,11 @@ public class OSPRuntime {
 	public static final String RELEASE_DATE = "11 Nov 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
+	public static String getSwingJSVersion() {
+		return /** @j2sNative J2S._version || */ "unknown";
+	}
+
+
 	/**
 	 * An interface with static methods that track implementing classes, adding them
 	 * to array to "allocate" them, and running their dispose() method when
@@ -2619,7 +2624,6 @@ public class OSPRuntime {
 		jsutil.setSaveFileSafelyFunction(filePath, null);
 		return o;
 	}
-
 
 }
 /*

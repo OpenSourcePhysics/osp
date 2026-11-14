@@ -160,7 +160,7 @@ public class ResourceLoader {
 //		int ms = OSPRuntime.WEB_CONNECTED_TEST_JS_TIMEOUT_MS;
 //		System.out.println("ResourceLoader checking for connection..." + url + " timeout " + ms);
 //		// do an asynchronous test, returning TRUE or FALSE 
-//		/** @j2sNative
+//		/** -j2sNative
 //		 * 
 //		 *  J2S.$ajax({
 //		 *    async:true,
