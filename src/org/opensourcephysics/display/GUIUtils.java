@@ -95,18 +95,14 @@ public class GUIUtils {
 		 * @param c the JPanel instance
 		 */
 		public static void installFullFrameDragHandler(Window window, JComponent c) {
-			if (window == null)
-				window = (Window) c.getTopLevelAncestor();
-			if (!(window instanceof JFrame) && !(window instanceof JDialog))
-				return;
 			attachToWindow(window);			
-			attachThis(c, window);
+			addComponent(c, window);
 		}
 	
-		public static void attachThis(JComponent c, Window window) {
+		public static void addComponent(JComponent c, Window window) {
 			// Attach to panel and all existing chidren in the window
 			attachThisAndChildHierarchy(c, window);
-			// Listen for tab changes 
+			// Listen for JTabPanel and JViewport changes 
 			attachStateListeners(c, window);
 		}
 
@@ -121,7 +117,7 @@ public class GUIUtils {
 				JScrollPane sp = (JScrollPane) comp;
 				JViewport vp = sp.getViewport();
 				if (vp != null) {
-					attachThis(vp, w);
+					addComponent(vp, w);
 					if (vp.getView() != null) {
 						attachThisAndChildHierarchy((JComponent) vp.getView(), w);
 					}
