@@ -664,9 +664,11 @@ public class LibraryBrowser extends JPanel {
 			}
 		});
 		setTransferHandler(new FileDropHandler());
-		GUIUtils.FullFrameDragHandler.addComponent(this, window);
+		// for the top menu:
+		GUIUtils.FullFrameDragHandler.addComponent(window, window);
+		// these two are not necessary attached yet:
+		GUIUtils.FullFrameDragHandler.addComponent(htmlScroller, window);
 		GUIUtils.FullFrameDragHandler.addComponent(tabbedPane, window);
-		GUIUtils.FullFrameDragHandler.addComponent(menubar, window);
 	}
 
 	protected void refreshLocale() {

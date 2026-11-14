@@ -11,7 +11,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -38,12 +37,10 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
-import javax.swing.JRootPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -71,31 +68,24 @@ import swingjs.api.js.DOMNode;
 public class GUIUtils {
 
 	/**
-	 * Installs mouse and touch dragging on a JFrame or JDialog.
+	 * Installs mouse and touch dragging on a movable JFrame, JInternalFrame, or JDialog.
 	 * 
-	 * Allows dragging the window by dragging anywhere inside the dialog while
-	 * preserving interactive controls (buttons, editable text fields, scrollbars,
-	 * and tree node selection / folder expansion).
+	 * Allows dragging the window by dragging any JComponent in the window's hierarchy
+	 * EXCEPT: AbstractButton, JComboBox, JScrollBar, and JTextComponent. 
+	 * 
+	 * The only public method generally necessary is addComponent(Component, Window). 
+	 * 
+	 * To capture everything in the window's attached hierarchy use:
+	 * 
+	 * addComponent(window, window)
+	 * 
 	 * 
 	 * @author ChatGPT+, adapted by Bob Hanson
 	 */
 	public static class FullFrameDragHandler {
 	
 		private static String DRAG_LISTENER_KEY = "Full_Frame_Drag_Listener_Installed"; 
-		private static String WINDOW_LISTENER_KEY = "Full_Frame_Drag_WindowListener_Attached";
-		private static String STATE_CHANGED_KEY = "Full_Frame_Drag_Tab_State_Listenerer_Installed"; 
-	
-		/**
-		 * Installs the drag handler for a window and all its currently attached components
-		 * 
-		 * Note that we could add a container listener, too, but not all containers added 
-		 * should be dragged.
-		 * 
-		 * @param window the top-level window that is to be dragged
-		 */
-		public static void installFullFrameDragHandler(Window window) {
-			attachToWindow(window);			
-		}
+		private static String STATE_CHANGED_KEY = "Fu ll_Frame_Drag_Tab_State_Listenerer_Installed"; 
 	
 		/**
 		 * Adds handling for components added a window or any of its attached components. 
@@ -104,14 +94,18 @@ public class GUIUtils {
 		 * @param c the component (JPanel, JTabbedPane, etc.) to be handled
 		 * @param window the top-level window that is to be dragged
 		 */
-		public static void addComponent(JComponent c, Window window) {
+		public static void addComponent(Component c, Window window) {
+			if (!(window instanceof RootPaneContainer)) {
+				// could also be a JApplet, but ignoring that fact
+				throw new RuntimeException("FullFrameDragHandler window must be JFrame, JInternalFrame, or JDialog");
+			}
 			// Attach to panel and all existing chidren in the window
 			attachThisAndChildHierarchy(c, window);
 			// Listen for JTabPanel and JViewport changes 
 			attachStateListeners(c, window);
 		}
 
-		private static void attachThisAndChildHierarchy(JComponent comp, Window w) {
+		private static void attachThisAndChildHierarchy(Component comp, Window w) {
 			if (comp == null)
 				return;
 	
@@ -131,7 +125,7 @@ public class GUIUtils {
 			if (comp instanceof Container) {
 				Container c = (Container) comp;
 				boolean isSplitPane = (c instanceof JSplitPane);
-				// BH the first component of a JSplitPane is always its UI-based divider
+				// BH do not include the UI-based divider, which is a Container in Java and a JLabel in SwingJS
 				for (Component child : c.getComponents()) {
 					if ((child instanceof JComponent) &&  (!isSplitPane || child.getClass().getName().indexOf("Divider") < 0))
 						attachThisAndChildHierarchy((JComponent) child, w);
@@ -139,39 +133,13 @@ public class GUIUtils {
 			}
 		}
 	
-		/**
-		 * Attaches drag listeners and window listeners to the window, root pane, and
-		 * layered pane.
-		 */
-		private static void attachToWindow(Window w) {
-			// exclude JApplet, JInternalFrame, JLightweightFrame, JWindow
-			if (w instanceof RootPaneContainer) {
-				JRootPane rp = ((RootPaneContainer) w).getRootPane();
-				if (rp != null) {
-					if (rp.getClientProperty(WINDOW_LISTENER_KEY) != null) {
-						return; // already attached
-					}
-					rp.putClientProperty(WINDOW_LISTENER_KEY, Boolean.TRUE);
-	
-					attachFullFrameDragAdapter(rp, w);
-					if (rp.getLayeredPane() != null) {
-						attachFullFrameDragAdapter(rp.getLayeredPane(), w);
-					}
-					if (rp.getContentPane() != null) {
-						attachFullFrameDragAdapter((JComponent)rp.getContentPane(), w);
-					}
-				}
-			}
-		}
-	
-		private static void attachStateListeners(JComponent root, Window w) {
-			if (root == null)
-				return;
+		private static void attachStateListeners(Component root, Window w) {
 			boolean isTabbedPane = false;
 			if (root instanceof JViewport || (isTabbedPane = (root instanceof JTabbedPane))) {
-				if (root.getClientProperty(STATE_CHANGED_KEY) == null) {
-					root.putClientProperty(STATE_CHANGED_KEY, Boolean.TRUE);
-					root.addContainerListener(new ContainerAdapter() {
+				JComponent c = (JComponent) root;
+				if (c.getClientProperty(STATE_CHANGED_KEY) == null) {
+					c.putClientProperty(STATE_CHANGED_KEY, Boolean.TRUE);
+					c.addContainerListener(new ContainerAdapter() {
 						@Override
 						public void componentAdded(ContainerEvent e) {
 							attachThisAndChildHierarchy((JComponent) e.getChild(), w);
@@ -192,13 +160,13 @@ public class GUIUtils {
 							public void stateChanged(ChangeEvent e) {
 								attachThisAndChildHierarchy((JComponent) vp.getView(), w);
 							}
-						});						
+						});
 					}
 				}
 			}
-			for (Component child : root.getComponents()) {
-				if (child instanceof JComponent) {
-					attachStateListeners((JComponent) child, w);
+			if (root instanceof Container) {
+				for (Component child : ((Container) root).getComponents()) {
+					attachStateListeners(child, w);
 				}
 			}
 		}
@@ -210,19 +178,17 @@ public class GUIUtils {
 		 * are excluded already so their primary interactions are preserved.
 		 */
 		private static boolean isEligibleForDrag(Component comp) {
-			return (comp != null 
+			return (comp instanceof JComponent 
 					&& !(comp instanceof AbstractButton)
 					&& !(comp instanceof JComboBox)
 					&& !(comp instanceof JScrollBar)
-					&& !(comp instanceof JEditorPane 
-							&& ((JTextComponent) comp).isEditable())
 					&& !(comp instanceof JTextComponent 
 							&& ((JTextComponent) comp).isEditable())
 					
 					);
 		}
 	
-		private static void attachFullFrameDragAdapter(JComponent comp, Window window) {
+		private static void attachFullFrameDragAdapter(Component comp, Window window) {
 			if (!isEligibleForDrag(comp))
 				return;
 
@@ -247,7 +213,6 @@ public class GUIUtils {
 			private Window window;
 			private Point mouseLoc = new Point();
 			private Point windowLoc = new Point();
-			private Dimension windowDim = new Dimension();
 			private boolean isDragging = false;
 	
 			public FullFrameDragMouseAdapter(Window w) {
