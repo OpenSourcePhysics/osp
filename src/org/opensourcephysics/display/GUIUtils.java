@@ -38,7 +38,6 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -72,13 +71,11 @@ import swingjs.api.js.DOMNode;
 public class GUIUtils {
 
 	/**
-	 * Installs mouse and touch dragging on a panel within a JFrame or JDialog.
+	 * Installs mouse and touch dragging on a JFrame or JDialog.
 	 * 
 	 * Allows dragging the window by dragging anywhere inside the dialog while
 	 * preserving interactive controls (buttons, editable text fields, scrollbars,
 	 * and tree node selection / folder expansion).
-	 * 
-	 * This includes resizing along edges if the frame or dialog is resizable
 	 * 
 	 * @author ChatGPT+, adapted by Bob Hanson
 	 */
@@ -89,16 +86,24 @@ public class GUIUtils {
 		private static String STATE_CHANGED_KEY = "Full_Frame_Drag_Tab_State_Listenerer_Installed"; 
 	
 		/**
-		 * Installs the drag handler and welcome screen renderer on the given JPanel
-		 * instance.
+		 * Installs the drag handler for a window and all its currently attached components
 		 * 
-		 * @param c the JPanel instance
+		 * Note that we could add a container listener, too, but not all containers added 
+		 * should be dragged.
+		 * 
+		 * @param window the top-level window that is to be dragged
 		 */
-		public static void installFullFrameDragHandler(Window window, JComponent c) {
+		public static void installFullFrameDragHandler(Window window) {
 			attachToWindow(window);			
-			addComponent(c, window);
 		}
 	
+		/**
+		 * Adds handling for components added a window or any of its attached components. 
+		 * Does not require prior attachment.
+		 * 
+		 * @param c the component (JPanel, JTabbedPane, etc.) to be handled
+		 * @param window the top-level window that is to be dragged
+		 */
 		public static void addComponent(JComponent c, Window window) {
 			// Attach to panel and all existing chidren in the window
 			attachThisAndChildHierarchy(c, window);
@@ -244,7 +249,6 @@ public class GUIUtils {
 			private Point windowLoc = new Point();
 			private Dimension windowDim = new Dimension();
 			private boolean isDragging = false;
-			private boolean isResizing = false;
 	
 			public FullFrameDragMouseAdapter(Window w) {
 				this.window = w;
@@ -276,45 +280,21 @@ public class GUIUtils {
 				if (window == null)
 					return;
 				Point startPt = e.getLocationOnScreen();
-				// BH added: Don't allow resizing if window is not resizable 
-				if ((window instanceof JFrame) && ((JFrame) window).isResizable()
-						|| (window instanceof JDialog) && ((JDialog) window).isResizable()) {
-					Point ptInWindow = SwingUtilities.convertPoint(component, e.getPoint(), window);
-					int cornerSize = 20;
-					if (ptInWindow.x >= window.getWidth() - cornerSize && ptInWindow.y >= window.getHeight() - cornerSize) {
-						mouseLoc.setLocation(startPt);
-						windowDim.setSize(window.getSize());
-						isResizing = true;
-						isDragging = false;
-						return;
-					}
-				}
 				mouseLoc.setLocation(startPt);
 				windowLoc.setLocation(window.getLocation());
 				isDragging = true;
-				isResizing = false;
 			}
 	
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				if (!isDragging && !isResizing)
+				if (!isDragging)
 					return;
 				if (window != null) {
 					Point curPt = e.getLocationOnScreen();
 					if (curPt != null) {
 						int dx = curPt.x - mouseLoc.x;
 						int dy = curPt.y - mouseLoc.y;
-						if (isResizing) {
-							int newW = Math.max(400, windowDim.width + dx);
-							int newH = Math.max(300, windowDim.height + dy);
-							window.setSize(newW, newH);
-							window.validate();
-							window.repaint();
-							// setupResizer(w);
-						} else {
-							window.setLocation(windowLoc.x + dx, windowLoc.y + dy);
-							window.repaint();
-						}
+						window.setLocation(windowLoc.x + dx, windowLoc.y + dy);
 					}
 				}
 			}
@@ -322,7 +302,6 @@ public class GUIUtils {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				isDragging = false;
-				isResizing = false;
 			}
 		}
 	
