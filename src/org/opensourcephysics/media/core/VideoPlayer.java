@@ -776,6 +776,9 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 		setBorder(BorderFactory.createEtchedBorder());
 		playButton = new OSPButton(playIcon, pauseIcon);
 		playButton.setDisabledIcon(grayPlayIcon);
+		if (OSPRuntime.isJS) {
+			playButton.addActionListener(e -> doPlay());
+		} else {
 		playButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -791,6 +794,8 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 			}
 
 		});
+		}
+
 		// resetButton
 		resetButton = new OSPButton(resetIcon);
 		resetButton.setPressedIcon(resetIcon);
