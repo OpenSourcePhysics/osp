@@ -665,7 +665,7 @@ public class LibraryBrowser extends JPanel {
 		});
 		setTransferHandler(new FileDropHandler());
 		// for the top menu:
-		GUIUtils.FullFrameDragHandler.addComponent(window, window);
+		GUIUtils.FullFrameDragHandler.addComponent(menubar, window);
 		// these two are not necessary attached yet:
 		GUIUtils.FullFrameDragHandler.addComponent(htmlScroller, window);
 		GUIUtils.FullFrameDragHandler.addComponent(tabbedPane, window);
