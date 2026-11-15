@@ -2628,7 +2628,7 @@ public class OSPRuntime {
 	}
 
 	public static boolean jsIsOnLine() {
-		return (/** @j2sNative window.navigator.onLine + */"").equalsIgnoreCase("true");
+		return (/**@j2sNative window.navigator.onLine + */"").equalsIgnoreCase("true");
 	}
 
 }
