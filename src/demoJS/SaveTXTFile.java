@@ -19,7 +19,7 @@ public class SaveTXTFile {
 	
   SaveTXTFile() {
   	
-  	/** @j2sNative   	currentLocation = window.location.pathname.split('/').slice(0, -1).join('/') */
+  	/**@j2sNative   	currentLocation = window.location.pathname.split('/').slice(0, -1).join('/') */
   	
   	String str="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
   			+ "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure "
@@ -65,7 +65,7 @@ public class SaveTXTFile {
         }
         
         // BH bypass, since it is not a relevant question in JavaScript
-        if(/** @j2sNative false && */file.exists()) {
+        if(/**@j2sNative false && */file.exists()) {
         	
         	// Again, this would not block in JavaScript. "selected" will be NaN. 
             int selected = JOptionPane.showConfirmDialog(null, "Replace existing "+file.getName()+"?", "Replace File",

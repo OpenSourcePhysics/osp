@@ -1895,12 +1895,7 @@ public class ResourceLoader {
 	 * @return
 	 */
 	public static boolean isWebConnected() {
-		if (OSPRuntime.isJS) {
-			String onlineStr="not set";
-			/** @j2sNative onlineStr=window.navigator.onLine; */;
-			return onlineStr.toString().equalsIgnoreCase("true");
-		}
-		return isURLAvailable(OSPRuntime.WEB_CONNECTED_TEST_URL);
+		return (OSPRuntime.isJS ? OSPRuntime.jsIsOnLine() : isURLAvailable(OSPRuntime.WEB_CONNECTED_TEST_URL));
 	}
 
 	/**

@@ -101,7 +101,7 @@ public class AsyncDialog implements PropertyChangeListener {
 		setListener(a);
 		JOptionPane.showMessageDialog(frame, message);
 		unsetListener();
-		if (/** @j2sNative false || */true)
+		if (/**@j2sNative false || */true)
 			process("" + message);
 	}
 
@@ -113,7 +113,7 @@ public class AsyncDialog implements PropertyChangeListener {
 		setListener(a);
 		JOptionPane.showMessageDialog(frame, message, title, messageType);
 		unsetListener();
-		if (/** @j2sNative false || */true)
+		if (/**@j2sNative false || */true)
 			process("" + message);
 	}
 
@@ -217,11 +217,11 @@ public class AsyncDialog implements PropertyChangeListener {
 		actionListener = a;
 		@SuppressWarnings("unused")
 		Class c = JOptionPane.class; // loads the class
-		/** @j2sNative c.$clazz$.listener = this */
+		/**@j2sNative c.$clazz$.listener = this */
 	}
 
 	private void unsetListener() {
-		/** @j2sNative javax.swing.JOptionPane.listener = null */
+		/**@j2sNative javax.swing.JOptionPane.listener = null */
 	}
 
 	/**

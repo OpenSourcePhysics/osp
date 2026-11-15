@@ -261,7 +261,7 @@ public class AsyncFileChooser extends JFileChooser implements PropertyChangeList
 	}
 
 	public static byte[] getFileBytes(File f) {
-		return /** @j2sNative f.秘bytes || */null;
+		return /**@j2sNative f.秘bytes || */null;
 	}
 
 }

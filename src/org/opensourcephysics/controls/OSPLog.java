@@ -1127,7 +1127,7 @@ public class OSPLog  {
 
 			try {
 				/**
-				 * @j2sNative var o = arguments.callee.caller.caller; methodName = o &&
+				 *@j2sNative var o = arguments.callee.caller.caller; methodName = o &&
 				 *            o.exName; className = o && o.exClazz && o.exClazz.__CLASS_NAME__;
 				 */
 			} catch (Throwable t) {

@@ -983,7 +983,7 @@ public class GUIUtils {
 
 	public static void addWindowOrientationChangeListener(Runnable onOrient) {
 		/**
-		 * @j2sNative window.addEventListener(window.onorientationchange ?
+		 *@j2sNative window.addEventListener(window.onorientationchange ?
 		 *            "orientationchange" : "resize", function() {
 		 *            console.log("Orientation changed"); onOrient.run$(); }, false);
 		 */
@@ -993,14 +993,14 @@ public class GUIUtils {
 		switch (action) {
 		case "add":
 			/**
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * 			J2S.Mobile.addNumberPad(nf);
 			 */
 			//$FALL-THROUGH$
 		case "show":
 			/**
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * 			J2S.Mobile.showNumberPad(nf);
 			 */

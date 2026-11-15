@@ -82,7 +82,7 @@ import javajs.api.JSUtilI;
 
 public class Assets {
 
-	public static boolean isJS = /** @j2sNative true || */
+	public static boolean isJS = /**@j2sNative true || */
 			false;
 
 	public static JSUtilI jsutil;

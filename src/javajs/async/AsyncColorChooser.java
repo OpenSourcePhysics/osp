@@ -48,11 +48,11 @@ public class AsyncColorChooser implements PropertyChangeListener {
 
 	private void setListener(ActionListener a) {
 		listener = a;
-		/** @j2sNative Clazz.load("javax.swing.JColorChooser");javax.swing.JColorChooser.listener = this */
+		/**@j2sNative Clazz.load("javax.swing.JColorChooser");javax.swing.JColorChooser.listener = this */
 	}
 
 	private void unsetListener() {
-		/** @j2sNative javax.swing.JColorChooser.listener = null */
+		/**@j2sNative javax.swing.JColorChooser.listener = null */
 	}
 
 	

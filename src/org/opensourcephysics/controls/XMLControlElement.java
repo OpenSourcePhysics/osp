@@ -1369,7 +1369,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			// BH never used?
 
 			/**
-			 * @j2sNative alert("XMLControlElement.getObjects with chooser called -- not
+			 *@j2sNative alert("XMLControlElement.getObjects with chooser called -- not
 			 *            configured to be asynchronous");
 			 */
 

@@ -16,7 +16,7 @@ public class ReadXMLFile {
 	JFrame frame = new JFrame("Read XML Example");
 
 	ReadXMLFile() {
-		/** @j2sNative currentLocation = window.location.pathname.split('/').slice(0, -1).join('/') */
+		/**@j2sNative currentLocation = window.location.pathname.split('/').slice(0, -1).join('/') */
 		frame.setSize(500, 500);
 		frame.setVisible(true);
 		readXML();

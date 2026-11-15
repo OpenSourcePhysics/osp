@@ -376,14 +376,11 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * 
 	 * @param relpath
 	 */
-	@SuppressWarnings("null")
 	public void loadDatasetURI(String relpath) {
 		if (getTabCount() > 0)
 			removeAllTabs();
 
-		String baseURI = (/** @j2sNative document.body.baseURI || */
-		null); // html page that has script
-		String rootpath = (baseURI == null) ? "" : baseURI.substring(0, baseURI.lastIndexOf('/') + 1);
+		String rootpath = OSPRuntime.getDocbase(); // html page that has script
 		String path = rootpath + relpath;
 
 		try {

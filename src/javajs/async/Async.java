@@ -169,7 +169,7 @@ package javajs.async;
 public class Async {
 
 	public static boolean isJS() {
-		return  (/** @j2sNative 1 ? true : */false);
+		return  (/**@j2sNative 1 ? true : */false);
 	}
 
 	/**

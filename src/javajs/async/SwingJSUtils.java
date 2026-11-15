@@ -60,13 +60,13 @@ public class SwingJSUtils {
 	 * @author hansonr
 	 */
 	public static Dimension setDim(int w, int h) {
-		String baseURI = (/** @j2sNative document.body.baseURI || */
+		String baseURI = (/**@j2sNative document.body.baseURI || */
 		null);
 		boolean isTest = (baseURI == null || baseURI.indexOf("_applet.html") >= 0);
 		if (!isTest)
 			return null;
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 * 			J2S.thisApplet.__Info.width = w; J2S.thisApplet.__Info.height = h;
 		 */
@@ -123,7 +123,7 @@ public class SwingJSUtils {
 
 			images[i] = (Image) getResource(cl, root + i + "." + ext, Image.class);
 //			/**
-//			 * @j2sNative
+//			 *@j2sNative
 //			 * $("body").append(images[i]._imgNode);
 //			 * 
 //			 */
@@ -382,7 +382,7 @@ public class SwingJSUtils {
 				this.levelNext = levelNext;
 
 			/**
-			 * @j2sNative var me = this; setTimeout(function(){ p$1.nextState.apply(me, []);
+			 *@j2sNative var me = this; setTimeout(function(){ p$1.nextState.apply(me, []);
 			 *            },ms);
 			 */
 			{
@@ -521,7 +521,7 @@ public class SwingJSUtils {
 			}
 			StateHelper me = this;
 			/**
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * 			setTimeout(function() {
 			 * 
@@ -708,13 +708,13 @@ public class SwingJSUtils {
 		 */
 		private static Map<Class<? extends SingletonI>, SingletonI> getContextMap() {
 			@SuppressWarnings("unused")
-			ThreadGroup g = ((/** @j2sNative true || */
+			ThreadGroup g = ((/**@j2sNative true || */
 			false) ? Thread.currentThread().getThreadGroup() : null);
 			Map<Class<? extends SingletonI>, SingletonI> map = singletons;
-			/** @j2sNative map = g._swingjsSingletons; */
+			/**@j2sNative map = g._swingjsSingletons; */
 			if (map == null) {
 				map = new HashMap<>();
-				/** @j2sNative g._swingjsSingletons = map; */
+				/**@j2sNative g._swingjsSingletons = map; */
 			}
 
 			return map;

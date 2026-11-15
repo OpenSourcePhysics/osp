@@ -336,7 +336,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						
 					};
 					
-					JSFunction f = /** @j2sNative
+					JSFunction f = /**@j2sNative
 					 	function() {next.run$()}
 					||*/null;
 					v.jsvideo.seekToNextFrame().then(f,null);
@@ -360,7 +360,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 						Object[] o = (Object[]) e.getSource();
 						@SuppressWarnings("unused")
 						Object jsEvent = o[1];
-						Object target = /** @j2sNative jsEvent.target.currentTime || */ null;
+						Object target = /**@j2sNative jsEvent.target.currentTime || */ null;
 						System.out.println("JSMovieVideo.debugging.actionPerformed " + e.getActionCommand() + " " + target);
 					}
 
@@ -580,7 +580,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 		}
 
 		protected void processVideoFrameCallback(Object metadata) {
-			double t = /** @j2sNative metadata.mediaTime || */ 0;
+			double t = /**@j2sNative metadata.mediaTime || */ 0;
 			v.frameTimes.add(t);
 			v.frame++;
 			//System.out.println("JSMovieVideo callback " + v.frameTimes.size() + " " + t);
@@ -750,7 +750,7 @@ public class JSMovieVideo extends MovieVideo implements AsyncVideoI {
 	@Override
 	protected String getPlatform() {
 		String engine = (useMediaInfo ? "MediaInfo - " : "");
-		return engine + (/** @j2sNative navigator.userAgent ||*/"?");
+		return engine + (/**@j2sNative navigator.userAgent ||*/"?");
 	}
 
 }

@@ -30,13 +30,13 @@ public class StateMachineTestApp extends AbstractCalculation implements Runnable
 	double dt=0;
 
 	private StateHelper stateHelper;
-	private int delay = (/** @j2sNative 100 || */ 100);
+	private int delay = (/**@j2sNative 100 || */ 100);
 	private final static int STATE_INIT = 0;
 	private final static int STATE_LOOP = 1;
 	private final static int STATE_DONE = 2;
 
 	StateMachineTestApp() {
-		/** @j2sNative debugger; */
+		/**@j2sNative debugger; */
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class StateMachineTestApp extends AbstractCalculation implements Runnable
 	 */
 	@Override
 	public void calculate() { // Does a calculation
-		/** @j2sNative debugger; */
+		/**@j2sNative debugger; */
 		control.println("Calculate pressed");
 		control.setValue("counter", counter); // show value
 		control.setValue("dt", dt); // show value

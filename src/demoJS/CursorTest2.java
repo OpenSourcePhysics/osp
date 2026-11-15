@@ -19,7 +19,7 @@ public class CursorTest2 {
 	static  {
 
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 *  $("body").append('<link href="./ipad.css" rel="stylesheet" type="text/css">');
 		 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
@@ -33,7 +33,7 @@ public class CursorTest2 {
 		 */
 		
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 		
 		 *  hideCustomCursor = function(e) {
 		 *  	var x = e.getXOnScreen$();
@@ -44,7 +44,7 @@ public class CursorTest2 {
 		 */
 		
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 		
 		 *  showCustomCursor = function(e) {
 		 *  	var x = e.getXOnScreen$();
@@ -60,7 +60,7 @@ public class CursorTest2 {
 		if (action != "moved")
 			System.out.println(action + " "  + e.getWhen() + " " + e);
 		/**
-		 * @j2sNative 
+		 *@j2sNative 
 		 * switch (action) { 
 		 * case "pressed":
 		 *   $('#customCursor').css({"backgroundColor":'yellow'});

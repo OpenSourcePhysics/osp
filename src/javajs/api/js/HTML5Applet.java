@@ -19,7 +19,7 @@ public interface HTML5Applet {
 	/**
 	 * avoiding GCC inability to handle .finally and .catch
 	 * 
-	 * @j2sNative
+	 *@j2sNative
 	 * 
 	 * 		eval("Promise.prototype.$then = function(resolve,reject){return this.then(function(value) {return resolve ? resolve.apply$O(value) : value},function(reason){return reject ? reject.apply$O(reason) : reason})};");
 	 *      eval("Promise.prototype.$finally = function(r){this.finally(function(){r.run$()})};");

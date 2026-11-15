@@ -76,7 +76,7 @@ public class Test_Dialog extends JFrame implements PropertyChangeListener {
 				return;
 			case "SelectedFile":
 				File file = (File) val;
-				byte[] array = (val == null ? null : /** @j2sNative file.秘bytes || */
+				byte[] array = (val == null ? null : /**@j2sNative file.秘bytes || */
 						null);
 				onDialogReturn("fileName is '" + file.getName() + " size=" + (array == null ? null : array.length));
 				return;

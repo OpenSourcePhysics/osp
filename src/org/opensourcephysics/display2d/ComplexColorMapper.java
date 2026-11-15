@@ -179,7 +179,7 @@ public class ComplexColorMapper {
 		Color c = (OSPRuntime.isJS ? colorTemp : null);
 		/**
 		 * just mutate colorTemp
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 * c.value = v;
 		 * 

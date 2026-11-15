@@ -103,7 +103,7 @@ public abstract class Simulation implements java.lang.Runnable, StateMachine {
 	}
 
 	private StateHelper stateHelper;
-	private int delayJS = (/** @j2sNative delay || */
+	private int delayJS = (/**@j2sNative delay || */
 	(int) delay);
 	private final static int STATE_INIT = 0;
 	private final static int STATE_LOOP = 1;

@@ -556,7 +556,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 			/**
 			 * Set this only once.
 			 * 
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 *  $("body").append('<style>'+ C$.ipadStyle + '</style>');
 			 * 	$("body").append('<div class="custom-cursor" id="customCursor" style="z-index: 10000000;"></div>');
@@ -587,7 +587,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 
 	private static void setCustomCursor(String x, String y, String c) {
 		/**
-		 * @j2sNative 
+		 *@j2sNative 
 		 * 
 		 * $('#customCursor').css({"backgroundColor":c,"left": x, "top": y});
 		 */
@@ -595,7 +595,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 
 	private static void showCustomCursor(String x, String y, String c) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 * $('#customCursor').css({"backgroundColor":c, "left": x
 		 *           , "top": y, "display": "block", "width":'25px',
@@ -605,7 +605,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 
 	private static void hideCustomCursor(String x, String y) {
 		/**
-		 * @j2sNative 
+		 *@j2sNative 
 		 * 
 		 * $('#customCursor').css({"backgroundColor":'transparent', "left": x
 		 *           , "top": y, "display": "none", "width":'0px',

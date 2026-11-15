@@ -104,7 +104,7 @@ public class OSPRuntime {
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	public static String getSwingJSVersion() {
-		return /** @j2sNative J2S._version || */ "unknown";
+		return /**@j2sNative J2S._version || */ "unknown";
 	}
 
 
@@ -458,14 +458,14 @@ public class OSPRuntime {
 
 	// BH note: Cannot use "final" here because then the constant will be set before
 	// the transpiler ever sees it.
-	public static boolean isJS = /** @j2sNative true || */
+	public static boolean isJS = /**@j2sNative true || */
 			false;
 	
-	public static boolean isMacTouch = /** @j2sNative /iPhone|iPad|iPod/i.test(navigator.userAgent)  || 
+	public static boolean isMacTouch = /**@j2sNative /iPhone|iPad|iPod/i.test(navigator.userAgent)  || 
 	(/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1) || */ false;
 
 	public static boolean cssCursor = isMacTouch ||
-			/** @j2sNative /Mobi|Android/i.test(navigator.userAgent) || */
+			/**@j2sNative /Mobi|Android/i.test(navigator.userAgent) || */
 			false;
 	
 	public static boolean hasKeyboard = !cssCursor;
@@ -525,7 +525,7 @@ public class OSPRuntime {
 		if (userAgent != null)
 			return;
 		userAgent =
-				/** @j2sNative navigator.userAgent || */
+				/**@j2sNative navigator.userAgent || */
 				null;
 		if (userAgent == null) {
 			userAgent = "<unknown>";
@@ -537,7 +537,7 @@ public class OSPRuntime {
 			isAndroid = (userAgent.indexOf("Android") >= 0);
 			if (isOSX) {
 				// check for iPadPro
-				int n = (/** @j2sNative navigator.maxTouchPoints || */
+				int n = (/**@j2sNative navigator.maxTouchPoints || */
 						0);
 				isiPad |= (n > 2);
 			}
@@ -604,7 +604,7 @@ public class OSPRuntime {
 	}
 
 	static {
-		/** @j2sNative
+		/**@j2sNative
 		 * window.addEventListener("online", function(){alert("Internet reconnected.")});
 		 * window.addEventListener("offline", function(){alert("Internet Disconnected.")})
 		 *  
@@ -614,7 +614,7 @@ public class OSPRuntime {
 	static {
 		try {
 			// system properties may not be readable in some environments
-			isMac = (/** @j2sNative 1 ? false : */
+			isMac = (/**@j2sNative 1 ? false : */
 			(System.getProperty("os.name", "").toLowerCase().startsWith("mac"))); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			macOffset = (isMac && !isJS) ? 16 : 0;
 		} catch (SecurityException ex) {
@@ -646,7 +646,7 @@ public class OSPRuntime {
 //	private static String browser = (isJS ? null : "JAVA"); 
 
 	public static String getBrowserName() {
-		String sUsrAg = /** @j2sNative navigator.userAgent || */
+		String sUsrAg = /**@j2sNative navigator.userAgent || */
 				"";
 		String sBrowser;
 		// from https://developer.mozilla.org/en-US/docs/Web/API/Window/navigator
@@ -700,7 +700,7 @@ public class OSPRuntime {
 			int height = 0;
 			
 			/**
-			* @j2sNative
+			*@j2sNative
 			* width = window.innerWidth || document.documentElement.clientWidth || (document.body ? document.body.clientWidth : 0);
 			* height = window.innerHeight || document.documentElement.clientHeight || (document.body ? document.body.clientHeight : 0);
 			* console.log("[Tracker] HTML page dimensions: " + width + " x " + height);
@@ -1455,6 +1455,7 @@ public class OSPRuntime {
 		return launchJarPath;
 	}
 
+	
 	/**
 	 * Gets the window.location.href when JavaScript code is running in an html
 	 * page.
@@ -1462,11 +1463,12 @@ public class OSPRuntime {
 	 * @return window.location.href
 	 */
 	public static String getDocbase() {
-		String base = "";
 		if (!isJS)
 			return null;
+		String base = "";
 		/**
-		 * @j2sNative console.log("href="+window.location.href);
+		 * 
+		 *@j2sNative console.log("href="+window.location.href);
 		 *            base=""+window.location.href;
 		 */
 		int last = base.lastIndexOf('/'); // look for path/document.html
@@ -2322,7 +2324,7 @@ public class OSPRuntime {
 			/**
 			 * totally ignore
 			 * 
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * 
 			 */
@@ -2623,6 +2625,10 @@ public class OSPRuntime {
 		}
 		jsutil.setSaveFileSafelyFunction(filePath, null);
 		return o;
+	}
+
+	public static boolean jsIsOnLine() {
+		return (/** @j2sNative window.navigator.onLine + */"").equalsIgnoreCase("true");
 	}
 
 }
