@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage;
  *
  */
 public interface DOMNode {
-	public static JQuery jQuery = /** @j2sNative jQuery.$ || (jQuery.$ = jQuery) || */null;
+	public static JQuery jQuery = /**@j2sNative jQuery.$ || (jQuery.$ = jQuery) || */null;
 
 	// "abstract" in the sense that these are the exact calls to JavaScript
 	
@@ -56,7 +56,7 @@ public interface DOMNode {
 	public static DOMNode createElement(String key, String id) {
 		DOMNode node = null;
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 					node = document.createElement(key);
 		 * 					id && (node.id = id);
 		 */
@@ -64,27 +64,27 @@ public interface DOMNode {
 	}
 
 	public static DOMNode getElement(String id) {
-		return (/**  @j2sNative  document.getElementById(id) ||*/ null);
+		return (/** @j2sNative  document.getElementById(id) ||*/ null);
 	}
 
 	public static DOMNode createTextNode(String text) {
-		return (/** @j2sNative document.createTextNode(text) || */ null); 
+		return (/**@j2sNative document.createTextNode(text) || */ null); 
 	}
 
 	public static DOMNode getParent(DOMNode node) {
-		return (/**  @j2sNative  node.parentNode ||*/ null);
+		return (/** @j2sNative  node.parentNode ||*/ null);
 	}
 	
 	public static DOMNode getPreviousSibling(DOMNode node) {
-		return (/**  @j2sNative  node.previousSibling ||*/ null);
+		return (/** @j2sNative  node.previousSibling ||*/ null);
 	}
 	
 	public static DOMNode firstChild(DOMNode node) {
-		return 	(/**  @j2sNative node.firstChild ||*/ null);
+		return 	(/** @j2sNative node.firstChild ||*/ null);
 	}
 
 	public static DOMNode lastChild(DOMNode node) {
-		return 	(/**  @j2sNative node.lastChild ||*/ null);
+		return 	(/** @j2sNative node.lastChild ||*/ null);
 	}
 
 	public static DOMNode setZ(DOMNode node, int z) {
@@ -93,7 +93,7 @@ public interface DOMNode {
 
 	public static Object getAttr(Object node, String attr) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 * if (!node)
 		 *   return null;
@@ -106,16 +106,16 @@ public interface DOMNode {
 	}
 
 	public static int getAttrInt(DOMNode node, String attr) {
-		return 	(/**  @j2sNative node && node[attr] ||*/ 0);
+		return 	(/** @j2sNative node && node[attr] ||*/ 0);
 	}
 
 	public static String getStyle(DOMNode node, String style) {
-		return 	(/**  @j2sNative node && node.style[style] ||*/ null);
+		return 	(/** @j2sNative node && node.style[style] ||*/ null);
 	}
 
 	public static void getCSSRectangle(DOMNode node, Rectangle r) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 *       r.x = parseInt(node.style.left.split("p")[0]);
 		 *       r.y = parseInt(node.style.top.split("p")[0]);
@@ -127,7 +127,7 @@ public interface DOMNode {
 
 	public static DOMNode setAttr(DOMNode node, String attr, Object val) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 * 			attr && (node[attr] = (val == "秘TRUE" ? true : val == "秘FALSE" ? false : val));
 		 * 
@@ -138,7 +138,7 @@ public interface DOMNode {
 
 	public static void setAttrInt(DOMNode node, String attr, int val) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 * 			node[attr] = val;
 		 * 
@@ -155,7 +155,7 @@ public interface DOMNode {
 	 */
 	public static DOMNode setAttrs(DOMNode node, Object... attr) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 *            for (var i = 0; i < attr.length;) { 
 		 *              C$.setAttr(node, attr[i++],attr[i++]);
@@ -166,7 +166,7 @@ public interface DOMNode {
 
 	public static DOMNode setStyle(DOMNode node, String attr, String val) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 *            node && (node.style[attr] = val);
 		 * 
@@ -176,7 +176,7 @@ public interface DOMNode {
 
 	public static DOMNode setStyles(DOMNode node, String... av) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 if (node)for (var i = 0, n = av.length; i < n;) {
 	var k = av[i++], v = av[i++];
@@ -212,7 +212,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 
 	public static void appendChildSafely(DOMNode parent, DOMNode node) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * if (!parent || node.parentElement == parent)
 		 *   return;
 		 */
@@ -274,7 +274,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 	 */
 	public static void detachAll(DOMNode node) {
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 *  if(node)
 		 *    while(node.lastChild)
 		 *  	node.removeChild(node.lastChild);
@@ -348,7 +348,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 		 */
 		static void setImageNode(DOMNode sourceNode, BufferedImage image) {
 			/**
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * 			image._setImageNode$O$Z(sourceNode, false);
 			 * 
@@ -363,7 +363,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 			HTML5Canvas canvas = (HTML5Canvas) DOMNode.createElement("canvas", (id == null ? "img" + Math.random() : id + ""));
 			DOMNode.setStyles(canvas, "width", width + "px", "height", height + "px");
 			/**
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * canvas.width = width;
 			 * canvas.height = height;
@@ -451,7 +451,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 			 */
 			public static int push(Context2D ctx, Object[] map) {
 				/**
-				 * @j2sNative
+				 *@j2sNative
 				 * 
 				 * (ctx._aSaved || (ctx._aSaved = [])).push(map); 
 				 * return ctx._aSaved.length;
@@ -469,7 +469,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 			 */
 			public static Object[] pop(Context2D ctx) {
 				/**
-				 * @j2sNative
+				 *@j2sNative
 				 * 
 				 * return (ctx._aSaved && ctx._aSaved.length > 0 ? ctx._aSaved.pop() : null); 
 				 */
@@ -480,7 +480,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 
 			public static int getSavedLevel(Context2D ctx) {
 				/**
-				 * @j2sNative
+				 *@j2sNative
 				 * 
 				 * return (ctx._aSaved ? ctx._aSaved.length : 0); 
 				 */
@@ -491,7 +491,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 			
 			public static Object[][] getSavedStack(Context2D ctx) {
 			   /**
-			    * @j2sNative
+			    *@j2sNative
 			    * 
 			    * return (ctx._aSaved || []);
 			    */
@@ -503,14 +503,14 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 
 			@SuppressWarnings("null")
 			public static double[] setMatrix(Context2D ctx, AffineTransform transform) {
-				double[] m = /**  @j2sNative ctx._m || */ null;
+				double[] m = /** @j2sNative ctx._m || */ null;
 				if (transform == null) {
-					/** @j2sNative ctx._m = null; */
+					/**@j2sNative ctx._m = null; */
 					return null;			
 				}
 				if (m == null) {
 					/**
-					 * @j2sNative
+					 *@j2sNative
 					 * ctx._m = m = new Array(6);
 					 */
 					transform.getMatrix(m);
@@ -520,7 +520,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 
 			public static void createLinearGradient(Context2D ctx, Float p1, Float p2, String css1, String css2) {
 				/**
-				 * @j2sNative
+				 *@j2sNative
 				 * 
 				 *   var grd = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
 				 *   grd.addColorStop(0,css1);

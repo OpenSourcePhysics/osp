@@ -117,27 +117,27 @@ public interface HTML5Video extends DOMNode {
 	// convenience methods
 
 	public static double getDuration(HTML5Video v) {
-		return /** @j2sNative v.duration || */
+		return /**@j2sNative v.duration || */
 		0;
 	}
 
 	public static double setCurrentTime(HTML5Video v, double time) {
-		return /** @j2sNative v.currentTime = time|| */
+		return /**@j2sNative v.currentTime = time|| */
 		0;
 	}
 
 	public static double getCurrentTime(HTML5Video v) {
-		return /** @j2sNative v.currentTime|| */
+		return /**@j2sNative v.currentTime|| */
 		0;
 	}
 
 	public static String getErrorMessage(HTML5Video v) {
-		return /** @j2sNative v.error && v.error.message || */null;
+		return /**@j2sNative v.error && v.error.message || */null;
 	}
 
 	public static Dimension getSize(HTML5Video v) {
-		return new Dimension(/** @j2sNative v.videoWidth || */
-				0, /** @j2sNative v.videoHeight|| */
+		return new Dimension(/**@j2sNative v.videoWidth || */
+				0, /**@j2sNative v.videoHeight|| */
 				0);
 	}
 
@@ -176,11 +176,11 @@ public interface HTML5Video extends DOMNode {
 	 */
 	public static void setProperty(HTML5Video jsvideo, String key, Object value) {
 		if (value instanceof Number) {
-			/** @j2sNative jsvideo[key] = +value; */
+			/**@j2sNative jsvideo[key] = +value; */
 		} else if (value instanceof Boolean) {
-			/** @j2sNative jsvideo[key] = !!+value */
+			/**@j2sNative jsvideo[key] = !!+value */
 		} else {
-			/** @j2sNative jsvideo[key] = value; */
+			/**@j2sNative jsvideo[key] = value; */
 		}
 	}
 
@@ -195,17 +195,17 @@ public interface HTML5Video extends DOMNode {
 	 */
 	@SuppressWarnings({ "unused", "null" })
 	public static Object getProperty(HTML5Video jsvideo, String key) {
-		Object val = (/** @j2sNative 1? jsvideo[key] : */
+		Object val = (/**@j2sNative 1? jsvideo[key] : */
 		null);
 		if (val == null)
 			return null;
-		switch (/** @j2sNative typeof val || */
+		switch (/**@j2sNative typeof val || */
 		"") {
 		case "number":
-			return Double.valueOf(/** @j2sNative val || */
+			return Double.valueOf(/**@j2sNative val || */
 					0);
 		case "boolean":
-			return Boolean.valueOf(/** @j2sNative val || */
+			return Boolean.valueOf(/**@j2sNative val || */
 					false);
 		default:
 			return val;
@@ -231,9 +231,9 @@ public interface HTML5Video extends DOMNode {
 
 			@Override
 			public Void apply(Object jsevent) {
-				String name = (/** @j2sNative jsevent.type || */
+				String name = (/**@j2sNative jsevent.type || */
 				"?");
-				//System.out.println("HTML5Video " + (/** @j2sNative jsevent.target.id || */null) + " " + name);
+				//System.out.println("HTML5Video " + (/**@j2sNative jsevent.target.id || */null) + " " + name);
 				ActionEvent e = new ActionEvent(new Object[] { jsvideo, jsevent }, 12345, name,
 						System.currentTimeMillis(), 0);
 				listener.actionPerformed(e);
@@ -243,7 +243,7 @@ public interface HTML5Video extends DOMNode {
 		ArrayList<Object> listeners = new ArrayList<>();
 		for (int i = 0; i < events.length; i++) {
 			Object func = /**
-							 * @j2sNative function(event){f.apply$O.apply(f, [event])} ||
+							 *@j2sNative function(event){f.apply$O.apply(f, [event])} ||
 							 */
 					null;
 			listeners.add(events[i]);
@@ -352,7 +352,7 @@ public interface HTML5Video extends DOMNode {
 		dialog.setVisible(false);
 		HTML5Video jsvideo = (HTML5Video) label.getClientProperty("jsvideo");
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 
 		 * // iPhone must keep the analysis video inline when frame scanning plays it.
 		 * jsvideo.playsInline = true;
@@ -398,7 +398,7 @@ public interface HTML5Video extends DOMNode {
 	public static void cancelVideoFrameCallback(HTML5Video jsvideo) {
 		
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 *          jsvideo._cancelVFCallback = true;
 		 *          
 		 */		
@@ -420,7 +420,7 @@ public interface HTML5Video extends DOMNode {
 	public static int requestVideoFrameCallback(HTML5Video jsvideo, Consumer<Object> callback) {
 		Object[] f = null;
 		/**
-		 * @j2sNative
+		 *@j2sNative
 		 * 			if (jsvideo.requestVideoFrameCallback) {
 		 *           jsvideo._cancelVFCallback = false;
 		 * 			 f = [];
@@ -524,10 +524,10 @@ public interface HTML5Video extends DOMNode {
 
 	public static void startVideo(HTML5Video jsvideo) {
 		@SuppressWarnings("unused")
-		HTML5VideoDialog d = /** @j2sNative jsvideo.dialog || */null;
+		HTML5VideoDialog d = /**@j2sNative jsvideo.dialog || */null;
 		try {
 			/**
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * 			var promise = jsvideo.play();
 			 *            if (promise !== undefined) { promise["catch"](function(){

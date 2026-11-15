@@ -86,7 +86,7 @@ public class Test_Video {
 	private int vw;
 	private int vh;
 
-	boolean isJS = /** @j2sNative true || */
+	boolean isJS = /**@j2sNative true || */
 			false;
 
 	JDialog dialog;
@@ -522,7 +522,7 @@ public class Test_Video {
 
 							@Override
 							public void accept(Object metadata) {
-								System.out.println("metata=" + (/** @j2sNative JSON.stringify(metadata) || */0));
+								System.out.println("metata=" + (/**@j2sNative JSON.stringify(metadata) || */0));
 							}
 							
 						});

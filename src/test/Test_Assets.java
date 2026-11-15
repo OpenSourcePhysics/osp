@@ -8,7 +8,7 @@ class Test_Assets extends Test_ {
 
 		if (Assets.isJS) {
 			/**
-			 * @j2sNative
+			 *@j2sNative
 			 * 
 			 * javajs.async.Assets.add$O({name:"test",zipPath:"test/assetTest.zip",classPath:"xl"});
 			 */

@@ -71,7 +71,7 @@ public class Test_Event extends JFrame {
 	private static boolean allowEventInfo = true;
 
 	private void setLogging() {
-		if ((/** @j2sNative false && */
+		if ((/**@j2sNative false && */
 		allowLogging)) {
 
 			Logger rootLogger = Logger.getLogger("");
@@ -94,7 +94,7 @@ public class Test_Event extends JFrame {
 					if (e.getID() == MouseEvent.MOUSE_PRESSED) { //
 						if(logging)System.out.println("FocusMan mousepressed event");
 					}
-					if(logging)System.out.println("FocusMan dispatching activeElement=" + (/** @j2sNative document.activeElement.id || */getFocusOwner()));
+					if(logging)System.out.println("FocusMan dispatching activeElement=" + (/**@j2sNative document.activeElement.id || */getFocusOwner()));
 					if(logging)System.out.println("FocusMan dispatching event Source " + e.getSource());
 					if (e.toString().indexOf("WINDOW_OPENED")>=0) {
 						if(logging)System.out.println("???");
@@ -268,19 +268,19 @@ public class Test_Event extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String s = /** @j2sNative document.activeElement.id || */
+				String s = /**@j2sNative document.activeElement.id || */
 						null;
 
 				s += " " + (++n);
 
 //				if(logging)System.out.println(s);
-				/** @j2sNative document.title = s; */
+				/**@j2sNative document.title = s; */
 			}
 
 		});
 
 		t.setRepeats(true);
-		if (/** @j2sNative true || */
+		if (/**@j2sNative true || */
 		false)
 			t.start();
 	}
@@ -288,7 +288,7 @@ public class Test_Event extends JFrame {
 	int n;
 
 	protected void showKeyEvent(KeyEvent e) {
-		String source = /** @j2sNative (xxx = e).bdata.jqevent.originalEvent.target.id || */
+		String source = /**@j2sNative (xxx = e).bdata.jqevent.originalEvent.target.id || */
 				"";
 		if(logging)System.out.println("Test_Editor keyEvent id=" + e.getID() + " " + " src=" + ((Component) e.getSource()).getName() + " " + ((Component) e.getSource()).getClass().getName() + " " + source + " char=" + e.getKeyChar() + " code=" + e.getKeyCode() + " loc=" + e.getKeyLocation() + "\n mod=" + e.getModifiers() + " " + KeyEvent.getKeyModifiersText(e.getModifiers()) + " modx=" + e.getModifiersEx() + " " + KeyEvent.getKeyModifiersText(e.getModifiersEx()));
 	}
@@ -534,7 +534,7 @@ public class Test_Event extends JFrame {
 	}
 
 	protected String getID(Object jc) {
-		return (jc == null ? null : jc instanceof JComponent ? /** @j2sNative jc.ui.id || */
+		return (jc == null ? null : jc instanceof JComponent ? /**@j2sNative jc.ui.id || */
 				((JComponent) jc).getUIClassID() : jc.getClass().getName());
 	}
 
