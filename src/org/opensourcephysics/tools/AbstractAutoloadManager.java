@@ -632,7 +632,7 @@ public abstract class AbstractAutoloadManager extends JDialog {
 		 */
 		private File chooseSearchDirectory(Component parent) {
 			JFileChooser chooser = new JFileChooser(searchPathChooserDir);
-			if (OSPRuntime.isMac())
+			if (OSPRuntime.isMac)
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 			else
 				chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

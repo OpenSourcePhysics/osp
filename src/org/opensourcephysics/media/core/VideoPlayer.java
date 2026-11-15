@@ -759,8 +759,10 @@ public class VideoPlayer extends JComponent implements PropertyChangeListener {
 
 	@Override
 	protected void paintChildren(Graphics g) {
-		if (!OSPRuntime.isJS)
+		/** @j2sIgnore */
+		{
 			super.paintChildren(g);
+		}
 
 	}
 

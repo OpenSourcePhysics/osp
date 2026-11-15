@@ -125,7 +125,7 @@ public void draw(DrawingPanel panel, Graphics g) {
 */
   
   void drawWithPix(DrawingPanel panel, Graphics g) {
-	  if(OSPRuntime.isMac()){
+	  if(OSPRuntime.isMac){
 		  drawWithPixMac( panel,  g);
 	  }else{
 		  drawWithPixWindows( panel,  g);	 
@@ -158,7 +158,7 @@ public void draw(DrawingPanel panel, Graphics g) {
    * @param g Graphics
    */
   void drawWithWorld(DrawingPanel panel, Graphics g) {
-	  if(OSPRuntime.isMac()){
+	  if(OSPRuntime.isMac){
 		  drawWithWorldMac( panel,  g);
 	  }else{  // windows
 		  drawWithWorldWindows( panel,  g);	 

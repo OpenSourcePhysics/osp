@@ -96,7 +96,7 @@ public class JREFinder {
 			// must be 32-bit?
 			return true;
 		}
-		if (OSPRuntime.isMac()) {
+		if (OSPRuntime.isMac) {
 			// no OSX VMs can be run in 32-bit mode?
 			return false;
 		}
@@ -254,7 +254,7 @@ public class JREFinder {
 				if (trackerhome != null) {
 					File file = new File(trackerhome);
 					if (file.exists()) {
-						if (OSPRuntime.isMac()) {
+						if (OSPRuntime.isMac) {
 							String path = file.getParent() + "/runtime"; //$NON-NLS-1$
 							searchPaths.add(new File(path));
 						} else {
@@ -286,7 +286,7 @@ public class JREFinder {
 						if (file.exists())
 							searchPaths.add(file);
 					}
-				} else if (OSPRuntime.isMac()) {
+				} else if (OSPRuntime.isMac) {
 					if (trackerhome != null) {
 						File file = new File(trackerhome);
 						if (file.exists())
@@ -346,7 +346,7 @@ public class JREFinder {
 		}
 
 		// for OSX
-		if (OSPRuntime.isMac()) {
+		if (OSPRuntime.isMac) {
 			// check for jre subfolder--add public jre instead of private in jdk
 			// should also find the bundled jre in Tracker.app
 			File javaFile = new File(dir, "jre/bin/java"); //$NON-NLS-1$
@@ -432,7 +432,7 @@ public class JREFinder {
 		public boolean accept(File dir, String name) {
 			if (!dir.getPath().endsWith("bin")) //$NON-NLS-1$
 				return false;
-			if (!OSPRuntime.isMac() && !dir.getParent().contains("jre")) //$NON-NLS-1$
+			if (!OSPRuntime.isMac && !dir.getParent().contains("jre")) //$NON-NLS-1$
 				return false;
 			// reject older versions
 			if (dir.getPath().contains("1.7.") || dir.getPath().contains("jre7") //$NON-NLS-1$ //$NON-NLS-2$

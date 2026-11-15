@@ -765,7 +765,7 @@ public class ResourceLoader {
 			String userHome = (OSPRuntime.isJS ? null : OSPRuntime.getUserHome());
 			if (userHome != null) {
 				userHome += "/"; //$NON-NLS-1$
-				if (OSPRuntime.isMac()) {
+				if (OSPRuntime.isMac) {
 					cacheDir = userHome + OSX_DEFAULT_CACHE;
 				} else if (OSPRuntime.isLinux()) {
 					cacheDir = userHome + LINUX_DEFAULT_CACHE;
@@ -790,7 +790,7 @@ public class ResourceLoader {
 	 */
 	public static File chooseOSPCache(Component parent) {
 		JFileChooser chooser = new JFileChooser(ospCache);
-		if (OSPRuntime.isMac())
+		if (OSPRuntime.isMac)
 			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		else
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -2540,7 +2540,7 @@ public class ResourceLoader {
 		}
 		String path = XML.getResolvedPath(name, base);
 		// correct the path so that it works with Mac
-		if (OSPRuntime.isMac() && path.startsWith("file:/") && !path.startsWith("file:///")) { //$NON-NLS-1$ //$NON-NLS-2$
+		if (OSPRuntime.isMac && path.startsWith("file:/") && !path.startsWith("file:///")) { //$NON-NLS-1$ //$NON-NLS-2$
 			path = path.substring(6);
 			while (path.startsWith("/")) { //$NON-NLS-1$
 				path = path.substring(1);

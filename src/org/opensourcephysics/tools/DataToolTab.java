@@ -2138,7 +2138,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 		boolean shift = e.isShiftDown();
 		boolean ctrl = e.isControlDown();
 		boolean zoom = button3 || OSPRuntime.isPopupTrigger(e);
-		boolean remove = OSPRuntime.isMac()? shift && ctrl: ctrl;
+		boolean remove = OSPRuntime.isMac? shift && ctrl: ctrl;
 		return zoom? STATE_ZOOM: 
 			e.isAltDown()? STATE_MOVE: 
 			remove? STATE_SELECT_REMOVE:
@@ -3346,7 +3346,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							plot.setMouseCursor(SELECT_REMOVE_CURSOR);
 							break;
 						case STATE_INACTIVE:
-//							if (!OSPRuntime.isMac())
+//							if (!OSPRuntime.isMac)
 //								plot.setMouseCursor(SELECT_REMOVE_CURSOR);
 							break;
 						}
@@ -3451,7 +3451,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 							return;
 						switch (mouseState) {
 						case STATE_INACTIVE:
-							plot.setMouseCursor(e.isControlDown() && !OSPRuntime.isMac()? 
+							plot.setMouseCursor(e.isControlDown() && !OSPRuntime.isMac? 
 									SELECT_REMOVE_CURSOR:
 									Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 							return;

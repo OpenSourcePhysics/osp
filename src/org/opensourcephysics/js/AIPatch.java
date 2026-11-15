@@ -2,6 +2,7 @@ package org.opensourcephysics.js;
 
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -24,20 +25,13 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class AIPatch {
 
-	public static void finishDataWindowClose(Window closedWindow) {
-		/**
-		 * @j2sNative
-		 * var ui = closedWindow.秘getUI$(), node = ui.outerNode || ui.getDOMNode$();
-		 * if (node) {
-		 *   if (node.contains(J2S._mouseOwner) || node.contains(J2S._mouseTarget))
-		 *     J2S.setMouseOwner(null);
-		 *   var owner = J2S._dmouseOwner;
-		 *   if (owner && node.contains(owner)) {
-		 *     owner.isDragging = false;
-		 *     J2S._dmouseOwner = J2S._dmouseDrag = J2S._dmouseUp = null;
-		 *   }
-		 * }
-		 */
+	@Deprecated
+	public static boolean strangeJavaClickRequest(MouseEvent e) {
+		if (true)
+			return false;
+		// SwingJS may synthesize a click from the release of a long press.
+		// Browser menus are dismissed by the next press, not that release.
+		return (!OSPRuntime.isJS && !OSPRuntime.isPopupTrigger(e));
 	}
 
 	public static void keepDialogAboveFrame(JFrame frame, JDialog builder) {
@@ -194,7 +188,6 @@ public class AIPatch {
 		 * });
 		 */
 	}
-
 
 	/// unused; adapted
 

@@ -88,7 +88,7 @@ public class Diagnostics {
 
 	public static void aboutJava3D() {
 		// Mac test added by W. Christian
-		if (OSPRuntime.isMac() && !OSPRuntime.hasJava3D()) {
+		if (OSPRuntime.isMac && !OSPRuntime.hasJava3D()) {
 			return; // Java version >= 1.7 on Mac does not have J3D
 		}
 		// try to load j3d properties

@@ -2258,7 +2258,7 @@ public class DataTable extends JTable {
 			// value is column name
 			String name = (value == null) ? "" : value.toString(); //$NON-NLS-1$
 //			textLine.setText(name);
-//			if (OSPRuntime.isMac()) {
+//			if (OSPRuntime.isMac) {
 //				name = TeXParser.removeSubscripting(name);
 //			}
 			Component c = renderer.getTableCellRendererComponent(table, name, isSelected, hasFocus, row, col);
@@ -2268,7 +2268,7 @@ public class DataTable extends JTable {
 			JComponent comp = (JComponent) c;
 			int sortCol = dataTableModel.getSortedColumn();
 			Font font = comp.getFont();
-//			if (OSPRuntime.isMac()) {
+//			if (OSPRuntime.isMac) {
 				// textline doesn't work on OSX
 			boolean isSortedCol = sortCol == convertColumnIndexToModel(col);
 			comp.setFont(!isSortedCol? font.deriveFont(Font.PLAIN)

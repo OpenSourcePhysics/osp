@@ -2191,7 +2191,7 @@ public class DataToolTable extends DataTable {
 			// value is data column name
 			String realname = (value == null) ? "" : value.toString(); //$NON-NLS-1$
 			String name = realname;
-			if (OSPRuntime.isMac()) {
+			if (OSPRuntime.isMac) {
 				name = TeXParser.removeSubscripting(name);
 			}
 			Component c = renderer.getTableCellRendererComponent(table, name, isSelected, hasFocus, row, col);
@@ -2247,7 +2247,7 @@ public class DataToolTable extends DataTable {
 			bgColor = selected ? selectedHeaderBG : bgColor;
 
 			// special case: textline doesn't work on OSX
-			if (OSPRuntime.isMac()) {
+			if (OSPRuntime.isMac) {
 				comp.setFont(font);
 				comp.setBackground(bgColor);
 				comp.setForeground(selected ? selectedHeaderFG : comp.getForeground());

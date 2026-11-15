@@ -451,7 +451,7 @@ public class OSPRuntime {
 		}
 	}
 
-	private static boolean isMac;
+	public static boolean isMac;
 
 
 	public static int macOffset; // shifts LR message box on Mac to avoid drag hot spot.
@@ -509,7 +509,7 @@ public class OSPRuntime {
 	}
 
 	/**
-	 * Determines if running on a mobile device.
+	 * Determines if running on a mobile device or has been set to emulate one.
 	 *
 	 * @return true if running on a mobile device
 	 */
@@ -1246,15 +1246,6 @@ public class OSPRuntime {
 		} catch (SecurityException ex) {
 			return false;
 		}
-	}
-
-	/**
-	 * Determines if OS is Mac
-	 *
-	 * @return true if Mac
-	 */
-	public static boolean isMac() {
-		return isMac;
 	}
 
 	/**
