@@ -1,9 +1,11 @@
 package org.opensourcephysics.js;
 
 import java.awt.Rectangle;
+import java.awt.Window;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 import org.opensourcephysics.display.OSPRuntime;
@@ -22,6 +24,61 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class AIPatch {
 
+	public static void finishDataWindowClose(Window closedWindow) {
+		/**
+		 * @j2sNative
+		 * var ui = closedWindow.秘getUI$(), node = ui.outerNode || ui.getDOMNode$();
+		 * if (node) {
+		 *   if (node.contains(J2S._mouseOwner) || node.contains(J2S._mouseTarget))
+		 *     J2S.setMouseOwner(null);
+		 *   var owner = J2S._dmouseOwner;
+		 *   if (owner && node.contains(owner)) {
+		 *     owner.isDragging = false;
+		 *     J2S._dmouseOwner = J2S._dmouseDrag = J2S._dmouseUp = null;
+		 *   }
+		 * }
+		 */
+	}
+
+	public static void keepDialogAboveFrame(JFrame frame, JDialog builder) {
+		/**
+		 * @j2sNative
+		 * if (frame._dataBuilderStacking) {
+		 *   frame._dataBuilderStacking();
+		 *   frame._dataBuilderStacking = null;
+		 * }
+		 */
+
+		builder.toFront();
+		
+		/** @j2sNative
+		 * var trackerUI = frame.秘getUI$(), builderUI = builder.秘getUI$();
+		 * var closer = builderUI.closerNode;
+		 * if (closer && !closer._trackerBuilderClose) {
+		 *   closer._trackerBuilderClose = true;
+		 *   // The close control sits inside the draggable title bar.
+		 *   ["pointerdown", "mousedown", "touchstart"].forEach(function(type) {
+		 *     closer.addEventListener(type, function(event) {
+		 *       event.stopImmediatePropagation();
+		 *     }, true);
+		 *   });
+		 *   closer.addEventListener("click", function(event) {
+		 *     event.stopImmediatePropagation();
+		 *     setTimeout(function() { builder.setVisible$Z(false); }, 0);
+		 *   }, true);
+		 * }
+		 * var trackerNode = trackerUI.outerNode || trackerUI.getDOMNode$();
+		 * var builderNode = builderUI.outerNode || builderUI.getDOMNode$();
+		 * if (!trackerNode || !builderNode || trackerNode === builderNode) return;
+		 * var rule = document.createElement("style");
+		 * rule.textContent = "#" + CSS.escape(builderNode.id) + " { z-index: 19000 !important; }";
+		 * document.head.appendChild(rule);
+		 * frame._dataBuilderStacking = function() { rule.remove(); };
+		 */
+	}
+
+
+	
 	@Deprecated
 	public static void addButtonTouchListeners(JButton button, Runnable onBegin, Runnable onEnd, Runnable onCancel) {
 		return;
@@ -97,7 +154,6 @@ public class AIPatch {
 		frame.setLocation(Math.max(minX, Math.min(x, maxX)), Math.max(viewport.y, Math.min(y, maxY)));
 	}
 
-
 	@Deprecated
 	public static void installWindowDrag(JFrame frame, JComponent bar) {
 		System.err.println("AIPatch.installWindowDrag disabled");
@@ -144,7 +200,7 @@ public class AIPatch {
 
 	// BH: Much more sensible to just use Java override and JavaScript UI
 	// clientProperties to do this.
-//  See TButton.TStickyMenuItem and TButton.TStickyPopupButton -- very simple there!
+	//  See TButton.TStickyMenuItem and TButton.TStickyPopupButton -- very simple there!
 //	/**
 //	 * Keeps browser context menus open through the release of their opening press.
 //	 * Install on the actual menu, since marker menus may belong to a track rather
