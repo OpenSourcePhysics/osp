@@ -24,7 +24,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -113,130 +112,119 @@ import javajs.async.AsyncDialog;
 @SuppressWarnings("serial")
 public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 
-	boolean standAlone = false; // true when running as application
-
 	// static fields
-	@SuppressWarnings("javadoc")
 	public static boolean loadClass = false;
-	protected static Dimension dim = new Dimension(800, 540);
+	private static Dimension dim = new Dimension(800, 540);
 	protected static final int defaultButtonHeight = 28;
 	protected static int buttonHeight = defaultButtonHeight;
-	protected static final String SPACE = " ";
-	protected static String[] delimiters = new String[] { "\t", ",", ";", SPACE }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-	protected static TextFrame helpFrame;
-//  protected static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
-	protected static String helpName = "datatool/datatool_help.html"; //$NON-NLS-1$
-	protected static String helpBase = "https://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
-	private static ArrayList<Data> processedData = new ArrayList<Data>();
-	protected static boolean loadMultipleTracksInSingleTab = false;
-	protected static boolean askToLoadMultipleTracksInSingleTab = true;
+	private static final String SPACE = " ";
+	private static final String[] delimiters = new String[] { "\t", ",", ";", SPACE }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+	private static TextFrame helpFrame;
+//  private static String helpName = "data_tool_help.html";                                 //$NON-NLS-1$
+	private static final String helpName = "datatool/datatool_help.html"; //$NON-NLS-1$
+	private static final String helpBase = "https://www.compadre.org/osp/online_help/tools/"; //$NON-NLS-1$
+	private static final ArrayList<Data> processedData = new ArrayList<Data>();
+
+	private static boolean loadMultipleTracksInSingleTab = false;
+	private static boolean askToLoadMultipleTracksInSingleTab = true;
 
 	// instance fields
+
 	protected JTabbedPane tabbedPane;
-	protected boolean useChooser = true;
-	protected JPanel contentPane = new JPanel(new BorderLayout());
-	protected PropertyChangeSupport support;
-	protected XMLControlElement control = new XMLControlElement();
-	protected Data addableData = null;
-	protected boolean controlContainsData;
-	protected JMenuBar emptyMenubar;
-	protected JMenu emptyFileMenu;
-	protected JMenuItem emptyNewTabItem;
-	protected JMenuItem emptyOpenItem;
-	protected JMenuItem emptyExitItem;
-	protected JMenu emptyEditMenu;
-	protected JMenuItem emptyPasteMenu;
-	protected JMenuItem emptyPasteTabItem;
-	protected JMenuBar menubar;
-	protected JMenu fileMenu;
-	protected JMenuItem newTabItem;
-	protected JMenuItem openItem;
-	protected JMenuItem importItem;
-	protected JMenuItem exportItem;
-	protected JMenuItem saveItem;
-	protected JMenuItem saveAsItem;
-	protected JMenuItem closeItem;
-	protected JMenuItem closeAllItem;
-	protected JMenuItem printItem;
-	protected JMenuItem exitItem;
-	protected JMenu editMenu;
 	protected JMenuItem undoItem;
 	protected JMenuItem redoItem;
-	protected JMenu copyMenu;
-	protected JMenuItem copyImageItem;
-	protected JMenuItem copyTabItem;
-	protected JMenu copyDataMenu, setDelimiterMenu;
-	protected JMenuItem copyDataAsFormattedItem, copyDataRawItem;
-	protected JMenu pasteMenu;
-	protected JMenuItem pasteTabItem;
-	protected JMenuItem pasteColumnsItem;
-	protected JMenu displayMenu;
-	protected JMenu languageMenu;
-	protected JMenuItem[] languageItems;
-	protected JMenu fontSizeMenu;
-	protected JMenuItem defaultFontSizeItem;
-	protected ButtonGroup fontSizeGroup;
-	protected JMenu helpMenu;
-	protected JMenuItem helpItem;
-	protected JMenuItem logItem;
-	protected JMenuItem aboutItem;
-	protected DataBuilder dataBuilder;
-	protected boolean exitOnClose = false;
-	protected boolean saveChangesOnClose = false;
 	protected FitBuilder fitBuilder;
-	protected boolean isLoading = false;
+	protected JMenuItem pasteColumnsItem;
 	protected JButton loadDataFunctionsButton, saveDataFunctionsButton;
-	protected boolean slopeExtended = false;
+
 	protected int myPopupFontLevel;
 	protected int myCopyMenuFontLevel;
+
+	protected boolean isLoading;
+	protected boolean slopeExtended;
+
+	private FunctionTool dataBuilder;
+	private Data addableData;
+	private XMLControlElement control;
+
+	private JPanel contentPane = new JPanel(new BorderLayout());
+	private JMenuBar emptyMenubar;
+	private JMenu emptyFileMenu;
+	private JMenuItem emptyNewTabItem;
+	private JMenuItem emptyOpenItem;
+	private JMenuItem emptyExitItem;
+	private JMenu emptyEditMenu;
+	private JMenuItem emptyPasteMenu;
+	private JMenuItem emptyPasteTabItem;
+	private JMenuBar menubar;
+	private JMenu fileMenu;
+	private JMenuItem newTabItem;
+	private JMenuItem openItem;
+	private JMenuItem importItem;
+	private JMenuItem exportItem;
+	private JMenuItem saveItem;
+	private JMenuItem saveAsItem;
+	private JMenuItem closeItem;
+	private JMenuItem closeAllItem;
+	private JMenuItem printItem;
+	private JMenuItem exitItem;
+	private JMenu editMenu;
+	private JMenu copyMenu;
+	private JMenuItem copyImageItem;
+	private JMenuItem copyTabItem;
+	private JMenu copyDataMenu, setDelimiterMenu;
+	private JMenuItem copyDataAsFormattedItem, copyDataRawItem;
+	private JMenu pasteMenu;
+	private JMenuItem pasteTabItem;
+	private JMenu displayMenu;
+	private JMenu languageMenu;
+	private JMenuItem[] languageItems;
+	private JMenu fontSizeMenu;
+	private JMenuItem defaultFontSizeItem;
+	private ButtonGroup fontSizeGroup;
+	private JMenu helpMenu;
+	private JMenuItem helpItem;
+	private JMenuItem logItem;
+	private JMenuItem aboutItem;
+	private JMenuItem editDataItem;
+
+
+	private boolean standAlone; // true when running as application
+	private boolean useChooser = true;
+	private boolean controlContainsData;
+	private boolean saveChangesOnClose;
+	private boolean exitOnClose;
+
+	///protected PropertyChangeSupport support;
+	
+	/**
+	 * A shared data tool.
+	 */
+	private static DataTool tool;
+
+	public static DataTool getTool() {
+		return getTool(true);
+	}
+
+	public static DataTool getToolOrNull() {
+		return tool;
+	}
+
+	/**
+	 * Gets the shared DataTool.
+	 *
+	 * @param forceNew create the singleton tool if it does not exist
+	 * @return the shared DataTool or null if not forced and it has not been created
+	 */
+	public static DataTool getTool(boolean forceNew) {
+		return (tool == null && forceNew ? (tool = new DataTool()) : tool);
+	}
 
 	private MenuListener editMenuChecker = new MenuListener() {
 
 		@Override
 		public void menuSelected(MenuEvent e) {
-			DataToolTab tab = getSelectedTab();
-			// undo and redo items
-			if (tab != null) {
-				undoItem.setEnabled(tab.undoManager.canUndo());
-				redoItem.setEnabled(tab.undoManager.canRedo());
-			}
-			// enable paste menu if clipboard contains pastable data
-			boolean enabled = hasPastableData();
-			emptyPasteMenu.setEnabled(enabled);
-			pasteMenu.setEnabled(enabled);
-			// prepare copy menu
-			copyMenu.removeAll();
-			if (tab != null) {
-				boolean isEmpty = tab.dataManager.getDatasetsRaw().isEmpty();
-				copyDataMenu.setEnabled(!isEmpty);
-				if (!isEmpty) {
-					copyTabItem.setText(ToolsRes.getString("DataTool.MenuItem.CopyTab")); //$NON-NLS-1$
-					copyMenu.add(copyTabItem);
-					copyMenu.addSeparator();
-					String s = ToolsRes.getString("DataTool.MenuItem.CopyData"); //$NON-NLS-1$
-					int[] selectedRows = getSelectedTab().dataTable.getSelectedRows();
-					int endRow = getSelectedTab().dataTable.getRowCount() - 1;
-					boolean emptySelection = (selectedRows.length == 1) && (selectedRows[0] == endRow)
-							&& getSelectedTab().dataTable.isEmptyRow(endRow);
-					if ((selectedRows.length > 0) && !emptySelection) {
-						s = ToolsRes.getString("DataTool.MenuItem.CopySelectedData"); //$NON-NLS-1$
-					}
-					copyDataMenu.setText(s);
-					copyDataMenu.removeAll();
-					copyDataRawItem.setText(ToolsRes.getString("DataTool.MenuItem.Unformatted"));
-					copyDataAsFormattedItem.setText(ToolsRes.getString("DataTool.MenuItem.Formatted"));
-					setDelimiterMenu.setText(ToolsRes.getString("DataTool.Menu.SetDelimiter")); //$NON-NLS-1$
-					copyDataMenu.add(copyDataAsFormattedItem);
-					copyDataMenu.add(copyDataRawItem);
-					copyDataMenu.addSeparator();
-					copyDataMenu.add(setDelimiterMenu);
-
-					copyMenu.add(copyDataMenu);
-					copyMenu.addSeparator();
-				}
-			}
-			copyMenu.add(copyImageItem);
-			FontSizer.setFonts(copyMenu);
+			updateMenuOnOpen();
 		}
 
 		@Override
@@ -252,93 +240,17 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 	};
 
-	private JMenuItem editDataItem;
-
-	/**
-	 * A shared data tool.
-	 */
-	private static DataTool tool;
-
-	public static DataTool getTool() {
-		return getTool(true);
-	}
-
-	/**
-	 * Gets the shared DataTool.
-	 *
-	 * @return the shared DataTool
-	 */
-	public static DataTool getTool(boolean forceNew) {
-		return (tool == null && forceNew ? (tool = new DataTool()) : tool);
-	}
-
-	/*
-	 * @Override public void setName(String name) { // set custom name
-	 * super.setName("DataToolTest"); }
-	 */
-
-	/**
-	 * Main entry point when used as application.
-	 *
-	 * @param args args[0] may be a data or xml file name
-	 */
-	public static void main(String[] args) {
-		getTool(true);
-		if (OSPRuntime.isJS)
-			tool.standAlone = true;
-		if (tool.standAlone)
-			tool.setLocation(0, 0);
-		OSPRuntime.setAppClass(tool);
-		tool.exitOnClose = true;
-		tool.saveChangesOnClose = true;
-		if ((args != null) && (args.length > 0) && (args[0] != null)) {
-			tool.setVisible(true);
-			tool.open(new File(args[0]));
-		} else {
-			tool.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowOpened(WindowEvent e) {
-					if (tool.getTabCount() == 0) {
-						DataToolTab tab = tool.createTab(null);
-						tab.setUserEditable(true);
-						tool.addTab(tab);
-					}
-				}
-			});
-			tool.setVisible(true);
-		}
-
-	}
-
 	/**
 	 * Constructs a blank DataTool.
 	 */
-	public DataTool() {
+	private DataTool() {
 		this(ToolsRes.getString("DataTool.Frame.Title"), "DataTool"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
-	 * Constructs a DataTool and opens the specified xml file.
-	 *
-	 * @param fileName the name of the xml file
-	 */
-	public DataTool(String fileName) {
-		this();
-		open(new File(fileName));
-	}
-
-	/**
-	 * Constructs a DataTool and loads data from an xml control.
-	 *
-	 * @param control the xml control
-	 */
-	public DataTool(XMLControl control) {
-		this();
-		addTabs(control, null);
-	}
-
-	/**
 	 * Constructs a DataTool and loads the specified data object.
+	 * 
+	 * No references
 	 *
 	 * @param data the data
 	 */
@@ -350,6 +262,30 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 	}
 	
+	/**
+	 * Constructs a DataTool and opens the specified xml file.
+	 * 
+	 * No references
+	 *
+	 * @param fileName the name of the xml file
+	 */
+	public DataTool(String fileName) {
+		this();
+		open(new File(fileName));
+	}
+
+	/**
+	 * Constructs a DataTool and loads data from an xml control.
+	 * 
+	 * No references
+	 *
+	 * @param control the xml control
+	 */
+	public DataTool(XMLControl control) {
+		this();
+		addTabs(control, null);
+	}
+
 	/**
 	 * Replace any open tabs with a single tab loaded with the given path.
 	 * JavaScript only?
@@ -514,23 +450,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	}
 
 	/**
-	 * Creates a tab for the specified Data object. The tab name will be that of the
-	 * Data object if it defines a getName() method.
+	 * Removes a specified tab.
 	 *
-	 * @param data the Data
-	 * @return the new tab
+	 * @param tab the tab
+	 * @return the removed tab, or null if none removed
 	 */
-	protected DataToolTab createTab(Data data) {
-		// be sure fitBuilder is instantiated
-		fitBuilder = getFitBuilder();
-		DataToolTab tab = new DataToolTab(data, this);
-		if (data != null) {
-			String name = data.getName();
-			if ((name != null) && !name.equals("")) { //$NON-NLS-1$ )
-				tab.setName(name);
-			}
-		}
-		return tab;
+	public DataToolTab removeTab(DataToolTab tab) {
+		return removeTab(getTabIndex(tab), true);
 	}
 
 	/**
@@ -557,16 +483,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			return tab;
 		}
 		return null;
-	}
-
-	/**
-	 * Removes a specified tab.
-	 *
-	 * @param tab the tab
-	 * @return the removed tab, or null if none removed
-	 */
-	public DataToolTab removeTab(DataToolTab tab) {
-		return removeTab(getTabIndex(tab), true);
 	}
 
 	/**
@@ -796,51 +712,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	}
 
 	/**
-	 * Imports an xml or data file into an existing tab.
-	 *
-	 * @param tab      the tab
-	 * @param fileName the file name
-	 * @return the file name, if successfully imported (datasets loaded)
-	 */
-	void importFileIntoTab(DataToolTab tab, File file) {
-		OSPLog.fine("importing " + file); //$NON-NLS-1$
-		Resource res = new Resource(file);
-		Reader in = res.openReader();
-		String firstLine = readFirstLine(in);
-		// if xml, read the file into an XML control and add tab
-		if (firstLine.startsWith("<?xml")) { //$NON-NLS-1$
-			XMLControlElement control = new XMLControlElement(file);
-			getSelfContainedDataAsync(control, false, new Consumer<ArrayList<Data>>() {
-
-				@Override
-				public void accept(ArrayList<Data> dataList) {
-					if (dataList.isEmpty()) {
-						OSPLog.finest("no data found"); //$NON-NLS-1$
-					} else {
-						DatasetManager manager = new DatasetManager();
-						for (Data next : dataList) {
-							for (DataColumn column : getDataColumns(next)) {
-								manager.addDataset(column);
-							}
-						}
-						tab.addColumns(manager, true, true, true);
-					}
-				}
-			});
-			return;
-		}
-		if (res.getString() != null) {
-			// if not xml, attempt to import data and add tab
-			Data[] data = parseData(res.getString(), file.toString());
-			if (data != null) {
-				tab.addColumns(data[0], true, true, true);
-				return;
-			}
-		}
-		OSPLog.finest("no data found"); //$NON-NLS-1$
-	}
-
-	/**
 	 * Sends a job to this tool and specifies a tool to reply to.
 	 *
 	 * @param job     the Job
@@ -949,56 +820,60 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	}
 
 	/**
-	 * Determines if an array contains any duplicate or Double.NaN values.
+	 * Parses a String into tokens separated by specified row and column delimiters.
+	 * 
+	 * NOTE: This method WILL check for European comma decimal point
 	 *
-	 * @param values the array
-	 * @return true if at least one duplicate is found
+	 * @param text         the text to parse
+	 * @param rowDelimiter the column delimiter
+	 * @param colDelimiter the column delimiter
+	 * @return a 2D array of String tokens
 	 */
-	protected static boolean containsDuplicateValues(double[] values) {
-		for (int i = 0; i < values.length; i++) {
-			if (Double.isNaN(values[i])) {
+	private static String[][] parseStrings(String text, String rowDelimiter, String colDelimiter) {
+		String[] rows = parseStrings(text, rowDelimiter);
+		String[][] tokens = new String[rows.length][0];
+		for (int i = 0; i < rows.length; i++) {
+			tokens[i] = parseStrings(rows[i], colDelimiter);
+		}
+		return tokens;
+	}
+
+	private static boolean containsDelimeter(String s) {
+		for (int i = 0; i < delimiters.length; i++) {
+			if (delimiters[i] != SPACE && s.contains(delimiters[i]))
 				return true;
-			}
-			int n = getIndex(values[i], values, i);
-			if (n > -1) {
-				return true;
-			}
 		}
 		return false;
 	}
 
 	/**
-	 * Gets the first array index at which the specified value is found.
+	 * Parses a String array into doubles. Unparsable strings are set to Double.NaN.
 	 *
-	 * @param value       the value to find
-	 * @param array       the array to search
-	 * @param ignoreIndex an array index to ignore
-	 * @return the index, or -1 if not found
+	 * @param strings   the String array to parse
+	 * @param delimiter the delimiter that was used to parse the strings
+	 * @return an array of doubles
 	 */
-	protected static int getIndex(double value, double[] array, int ignoreIndex) {
-		for (int i = 0; i < array.length; i++) {
-			if (i == ignoreIndex) {
-				continue;
-			}
-			if (array[i] == value) {
-				return i;
+	private static double[] parseDoubles(String[] strings, String delimiter) {
+		double[] doubles = new double[strings.length];
+		boolean checkComma = (delimiter != null && !delimiter.equals(","));
+		for (int i = 0; i < strings.length; i++) {
+			String s = strings[i];
+			doubles[i] = Double.NaN;
+			if (s != "" && s.indexOf("\t") < 0) { //$NON-NLS-1$
+				try {
+					doubles[i] = Double.parseDouble(s);
+				} catch (NumberFormatException e) {
+					// convert decimal separator commas with periods
+					if (checkComma && s.indexOf(",") >= 0) { //$NON-NLS-1$ //$NON-NLS-2$
+						try {
+							doubles[i] = Double.parseDouble(s.replace(",", "."));
+						} catch (NumberFormatException e1) {
+						}
+					} 
+				}
 			}
 		}
-		return -1;
-	}
-
-	/**
-	 * Returns an array of row numbers.
-	 *
-	 * @param rowCount length of the array
-	 * @return the array
-	 */
-	protected static double[] getRowArray(int rowCount) {
-		double[] rows = new double[rowCount];
-		for (int i = 0; i < rowCount; i++) {
-			rows[i] = i;
-		}
-		return rows;
+		return doubles;
 	}
 
 	/**
@@ -1009,7 +884,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param delimiter the delimiter
 	 * @return an array of String tokens
 	 */
-	protected static String[] parseStrings(String text, String delimiter) {
+	private static String[] parseStrings(String text, String delimiter) {
 		Collection<String> tokens = new ArrayList<String>();
 		if (text != null) {
 			// get the first token
@@ -1067,6 +942,59 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	}
 
 	/**
+	 * Determines if an array contains any duplicate or Double.NaN values.
+	 *
+	 * @param values the array
+	 * @return true if at least one duplicate is found
+	 */
+	protected static boolean containsDuplicateValues(double[] values) {
+		for (int i = 0; i < values.length; i++) {
+			if (Double.isNaN(values[i])) {
+				return true;
+			}
+			int n = getIndex(values[i], values, i);
+			if (n > -1) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Gets the first array index at which the specified value is found.
+	 *
+	 * @param value       the value to find
+	 * @param array       the array to search
+	 * @param ignoreIndex an array index to ignore
+	 * @return the index, or -1 if not found
+	 */
+	protected static int getIndex(double value, double[] array, int ignoreIndex) {
+		for (int i = 0; i < array.length; i++) {
+			if (i == ignoreIndex) {
+				continue;
+			}
+			if (array[i] == value) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Returns an array of row numbers.
+	 *
+	 * @param rowCount length of the array
+	 * @return the array
+	 */
+	protected static double[] getRowArray(int rowCount) {
+		double[] rows = new double[rowCount];
+		for (int i = 0; i < rowCount; i++) {
+			rows[i] = i;
+		}
+		return rows;
+	}
+
+	/**
 	 * Parses a String into doubles separated by a specified delimiter. Unparsable
 	 * strings are set to Double.NaN.
 	 *
@@ -1076,55 +1004,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 */
 	protected static double[] parseDoubles(String text, String delimiter) {
 		return parseDoubles(parseStrings(text, delimiter), delimiter);
-	}
-
-	/**
-	 * Parses a String array into doubles. Unparsable strings are set to Double.NaN.
-	 *
-	 * @param strings   the String array to parse
-	 * @param delimiter the delimiter that was used to parse the strings
-	 * @return an array of doubles
-	 */
-	protected static double[] parseDoubles(String[] strings, String delimiter) {
-		double[] doubles = new double[strings.length];
-		boolean checkComma = (delimiter != null && !delimiter.equals(","));
-		for (int i = 0; i < strings.length; i++) {
-			String s = strings[i];
-			doubles[i] = Double.NaN;
-			if (s != "" && s.indexOf("\t") < 0) { //$NON-NLS-1$
-				try {
-					doubles[i] = Double.parseDouble(s);
-				} catch (NumberFormatException e) {
-					// convert decimal separator commas with periods
-					if (checkComma && s.indexOf(",") >= 0) { //$NON-NLS-1$ //$NON-NLS-2$
-						try {
-							doubles[i] = Double.parseDouble(s.replace(",", "."));
-						} catch (NumberFormatException e1) {
-						}
-					} 
-				}
-			}
-		}
-		return doubles;
-	}
-
-	/**
-	 * Parses a String into tokens separated by specified row and column delimiters.
-	 * 
-	 * NOTE: This method WILL check for European comma decimal point
-	 *
-	 * @param text         the text to parse
-	 * @param rowDelimiter the column delimiter
-	 * @param colDelimiter the column delimiter
-	 * @return a 2D array of String tokens
-	 */
-	protected static String[][] parseStrings(String text, String rowDelimiter, String colDelimiter) {
-		String[] rows = parseStrings(text, rowDelimiter);
-		String[][] tokens = new String[rows.length][0];
-		for (int i = 0; i < rows.length; i++) {
-			tokens[i] = parseStrings(rows[i], colDelimiter);
-		}
-		return tokens;
 	}
 
 	/**
@@ -1147,14 +1026,6 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		return doubles;
 	}
 	
-	private static boolean containsDelimeter(String s) {
-		for (int i = 0; i < delimiters.length; i++) {
-			if (delimiters[i] != SPACE && s.contains(delimiters[i]))
-				return true;
-		}
-		return false;
-	}
-
 	/**
 	 * Parses character-delimited data from a string. This attempts to extract the
 	 * following information from the string:
@@ -1452,8 +1323,76 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		return null;
 	}
 
-	// ______________________________ protected methods ________________________
-	protected String readFirstLine(Reader in) {
+	// ______________________________ private methods ________________________
+
+	
+	/**
+	 * Creates a tab for the specified Data object. The tab name will be that of the
+	 * Data object if it defines a getName() method.
+	 *
+	 * @param data the Data
+	 * @return the new tab
+	 */
+	private DataToolTab createTab(Data data) {
+		// be sure fitBuilder is instantiated
+		fitBuilder = getFitBuilder();
+		DataToolTab tab = new DataToolTab(data, this);
+		if (data != null) {
+			String name = data.getName();
+			if ((name != null) && !name.equals("")) { //$NON-NLS-1$ )
+				tab.setName(name);
+			}
+		}
+		return tab;
+	}
+
+	private void updateMenuOnOpen() {
+		DataToolTab tab = getSelectedTab();
+		// undo and redo items
+		if (tab != null) {
+			undoItem.setEnabled(tab.undoManager.canUndo());
+			redoItem.setEnabled(tab.undoManager.canRedo());
+		}
+		// enable paste menu if clipboard contains pastable data
+		boolean enabled = hasPastableData();
+		emptyPasteMenu.setEnabled(enabled);
+		pasteMenu.setEnabled(enabled);
+		// prepare copy menu
+		copyMenu.removeAll();
+		if (tab != null) {
+			boolean isEmpty = tab.dataManager.getDatasetsRaw().isEmpty();
+			copyDataMenu.setEnabled(!isEmpty);
+			if (!isEmpty) {
+				copyTabItem.setText(ToolsRes.getString("DataTool.MenuItem.CopyTab")); //$NON-NLS-1$
+				copyMenu.add(copyTabItem);
+				copyMenu.addSeparator();
+				String s = ToolsRes.getString("DataTool.MenuItem.CopyData"); //$NON-NLS-1$
+				int[] selectedRows = getSelectedTab().dataTable.getSelectedRows();
+				int endRow = getSelectedTab().dataTable.getRowCount() - 1;
+				boolean emptySelection = (selectedRows.length == 1) && (selectedRows[0] == endRow)
+						&& getSelectedTab().dataTable.isEmptyRow(endRow);
+				if ((selectedRows.length > 0) && !emptySelection) {
+					s = ToolsRes.getString("DataTool.MenuItem.CopySelectedData"); //$NON-NLS-1$
+				}
+				copyDataMenu.setText(s);
+				copyDataMenu.removeAll();
+				copyDataRawItem.setText(ToolsRes.getString("DataTool.MenuItem.Unformatted"));
+				copyDataAsFormattedItem.setText(ToolsRes.getString("DataTool.MenuItem.Formatted"));
+				setDelimiterMenu.setText(ToolsRes.getString("DataTool.Menu.SetDelimiter")); //$NON-NLS-1$
+				copyDataMenu.add(copyDataAsFormattedItem);
+				copyDataMenu.add(copyDataRawItem);
+				copyDataMenu.addSeparator();
+				copyDataMenu.add(setDelimiterMenu);
+
+				copyMenu.add(copyDataMenu);
+				copyMenu.addSeparator();
+			}
+		}
+		copyMenu.add(copyImageItem);
+		FontSizer.setFonts(copyMenu);
+	}
+
+	private String readFirstLine(Reader in) {
 		BufferedReader input = null;
 		if (in instanceof BufferedReader) {
 			input = (BufferedReader) in;
@@ -1509,7 +1448,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param proposed the proposed name
 	 * @return the unique name
 	 */
-	protected String getUniqueTabName(String proposed) {
+	private String getUniqueTabName(String proposed) {
 		if ((proposed == null) || proposed.equals("")) { //$NON-NLS-1$
 			proposed = ToolsRes.getString("DataToolTab.DefaultName"); //$NON-NLS-1$
 		}
@@ -2133,7 +2072,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param i the tab index
 	 * @return true unless canceled by the user
 	 */
-	protected boolean saveChangesAt(int i) {
+	private boolean saveChangesAt(int i) {
 		if (OSPRuntime.appletMode) {
 			return true;
 		}
@@ -2318,7 +2257,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param text the text
 	 * @param out  the Writer
 	 */
-	protected static void write(String text, Writer out) {
+	private static void write(String text, Writer out) {
 		try {
 			Writer output = new BufferedWriter(out);
 			output.write(text);
@@ -2334,7 +2273,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 *
 	 * @return the name of the opened file
 	 */
-	protected void open() {
+	private void open() {
 		// BH changed return String to void
 		OSPRuntime.getChooser().showOpenDialog(null, new Runnable() {
 
@@ -2351,7 +2290,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 *
 	 * @param tab the tab to import into
 	 */
-	void importFileIntoTab(DataToolTab tab) {
+	private void importFileIntoTab(DataToolTab tab) {
 		OSPRuntime.getChooser().showOpenDialog(tab, new Runnable() {
 
 			@Override
@@ -2364,12 +2303,57 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	}
 
 	/**
+	 * Imports an xml or data file into an existing tab.
+	 *
+	 * @param tab      the tab
+	 * @param fileName the file name
+	 * @return the file name, if successfully imported (datasets loaded)
+	 */
+	private void importFileIntoTab(DataToolTab tab, File file) {
+		OSPLog.fine("importing " + file); //$NON-NLS-1$
+		Resource res = new Resource(file);
+		Reader in = res.openReader();
+		String firstLine = readFirstLine(in);
+		// if xml, read the file into an XML control and add tab
+		if (firstLine.startsWith("<?xml")) { //$NON-NLS-1$
+			XMLControlElement control = new XMLControlElement(file);
+			getSelfContainedDataAsync(control, false, new Consumer<ArrayList<Data>>() {
+
+				@Override
+				public void accept(ArrayList<Data> dataList) {
+					if (dataList.isEmpty()) {
+						OSPLog.finest("no data found"); //$NON-NLS-1$
+					} else {
+						DatasetManager manager = new DatasetManager();
+						for (Data next : dataList) {
+							for (DataColumn column : getDataColumns(next)) {
+								manager.addDataset(column);
+							}
+						}
+						tab.addColumns(manager, true, true, true);
+					}
+				}
+			});
+			return;
+		}
+		if (res.getString() != null) {
+			// if not xml, attempt to import data and add tab
+			Data[] data = parseData(res.getString(), file.toString());
+			if (data != null) {
+				tab.addColumns(data[0], true, true, true);
+				return;
+			}
+		}
+		OSPLog.finest("no data found"); //$NON-NLS-1$
+	}
+
+	/**
 	 * Saves the current tab to the specified file.
 	 *
 	 * @param fileName the file name
 	 * @return the name of the saved file, or null if not saved
 	 */
-	protected String save(String fileName) {
+	private String save(String fileName) {
 		return save(getSelectedTab(), fileName);
 	}
 
@@ -2380,7 +2364,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param fileName the file name
 	 * @return the name of the saved file, or null if not saved
 	 */
-	protected String save(DataToolTab tab, String fileName) {
+	private String save(DataToolTab tab, String fileName) {
 		if ((fileName == null) || fileName.equals("")) { //$NON-NLS-1$
 			return saveAs();
 		}
@@ -2398,7 +2382,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 *
 	 * @return the name of the saved file, or null if not saved
 	 */
-	protected String saveAs() {
+	private String saveAs() {
 		int result = OSPRuntime.getChooser().showSaveDialog(this);
 		if (result == JFileChooser.APPROVE_OPTION) {
 			OSPRuntime.chooserDir = OSPRuntime.getChooser().getCurrentDirectory().toString();
@@ -2432,7 +2416,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param data the Data
 	 * @return the index, or -1 if not found
 	 */
-	protected int getTabIndex(Data data) {
+	private int getTabIndex(Data data) {
 		for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 			DataToolTab tab = (DataToolTab) tabbedPane.getComponentAt(i);
 			if (tab.isOwnedBy(data)) {
@@ -2448,7 +2432,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param tab the tab
 	 * @return the index, or -1 if not found
 	 */
-	protected int getTabIndex(DataToolTab tab) {
+	private int getTabIndex(DataToolTab tab) {
 		for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 			if (tab == tabbedPane.getComponentAt(i)) {
 				return i;
@@ -2463,7 +2447,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param title
 	 * @param name
 	 */
-	protected DataTool(String title, String name) {
+	private DataTool(String title, String name) {
 		super(title);
 		setName(name);
 		createGUI();
@@ -2486,7 +2470,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * @param index the tab number
 	 * @return true if tabs removed
 	 */
-	protected boolean removeAllButTab(int index) {
+	private boolean removeAllButTab(int index) {
 		for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
 			if (i == index) {
 				continue;
@@ -2511,7 +2495,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 *
 	 * @return true if all tabs removed
 	 */
-	protected boolean removeAllTabs() {
+	private boolean removeAllTabs() {
 		for (int i = tabbedPane.getTabCount() - 1; i >= 0; i--) {
 			if (!saveChangesAt(i)) {
 				return false;
@@ -2535,7 +2519,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 	}
 
-	protected void refreshMenubar() {
+	private void refreshMenubar() {
 		if (getTabCount() == 0) {
 			emptyMenubar.add(displayMenu);
 			emptyMenubar.add(helpMenu);
@@ -2566,8 +2550,8 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	 * Refreshes the data builder.
 	 */
 	protected void refreshDataBuilder() {
-		if (dataBuilder != null) {
-			dataBuilder.refreshPanels();
+		if (dataBuilder != null && dataBuilder instanceof DataBuilder) {
+			((DataBuilder) dataBuilder).refreshPanels();
 		}
 	}
 
@@ -2629,7 +2613,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	/**
 	 * Creates the GUI.
 	 */
-	protected void createGUI() {
+	private void createGUI() {
 		// configure the frame
 
 		// set preferred size
@@ -3248,13 +3232,13 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 			setLocation(x, y); // don't set location if running stand alone
 	}
 
-	protected void pasteTab(Object source) {
+	private void pasteTab(Object source) {
 		OSPRuntime.paste((s) -> {
 			pasteAction(s, source);
 		});
 	}
 
-	protected void copyTab() {
+	private void copyTab() {
 		int i = tabbedPane.getSelectedIndex();
 		String title = tabbedPane.getTitleAt(i);
 		OSPLog.finest("copying tab " + title); //$NON-NLS-1$
@@ -3265,7 +3249,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		return new XMLControlElement(getSelectedTab()).toXML();
 	}
 
-	protected void cloneTab(int index, boolean editable) {
+	private void cloneTab(int index, boolean editable) {
 		// determine name of cloned tab
 		pasteAction(getTabXML(), pasteTabItem);
 		String name = getTab(index).getName();
@@ -3287,7 +3271,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		refreshTabTitles();
 	}
 
-	protected void pasteAction(String dataString, Object source) {
+	private void pasteAction(String dataString, Object source) {
 		boolean failed = false;
 		try { // we will check for failure finally, before returning
 			if (dataString == null) {
@@ -3365,7 +3349,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	/**
 	 * add columns, possibly asynchronously
 	 */
-	protected void addColumnsFromPaste() {
+	private void addColumnsFromPaste() {
 		if (addableData != null) {
 			DataToolTab tab = getSelectedTab();
 			//OSPLog.finest("pasting columns into " + tab.getName()); //$NON-NLS-1$
@@ -3373,6 +3357,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	void editDataAction() {
 		new EditDataDialog();
 	}
@@ -3495,7 +3480,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	/**
 	 * Shows the about dialog.
 	 */
-	protected void showAboutDialog() {
+	private void showAboutDialog() {
 		String date = OSPRuntime.getLaunchJarBuildDate();
 		if ("".equals(date))
 			date = OSPRuntime.RELEASE_DATE;
@@ -3507,7 +3492,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				JOptionPane.INFORMATION_MESSAGE);
 	}
 	
-	protected void setMultipleTabPolicy(String dataString) {
+	private void setMultipleTabPolicy(String dataString) {
 		if (askToLoadMultipleTracksInSingleTab &&
 				dataString.startsWith("#multi:")) {
 			JPanel panel = new JPanel(new BorderLayout());
@@ -3645,7 +3630,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		private String defaultColumnNameText = "x, y\n";
 		private int undoCount = 0;
 
-		EditDataDialog() {
+		protected EditDataDialog() {
 			super(JOptionPane.getFrameForComponent(DataTool.this), true);
 			setLayout(new BorderLayout());
 			setTitle(ToolsRes.getString("DataToolTab.Button.EditData.Text")); //$NON-NLS-1$
@@ -3827,6 +3812,48 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 				redoItem.doClick(0);
 			}
 		}
+	}
+
+	/**
+	 * Main entry point when used as application.
+	 *
+	 * @param args args[0] may be a data or xml file name
+	 */
+	public static void main(String[] args) {
+		getTool(true);
+		if (OSPRuntime.isJS)
+			tool.standAlone = true;
+		if (tool.standAlone)
+			tool.setLocation(0, 0);
+		OSPRuntime.setAppClass(tool);
+		tool.exitOnClose = true;
+		tool.saveChangesOnClose = true;
+		if ((args != null) && (args.length > 0) && (args[0] != null)) {
+			tool.setVisible(true);
+			tool.open(new File(args[0]));
+		} else {
+			tool.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowOpened(WindowEvent e) {
+					if (tool.getTabCount() == 0) {
+						DataToolTab tab = tool.createTab(null);
+						tab.setUserEditable(true);
+						tool.addTab(tab);
+					}
+				}
+			});
+			tool.setVisible(true);
+		}
+
+	}
+
+	public void setDataBuilder(FunctionTool dataBuilder) {
+		if (dataBuilder == null) {
+			this.dataBuilder = null;
+			return;
+		}
+		getDataBuilder().setContentPane(dataBuilder.getContentPane());
+		this.dataBuilder = dataBuilder;
 	}
 
 }

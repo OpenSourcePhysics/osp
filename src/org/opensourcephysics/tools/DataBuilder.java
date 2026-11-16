@@ -172,11 +172,12 @@ public class DataBuilder extends FunctionTool {
 	protected void refreshPanels() {
 		// add and remove DataFunctionPanels based on current tabs
 		ArrayList<String> tabNames = new ArrayList<String>();
-		for (int i = 0; i < dataTool.tabbedPane.getTabCount(); i++) {
+		for (int i = 0, n = dataTool.tabbedPane.getTabCount(); i < n; i++) {
 			DataToolTab tab = dataTool.getTab(i);
-			tabNames.add(tab.getName());
-			if (getPanel(tab.getName()) == null) {
-				addPanel(tab.getName(), new DataFunctionPanel(tab.dataManager));
+			String name = tab.getName();
+			tabNames.add(name);
+			if (getPanel(name) == null) {
+				addPanel(name, new DataFunctionPanel(tab.dataManager));
 			}
 		}
 		ArrayList<String> remove = new ArrayList<String>();
