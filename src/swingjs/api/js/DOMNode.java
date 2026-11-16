@@ -64,7 +64,7 @@ public interface DOMNode {
 	}
 
 	public static DOMNode getElement(String id) {
-		return (/** @j2sNative  document.getElementById(id) ||*/ null);
+		return (/**@j2sNative  document.getElementById(id) ||*/ null);
 	}
 
 	public static DOMNode createTextNode(String text) {
@@ -72,19 +72,19 @@ public interface DOMNode {
 	}
 
 	public static DOMNode getParent(DOMNode node) {
-		return (/** @j2sNative  node.parentNode ||*/ null);
+		return (/**@j2sNative  node.parentNode ||*/ null);
 	}
 	
 	public static DOMNode getPreviousSibling(DOMNode node) {
-		return (/** @j2sNative  node.previousSibling ||*/ null);
+		return (/**@j2sNative  node.previousSibling ||*/ null);
 	}
 	
 	public static DOMNode firstChild(DOMNode node) {
-		return 	(/** @j2sNative node.firstChild ||*/ null);
+		return 	(/**@j2sNative node.firstChild ||*/ null);
 	}
 
 	public static DOMNode lastChild(DOMNode node) {
-		return 	(/** @j2sNative node.lastChild ||*/ null);
+		return 	(/**@j2sNative node.lastChild ||*/ null);
 	}
 
 	public static DOMNode setZ(DOMNode node, int z) {
@@ -106,11 +106,11 @@ public interface DOMNode {
 	}
 
 	public static int getAttrInt(DOMNode node, String attr) {
-		return 	(/** @j2sNative node && node[attr] ||*/ 0);
+		return 	(/**@j2sNative node && node[attr] ||*/ 0);
 	}
 
 	public static String getStyle(DOMNode node, String style) {
-		return 	(/** @j2sNative node && node.style[style] ||*/ null);
+		return 	(/**@j2sNative node && node.style[style] ||*/ null);
 	}
 
 	public static void getCSSRectangle(DOMNode node, Rectangle r) {
@@ -503,7 +503,7 @@ if (node)for (var i = 0, n = av.length; i < n;) {
 
 			@SuppressWarnings("null")
 			public static double[] setMatrix(Context2D ctx, AffineTransform transform) {
-				double[] m = /** @j2sNative ctx._m || */ null;
+				double[] m = /**@j2sNative ctx._m || */ null;
 				if (transform == null) {
 					/**@j2sNative ctx._m = null; */
 					return null;			
