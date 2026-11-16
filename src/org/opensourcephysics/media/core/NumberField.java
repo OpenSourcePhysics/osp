@@ -473,9 +473,9 @@ public class NumberField extends JTextField {
 	 * @param value the value to be entered
 	 */
 	public void setValue(double value) {
-		if (!isVisible()) {
-			return;
-		}
+//		if (!isVisible()) {
+//			return;
+//		}
 		if (minValue != null) {
 			value = Math.max(value, minValue.doubleValue());
 		}
