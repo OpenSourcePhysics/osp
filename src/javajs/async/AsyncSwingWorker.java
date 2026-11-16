@@ -159,6 +159,7 @@ public abstract class AsyncSwingWorker extends SwingWorker<Void, Void> implement
 		if (title != null && delayMillis > 0) {
 			progressMonitor = new ProgressMonitor(owner, title, "", Math.min(min, max), Math.max(min, max));
 			progressMonitor.setProgress(Math.min(min, max)); // displays monitor
+
 		}
 		this.delayMillis = Math.max(0, delayMillis);
 		this.isAsync = (delayMillis > 0);
