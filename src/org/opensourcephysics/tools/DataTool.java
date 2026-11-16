@@ -198,7 +198,7 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 	///protected PropertyChangeSupport support;
 	
 	/**
-	 * A shared data tool.
+	 * The shared DatTool instance. Creates one if it does not already exist.
 	 */
 	private static DataTool tool;
 
@@ -206,7 +206,12 @@ public class DataTool extends OSPFrame implements Tool, PropertyChangeListener {
 		return getTool(true);
 	}
 
-	public static DataTool getToolOrNull() {
+	/**
+	 * Same as DataTool.getTool(false), but more explicit in what it does.
+	 * 
+	 * @return shared DataTool or null
+	 */
+	public static DataTool getToolIfExists() {
 		return tool;
 	}
 
