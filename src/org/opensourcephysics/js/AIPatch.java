@@ -34,45 +34,6 @@ public class AIPatch {
 		return (!OSPRuntime.isJS && !OSPRuntime.isPopupTrigger(e));
 	}
 
-	public static void keepDialogAboveFrame(JFrame frame, JDialog builder) {
-		/**
-		 * @j2sNative
-		 * if (frame._dataBuilderStacking) {
-		 *   frame._dataBuilderStacking();
-		 *   frame._dataBuilderStacking = null;
-		 * }
-		 */
-
-		builder.toFront();
-		
-		/** @j2sNative
-		 * var trackerUI = frame.秘getUI$(), builderUI = builder.秘getUI$();
-		 * var closer = builderUI.closerNode;
-		 * if (closer && !closer._trackerBuilderClose) {
-		 *   closer._trackerBuilderClose = true;
-		 *   // The close control sits inside the draggable title bar.
-		 *   ["pointerdown", "mousedown", "touchstart"].forEach(function(type) {
-		 *     closer.addEventListener(type, function(event) {
-		 *       event.stopImmediatePropagation();
-		 *     }, true);
-		 *   });
-		 *   closer.addEventListener("click", function(event) {
-		 *     event.stopImmediatePropagation();
-		 *     setTimeout(function() { builder.setVisible$Z(false); }, 0);
-		 *   }, true);
-		 * }
-		 * var trackerNode = trackerUI.outerNode || trackerUI.getDOMNode$();
-		 * var builderNode = builderUI.outerNode || builderUI.getDOMNode$();
-		 * if (!trackerNode || !builderNode || trackerNode === builderNode) return;
-		 * var rule = document.createElement("style");
-		 * rule.textContent = "#" + CSS.escape(builderNode.id) + " { z-index: 19000 !important; }";
-		 * document.head.appendChild(rule);
-		 * frame._dataBuilderStacking = function() { rule.remove(); };
-		 */
-	}
-
-
-	
 	@Deprecated
 	public static void addButtonTouchListeners(JButton button, Runnable onBegin, Runnable onEnd, Runnable onCancel) {
 		return;
