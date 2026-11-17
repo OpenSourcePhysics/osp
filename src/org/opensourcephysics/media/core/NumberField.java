@@ -327,6 +327,7 @@ public class NumberField extends JTextField {
 	public static final String DECIMAL_1_PATTERN = "0.0"; //$NON-NLS-1$
 	public static final String DECIMAL_2_PATTERN = "0.00"; //$NON-NLS-1$
 	public static final String DECIMAL_3_PATTERN = "0.000"; //$NON-NLS-1$
+	public static final String VALUE_CHANGED = "ValueChanged"; //$NON-NLS-1$
 
 	// instance fields
 	// BH 2021 making format private to allow bypassing it for simple formats
@@ -426,12 +427,13 @@ public class NumberField extends JTextField {
 	}
 
 	/**
-	 * Gets the value from the text field.
+	 * Gets the value of a String.
 	 *
+	 * @param text the text
 	 * @return the value
 	 */
-	public double getValue() {		
-		String s = getText().trim().toUpperCase();
+	public double getValue(String text) {	
+		String s = text.trim().toUpperCase();
 		if (s.length() == 0)
 			return prevValue;
 
@@ -461,6 +463,15 @@ public class NumberField extends JTextField {
 			return prevValue;
 		}
 		return retValue;
+	}
+
+	/**
+	 * Gets the value from the text field.
+	 *
+	 * @return the value
+	 */
+	public double getValue() {		
+		return getValue(getText());
 	}
 
 	final public String format(double d) {
