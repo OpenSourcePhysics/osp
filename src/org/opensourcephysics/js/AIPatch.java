@@ -25,133 +25,133 @@ import org.opensourcephysics.display.OSPRuntime;
  */
 public class AIPatch {
 
-	@Deprecated
-	public static boolean strangeJavaClickRequest(MouseEvent e) {
-		if (true)
-			return false;
-		// SwingJS may synthesize a click from the release of a long press.
-		// Browser menus are dismissed by the next press, not that release.
-		return (!OSPRuntime.isJS && !OSPRuntime.isPopupTrigger(e));
-	}
-
-	@Deprecated
-	public static void addButtonTouchListeners(JButton button, Runnable onBegin, Runnable onEnd, Runnable onCancel) {
-		return;
-		/**
-		 * ???
-		 * 
-		 * @j2sNative
-		 * var node = button.getUI$().getDOMNode$();
-		 * if (!node || node._trackerViewTouch) 
-		 *   return;
-		 * 
-		 * node._trackerViewTouch = true;
-		 * node.style.touchAction = "none";
-		 * node.style.webkitTouchCallout = "none";
-		 * var pointer = null, startX, startY, suppressClickUntil = 0;
-		 * function consume(event) {
-		 *   event.preventDefault();
-		 *   event.stopImmediatePropagation();
-		 * }
-		 * node.addEventListener("pointerdown", function(event) {
-		 *   if (event.pointerType !== "touch" && event.pointerType !== "pen") {
-		 *     suppressClickUntil = 0;
-		 *     return;
-		 *   }
-		 *   if (!event.isPrimary || !button.isEnabled$()) return;
-		 *   pointer = event.pointerId;
-		 *   startX = event.clientX;
-		 *   startY = event.clientY;
-		 *   if (event.isTrusted) node.setPointerCapture(pointer);
-		 *   consume(event);
-		 *   onBegin.run$();
-		 * }, true);
-		 * node.addEventListener("pointermove", function(event) {
-		 *   if (event.pointerId !== pointer) return;
-		 *   var dx = event.clientX - startX, dy = event.clientY - startY;
-		 *   if (dx * dx + dy * dy > 144) onCancel.run$();
-		 *   consume(event);
-		 * }, true);
-		 * function end(event) {
-		 *   if (event.pointerId !== pointer) return;
-		 *   pointer = null;
-		 *   suppressClickUntil = Date.now() + 500;
-		 *   consume(event);
-		 *   switch (event.type) {
-		 *   case "pointerup":
-		 *      onEnd.run$();
-		 *      break;
-		 *   case "pointercancel":
-		 *      onCancel.run$();
-		 *      break;
-		 *   }
-		 * }
-		 * node.addEventListener("pointerup", end, true);
-		 * node.addEventListener("pointercancel", end, true);
-		 * ["touchstart", "touchmove", "touchend", "touchcancel", "contextmenu"].forEach(function(type) {
-		 *   node.addEventListener(type, function(event) {
-		 *     if (pointer !== null || Date.now() < suppressClickUntil) consume(event);
-		 *   }, {capture: true, passive: false});
-		 * });
-		 * node.addEventListener("click", function(event) {
-		 *   if (event.detail && Date.now() < suppressClickUntil) consume(event);
-		 * }, true);
-		 */
-	}
-
-	@SuppressWarnings("unused")
-	@Deprecated
-	private static void moveFromMenuBar(JFrame frame, int x, int y) {
-		Rectangle viewport = OSPRuntime.jsutil.getMaximumViewport(2, 2);
-		int minX = viewport.x + Math.min(48, frame.getWidth()) - frame.getWidth();
-		int maxX = viewport.x + viewport.width - Math.min(48, frame.getWidth());
-		int maxY = viewport.y + Math.max(0, viewport.height - 30);
-		frame.setLocation(Math.max(minX, Math.min(x, maxX)), Math.max(viewport.y, Math.min(y, maxY)));
-	}
-
-	@Deprecated
-	public static void installWindowDrag(JFrame frame, JComponent bar) {
-		System.err.println("AIPatch.installWindowDrag disabled");
-		return;
-		/**
-		 * 
-		 * Huh?? Why?? Why JavaScript only??
-		 * 
-		 * @j2sNative
-		 * var node = bar.getUI$().getDOMNode$();
-		 * if (!node || node._trackerWindowDrag) return;
-		 * node._trackerWindowDrag = true;
-		 * node.style.touchAction = "none";
-		 * var pointer = null, startX, startY, frameX, frameY;
-		 * node.addEventListener("pointerdown", function(e) {
-		 *   if (!e.isPrimary || e.button !== 0 || !bar.isEnabled$() || frame.maximized) return;
-		 *   // SwingJS menu labels can be plain DOM nodes with no button role.
-		 *   // Capture gestures only on the bar background.
-		 *   if (e.target !== node) return;
-		 *   pointer = e.pointerId;
-		 *   startX = e.clientX;
-		 *   startY = e.clientY;
-		 *   frameX = frame.getX$();
-		 *   frameY = frame.getY$();
-		 *   node.setPointerCapture(pointer);
-		 *   e.preventDefault();
-		 *   e.stopPropagation();
-		 * }, true);
-		 * node.addEventListener("pointermove", function(e) {
-		 *   if (e.pointerId !== pointer) return;
-		 *   var dx = e.clientX - startX, dy = e.clientY - startY;
-		 *   if (Math.abs(dx) + Math.abs(dy) >= 4)
-		 *     C$.moveFromMenuBar$I$I(Math.round(frameX + dx), Math.round(frameY + dy));
-		 *   e.stopPropagation();
-		 * }, true);
-		 * node.addEventListener("lostpointercapture", function(e) {
-		 *   if (e.pointerId === pointer) pointer = null;
-		 * });
-		 */
-	}
-
 	/// unused; adapted
 
+//	@Deprecated
+//	public static boolean strangeJavaClickRequest(MouseEvent e) {
+//		if (true)
+//			return false;
+//		// SwingJS may synthesize a click from the release of a long press.
+//		// Browser menus are dismissed by the next press, not that release.
+//		return (!OSPRuntime.isJS && !OSPRuntime.isPopupTrigger(e));
+//	}
+//
+//	@Deprecated
+//	public static void addButtonTouchListeners(JButton button, Runnable onBegin, Runnable onEnd, Runnable onCancel) {
+//		return;
+//		/**
+//		 * ???
+//		 * 
+//		 * -j2sNative
+//		 * var node = button.getUI$().getDOMNode$();
+//		 * if (!node || node._trackerViewTouch) 
+//		 *   return;
+//		 * 
+//		 * node._trackerViewTouch = true;
+//		 * node.style.touchAction = "none";
+//		 * node.style.webkitTouchCallout = "none";
+//		 * var pointer = null, startX, startY, suppressClickUntil = 0;
+//		 * function consume(event) {
+//		 *   event.preventDefault();
+//		 *   event.stopImmediatePropagation();
+//		 * }
+//		 * node.addEventListener("pointerdown", function(event) {
+//		 *   if (event.pointerType !== "touch" && event.pointerType !== "pen") {
+//		 *     suppressClickUntil = 0;
+//		 *     return;
+//		 *   }
+//		 *   if (!event.isPrimary || !button.isEnabled$()) return;
+//		 *   pointer = event.pointerId;
+//		 *   startX = event.clientX;
+//		 *   startY = event.clientY;
+//		 *   if (event.isTrusted) node.setPointerCapture(pointer);
+//		 *   consume(event);
+//		 *   onBegin.run$();
+//		 * }, true);
+//		 * node.addEventListener("pointermove", function(event) {
+//		 *   if (event.pointerId !== pointer) return;
+//		 *   var dx = event.clientX - startX, dy = event.clientY - startY;
+//		 *   if (dx * dx + dy * dy > 144) onCancel.run$();
+//		 *   consume(event);
+//		 * }, true);
+//		 * function end(event) {
+//		 *   if (event.pointerId !== pointer) return;
+//		 *   pointer = null;
+//		 *   suppressClickUntil = Date.now() + 500;
+//		 *   consume(event);
+//		 *   switch (event.type) {
+//		 *   case "pointerup":
+//		 *      onEnd.run$();
+//		 *      break;
+//		 *   case "pointercancel":
+//		 *      onCancel.run$();
+//		 *      break;
+//		 *   }
+//		 * }
+//		 * node.addEventListener("pointerup", end, true);
+//		 * node.addEventListener("pointercancel", end, true);
+//		 * ["touchstart", "touchmove", "touchend", "touchcancel", "contextmenu"].forEach(function(type) {
+//		 *   node.addEventListener(type, function(event) {
+//		 *     if (pointer !== null || Date.now() < suppressClickUntil) consume(event);
+//		 *   }, {capture: true, passive: false});
+//		 * });
+//		 * node.addEventListener("click", function(event) {
+//		 *   if (event.detail && Date.now() < suppressClickUntil) consume(event);
+//		 * }, true);
+//		 */
+//	}
+//
+//	@SuppressWarnings("unused")
+//	@Deprecated
+//	private static void moveFromMenuBar(JFrame frame, int x, int y) {
+//		Rectangle viewport = OSPRuntime.jsutil.getMaximumViewport(2, 2);
+//		int minX = viewport.x + Math.min(48, frame.getWidth()) - frame.getWidth();
+//		int maxX = viewport.x + viewport.width - Math.min(48, frame.getWidth());
+//		int maxY = viewport.y + Math.max(0, viewport.height - 30);
+//		frame.setLocation(Math.max(minX, Math.min(x, maxX)), Math.max(viewport.y, Math.min(y, maxY)));
+//	}
+//
+//	@Deprecated
+//	public static void installWindowDrag(JFrame frame, JComponent bar) {
+//		System.err.println("AIPatch.installWindowDrag disabled");
+//		return;
+//		/**
+//		 * 
+//		 * Huh?? Why?? Why JavaScript only??
+//		 * 
+//		 * -j2sNative
+//		 * var node = bar.getUI$().getDOMNode$();
+//		 * if (!node || node._trackerWindowDrag) return;
+//		 * node._trackerWindowDrag = true;
+//		 * node.style.touchAction = "none";
+//		 * var pointer = null, startX, startY, frameX, frameY;
+//		 * node.addEventListener("pointerdown", function(e) {
+//		 *   if (!e.isPrimary || e.button !== 0 || !bar.isEnabled$() || frame.maximized) return;
+//		 *   // SwingJS menu labels can be plain DOM nodes with no button role.
+//		 *   // Capture gestures only on the bar background.
+//		 *   if (e.target !== node) return;
+//		 *   pointer = e.pointerId;
+//		 *   startX = e.clientX;
+//		 *   startY = e.clientY;
+//		 *   frameX = frame.getX$();
+//		 *   frameY = frame.getY$();
+//		 *   node.setPointerCapture(pointer);
+//		 *   e.preventDefault();
+//		 *   e.stopPropagation();
+//		 * }, true);
+//		 * node.addEventListener("pointermove", function(e) {
+//		 *   if (e.pointerId !== pointer) return;
+//		 *   var dx = e.clientX - startX, dy = e.clientY - startY;
+//		 *   if (Math.abs(dx) + Math.abs(dy) >= 4)
+//		 *     C$.moveFromMenuBar$I$I(Math.round(frameX + dx), Math.round(frameY + dy));
+//		 *   e.stopPropagation();
+//		 * }, true);
+//		 * node.addEventListener("lostpointercapture", function(e) {
+//		 *   if (e.pointerId === pointer) pointer = null;
+//		 * });
+//		 */
+//	}
+//
 	// BH: Much more sensible to just use Java override and JavaScript UI
 	// clientProperties to do this.
 	//  See TButton.TStickyMenuItem and TButton.TStickyPopupButton -- very simple there!

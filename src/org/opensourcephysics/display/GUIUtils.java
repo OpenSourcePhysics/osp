@@ -1048,8 +1048,7 @@ public class GUIUtils {
 		if (frame == null || !OSPRuntime.isJS)
 			return;
 		// note that we can change these styles to anything we want
-		boolean useAI = false;
-	    OSPRuntime.jsutil.setFrameResizer(frame, MIN_WIDTH, MIN_HEIGHT, resizerNodeStyles, rubberBandStyles, useAI);
+	    OSPRuntime.jsutil.setFrameResizer(frame, MIN_WIDTH, MIN_HEIGHT, resizerNodeStyles, rubberBandStyles);
 	}
 
 }
