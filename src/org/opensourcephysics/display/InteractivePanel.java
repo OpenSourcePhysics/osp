@@ -431,6 +431,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 	protected void doMousePressed(MouseEvent e) {
         mouseEvent = e;
         mouseAction = MOUSE_PRESSED;
+        iaDraggable = null; // Hit-test this press instead of reusing the previous drag target.
         if(mouseHandler!=null) { // is there an object available to handle the mouse event
           mouseHandler.handleMouseAction(this, e);
           iaDraggable = null;   // force the panel to search all drawables
