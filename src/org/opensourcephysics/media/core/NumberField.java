@@ -339,6 +339,11 @@ public class NumberField extends JTextField {
 	protected NumberFormatter nf;
 	private boolean haveVirtualNumberPad;
 
+	@Override
+	public String toString() {
+		return "[NumberField " + getText() + "]";
+	}
+
 	/**
 	 * Constructs a NumberField with default sigfigs (4)
 	 *
