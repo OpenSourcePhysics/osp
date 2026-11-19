@@ -2534,6 +2534,23 @@ public class OSPRuntime {
 	}
 
 	/**
+	 * Create a simple one-time Timer for a Runnable. 
+	 * @param ms
+	 * @param a
+	 * @return
+	 */
+	public static Timer trigger(int ms, Runnable r) {
+		return trigger(ms, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				r.run();				
+			}
+			
+		});
+	}
+
+	/**
 	 * Displays a JColorChooser and returns the selected color.
 	 *
 	 * @param color the initial color to select
