@@ -422,6 +422,9 @@ public class NumberField extends JTextField {
 			public void mouseClicked(MouseEvent e) {
 				if (!isEditable())
 					return;
+				if (isEnabled() && OSPRuntime.isJS && !OSPRuntime.hasKeyboard
+						&& !OSPRuntime.isPopupTrigger(e))
+					OSPRuntime.checkMobileKeyboard(NumberField.this);
 				if (e.getClickCount() == 2) {
 					selectAll();
 				}

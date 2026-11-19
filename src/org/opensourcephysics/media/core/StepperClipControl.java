@@ -204,7 +204,11 @@ public class StepperClipControl extends ClipControl {
 
 	protected void setStepNumberLater(int frame, int step) {
 		if (videoFrameNumber == frame) {
+			boolean stepChanged = stepNumber != step;
+			super.setStepNumber(step);
 			stepDisplayed = true;
+			if (stepChanged)
+				firePropertyChange(ClipControl.PROPERTY_CLIPCONTROL_STEPNUMBER, null, Integer.valueOf(step));
 		} else if (video.getFrameNumber() == frame) { // setting frame number will have no effect
 			super.setStepNumber(step);
 			stepDisplayed = true;
