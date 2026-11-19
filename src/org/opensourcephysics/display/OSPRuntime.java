@@ -99,8 +99,8 @@ import javajs.async.SwingJSUtils.Timeout;
  */
 public class OSPRuntime {
 
-	public static final String VERSION = "6.3.5-261111"; //$NON-NLS-1$
-	public static final String RELEASE_DATE = "11 Nov 2026"; //$NON-NLS-1$
+	public static final String VERSION = "6.3.5-261118"; //$NON-NLS-1$
+	public static final String RELEASE_DATE = "18 Nov 2026"; //$NON-NLS-1$
 	public static final String OSP_PROPERTY_LOCALE = "locale";
 
 	public static String getSwingJSVersion() {
@@ -718,15 +718,17 @@ public class OSPRuntime {
 	 * Large (Tablets / iPads): 768px to 1024px
 	 * 
 	 * @param c a top-level Container like JFrame, etc
-	 * @return true if small
+	 * @return true only if the width is below the threshold (horz toolbars)
 	 */	
 	public static boolean isSmallScreen(Container c) {		
 		Dimension size;
 		if (c != null) size = c.getSize();			
 		else size = getHTMLPageSize(); // returns screen size in Java
     // Check if logical width or height is under the "smallScreen" threshold
+//    boolean small = size.width > 0 && size.height > 0 
+//    		&& (size.width < getSmallScreenThreshold() || size.height < getSmallScreenThreshold());
     boolean small = size.width > 0 && size.height > 0 
-    		&& (size.width < getSmallScreenThreshold() || size.height < getSmallScreenThreshold());
+    		&& (size.width < getSmallScreenThreshold());
     return small;
 	}
 	
