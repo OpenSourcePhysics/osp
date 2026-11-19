@@ -32,8 +32,8 @@ public class ResizableIcon implements Icon {
 	private final int baseWidth, baseHeight;
 	private BufferedImage baseImage;
 	private final Icon icon;
-	private int sizeFactor, w, h;
-	private double fixedSizeFactor = 0, sizeBoost = 1;
+	private int w, h;
+	private double sizeFactor, fixedSizeFactor = 0, sizeBoost = 1;
 	private boolean isDrawn;
 
 	/**
@@ -97,7 +97,8 @@ public class ResizableIcon implements Icon {
 	@Override
 	public int getIconWidth() {
 		if (fixedSizeFactor <= 0)
-			setSizeFactor(FontSizer.getIntegerFactor());
+//			setSizeFactor(FontSizer.getIntegerFactor());
+			setSizeFactor(FontSizer.getFactor());
 		return w;
 	}
 
@@ -121,7 +122,7 @@ public class ResizableIcon implements Icon {
 	 * 
 	 * @param factor the desired factor
 	 */
-	private void setSizeFactor(int factor) {
+	private void setSizeFactor(double factor) {
 		if (factor != sizeFactor) {
 			sizeFactor = factor;
 			w = Math.round(Math.round(baseWidth * sizeFactor * sizeBoost));
