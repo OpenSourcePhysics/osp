@@ -71,7 +71,7 @@ public double step() {
       counter++;
     } else {
       for(int i = 0; i<numEqn; i++) { // Predictor
-        temp_state[i] = state[i]+stepSize*(4277*fn[i]-7923*fn1[i]+9982*fn2[i]-7298*fn3[i]+2877*fn4[i]-475*fn5[i])/720;
+        temp_state[i] = state[i]+stepSize*(4277*fn[i]-7923*fn1[i]+9982*fn2[i]-7298*fn3[i]+2877*fn4[i]-475*fn5[i])/1440;
       }
       ode.getRate(temp_state, temp_rate);
       for(int i = 0; i<numEqn; i++) { // Corrector

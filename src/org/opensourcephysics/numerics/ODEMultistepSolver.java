@@ -212,10 +212,11 @@ public double step() {
           throw new ODESolverException(err_msg);
         }
         if(maxMessages>0) {
-          maxMessages--;
-          System.out.println("ODEMultistepSolver " + err_msg);
-          //OSPLog.warning(err_msg);
+            maxMessages--;
+            System.out.println("ODEMultistepSolver " + err_msg);
+            //OSPLog.warning(err_msg);
         }
+        break;
       }
     }
     return remainder;

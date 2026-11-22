@@ -622,7 +622,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 //		return exp.replaceAll("([A-Za-z_θω]\\w*)", " $1 ").replaceAll("([0123456789\\.]) ([eE])", "$1$2");
 		return exp.replaceAll("([A-Za-z_θω]\\w*)", " $1 ")
 				.replaceAll("([0123456789\\.]) ([eE])", "$1$2")
-				.replaceAll("([eE]) ([-])", "$1$2");
+				.replaceAll("([eE]) ([-+])", "$1$2");
 	}
 
 	/**

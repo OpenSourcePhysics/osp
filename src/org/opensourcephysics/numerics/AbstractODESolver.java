@@ -50,6 +50,7 @@ abstract public double step();
   @Override
 public void setStepSize(double _stepSize) {
     stepSize = _stepSize;
+    initialize(stepSize);
   }
 
   /**

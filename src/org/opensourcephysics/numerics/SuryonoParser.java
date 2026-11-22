@@ -179,7 +179,7 @@ public final class SuryonoParser extends MathExpParser {
 			err = NO_ERROR;
 			numberindex = 0;
 			int size = refnames.size();
-			if (size == 0) {
+			if (size > 0) {
 				if (refvalue == null || refvalue.length < size)
 					refvalue = new double[size];
 				for (int i = 0; i < size; i++) {
@@ -358,7 +358,7 @@ public final class SuryonoParser extends MathExpParser {
 			case 3:
 				return Math.log(p);
 			case 4:
-				return Math.log(p) / LOG10;
+				return Math.log10(p);
 			case 5:
 				return Math.abs(p);
 			case 6:
@@ -378,11 +378,21 @@ public final class SuryonoParser extends MathExpParser {
 			case 13:
 				return Math.tanh(p); //double a = Math.exp(parameter); double b = Math.exp(-parameter);	return (a - b) / (a + b);
 			case 14: // asinh
-				return Math.log(p + Math.sqrt(p * p + 1));
+				double magnitude = Math.abs(p);
+				// Above 2^28 the asymptotic correction is below double precision.
+				if (magnitude > 0x1.0p28) {
+					return Math.copySign(Math.log(magnitude) + Math.log(2), p);
+				}
+				double square = magnitude * magnitude;
+				return Math.copySign(Math.log1p(magnitude + square / (1 + Math.sqrt(1 + square))), p);
 			case 15: // acosh
+				// Avoid overflow in both x squared and 2x for large arguments.
+				if (p > 0x1.0p28) {
+					return Math.log(p) + Math.log(2);
+				}
 				return Math.log(p + Math.sqrt(p * p - 1));
 			case 16: // atanh
-				return Math.log((1 + p) / (1 - p)) / 2;
+				return 0.5 * Math.log1p(2 * p / (1 - p));
 			case 17:
 				return Math.ceil(p);
 			case 18:
@@ -460,7 +470,6 @@ public final class SuryonoParser extends MathExpParser {
 	
 	// constants
 	private static final double DEGTORAD = Math.PI / 180;
-	private static final double LOG10 = Math.log(10);
 	/**
 	 * Parentheses expected.
 	 */
@@ -530,6 +539,10 @@ public final class SuryonoParser extends MathExpParser {
 	 * Referenced name could not be found.
 	 */
 	public static final int REF_NAME_EXPECTED = 15;
+
+	/** Compiled postfix buffer would exceed its maximum capacity. */
+	public static final int TOO_MANY_CODES = 16;
+	private static final int MAX_CODE_BUFFER_SIZE = 999;
 	// postfix codes
 
 	private static final int OFFSET_MASK     = 0xF000;
@@ -848,22 +861,29 @@ public final class SuryonoParser extends MathExpParser {
 		}
 		num = 0;
 		error = NO_ERROR;
+		f.postfix_code[0] = 0;
 		f.references.clear();
 		f.refnames.clear();
-		switch (function) {
-		case "":
-			error = EXPRESSION_EXPECTED;
+		try {
+			switch (function) {
+			case "":
+				error = EXPRESSION_EXPECTED;
+				valid = false;
+				return;
+			case NULL:
+			case NULL_D:
+				addNum(0);
+				valid = true;
+				return;
+			case "1":
+			case "1.0":
+				addNum(1);
+				valid = true;
+				return;
+			}
+		} catch (ParserException e) {
+			error = e.getErrorCode();
 			valid = false;
-			return;
-		case NULL:
-		case NULL_D:
-			addNum(0);
-			valid = true;
-			return;
-		case "1":
-		case "1.0":
-			addNum(1);
-			valid = true;
 			return;
 		}
 		String allFunction = function;
@@ -871,7 +891,7 @@ public final class SuryonoParser extends MathExpParser {
 		int index;
 		while ((index = allFunction.lastIndexOf(";")) >= 0) { //$NON-NLS-1$
 			function = allFunction.substring(++index) + ')';
-			allFunction = allFunction.substring(0, index);
+			allFunction = allFunction.substring(0, index - 1);
 			// references are of form: refname1:reffunc1;refname2:reffunc2;...
 			String refname = null;
 			int separator = function.indexOf(":"); //$NON-NLS-1$
@@ -899,7 +919,7 @@ public final class SuryonoParser extends MathExpParser {
 				position += index;
 				break;
 			}
-			f.references.put(refname, f.postfix_code);
+			f.references.put(refname, Arrays.copyOf(f.postfix_code, f.postfix_code[0] + 1));
 			f.refnames.add(refname);
 		}
 		if (error == NO_ERROR) {
@@ -1025,6 +1045,9 @@ public final class SuryonoParser extends MathExpParser {
 		case CODE_DAMAGED:
 			s = "internal code damaged"; //$NON-NLS-1$
 			break;
+		case TOO_MANY_CODES:
+			s = "postfix code buffer exceeds 999 entries";
+			break;
 		case STACK_OVERFLOW:
 			s = "execution stack overflow"; //$NON-NLS-1$
 			break;
@@ -1134,19 +1157,33 @@ public final class SuryonoParser extends MathExpParser {
 	 *
 	 * @param code the postfix code to append
 	 */
-	private void addCode(int code) {
-		f.postfix_code[++f.postfix_code[0]] = code;
+	private void addCode(int code) throws ParserException {
+		f.postfix_code = addCode(f.postfix_code, code);
 	}
 
-	private static void addCode(int[] a, int code) {
-		a[++a[0]] = code;
+	private static int[] ensureCodeCapacity(int[] codes, int required) throws ParserException {
+		if (required > MAX_CODE_BUFFER_SIZE) {
+			throw new ParserException(TOO_MANY_CODES);
+		}
+		if (required > codes.length) {
+			return Arrays.copyOf(codes, Math.min(MAX_CODE_BUFFER_SIZE, Math.max(required, codes.length * 2)));
+		}
+		return codes;
 	}
 
-	private static void addCodes(int[] a, int[] b) {
-		int n = b[0];
-		int pt = a[0];
-		a[0] += n;
-		System.arraycopy(b, 1, a, pt + 1, n);
+	private static int[] addCode(int[] codes, int code) throws ParserException {
+		codes = ensureCodeCapacity(codes, codes[0] + 2);
+		codes[++codes[0]] = code;
+		return codes;
+	}
+
+	private static int[] addCodes(int[] target, int[] source) throws ParserException {
+		int count = source[0];
+		int offset = target[0];
+		target = ensureCodeCapacity(target, offset + count + 1);
+		System.arraycopy(source, 1, target, offset + 1, count);
+		target[0] = offset + count;
+		return target;
 	}
 
 	/**
@@ -1196,7 +1233,7 @@ public final class SuryonoParser extends MathExpParser {
 		addNum(value);
 	}
 
-	private void addNum(double value) {
+	private void addNum(double value) throws ParserException {
 		f.number[num++] = value;
 		addCode(NUMERIC);
 	}
@@ -1267,15 +1304,15 @@ public final class SuryonoParser extends MathExpParser {
 				throw new ParserException(COMMA_EXPECTED);
 			}
 			addCode(JUMP_CODE);
-			addCode(savecode, f.postfix_code[0] + 2);
-			addCodes(savecode, f.postfix_code);
+			savecode = addCode(savecode, f.postfix_code[0] + 2);
+			savecode = addCodes(savecode, f.postfix_code);
 			f.postfix_code[0] = 0; //$NON-NLS-1$
 			scanAndParse();
 			if (ch != ')') {
 				throw new ParserException(PAREN_EXPECTED);
 			}
-			addCode(savecode, f.postfix_code[0] + 1);
-			addCodes(savecode, f.postfix_code);
+			savecode = addCode(savecode, f.postfix_code[0] + 1);
+			savecode = addCodes(savecode, f.postfix_code);
 			f.postfix_code = Arrays.copyOf(savecode, savecode.length);
 			getNextch();
 			return;
@@ -1314,7 +1351,7 @@ public final class SuryonoParser extends MathExpParser {
 					throw new ParserException(PAREN_EXPECTED);
 				}
 				getNextch();
-				addCodes(savecode, f.postfix_code);
+				savecode = addCodes(savecode, f.postfix_code);
 				f.postfix_code = Arrays.copyOf(savecode, savecode.length);
 				addCode(i | EXT_FUNC_OFFSET);
 				return;
@@ -1343,7 +1380,7 @@ public final class SuryonoParser extends MathExpParser {
 	}
 
 	// W. Christian addition to automatically add variables
-	private boolean append(String stream) {
+	private boolean append(String stream) throws ParserException {
 		String[] var_name2 = new String[f.var_count + 1];
 		double[] var_value2 = new double[f.var_count + 1];
 		System.arraycopy(f.var_name, 0, var_name2, 0, f.var_count);
@@ -1387,6 +1424,7 @@ public final class SuryonoParser extends MathExpParser {
 			}
 			addCode(NOT_CODE);
 			getNextch();
+			skipSpaces();
 			return false;
 		}
 		isBoolean = false;
@@ -1430,10 +1468,10 @@ public final class SuryonoParser extends MathExpParser {
 		if (ch == '^') {
 			arithmeticLevel3();
 		}
-		addCode(POWER);
 		if (negate) {
 			addCode(NEGATE);
 		}
+		addCode(POWER);
 	}
 
 	/**
@@ -1484,6 +1522,7 @@ public final class SuryonoParser extends MathExpParser {
 				if (negate) {
 					addCode(NEGATE);
 				}
+				if (ch=='*'||ch=='/') arithmeticLevel2();
 				break;
 			case '*':
 			case '/':
@@ -1492,6 +1531,7 @@ public final class SuryonoParser extends MathExpParser {
 				}
 				arithmeticLevel2();
 				break;
+			default: if (negate) addCode(NEGATE); 
 			}
 			addCode(operator);
 		} while ((ch == '+') || (ch == '-'));
