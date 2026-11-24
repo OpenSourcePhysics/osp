@@ -113,10 +113,6 @@ public class MessageDrawable implements Drawable {
 		}); 
 	}
 
-	public void setIgnoreRepaint(boolean ignore) {
-		ignoreRepaint = ignore;
-	}
-
 	/**
 	 * Sets the font factor.
 	 *
