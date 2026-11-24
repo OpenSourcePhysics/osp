@@ -477,16 +477,7 @@ public class CartesianInteractive extends CartesianType1 implements Selectable {
 		if (scaleSetter == null) {
 			scaleSetter = new ScaleSetter();
 			if (plot != null)
-				plot.getGlassPane().add(scaleSetter);
-			// BH opted to dispense with scaleSetterPanel, since
-			// scaleSetter itself is a panel, and the added panel adds nothing
-			// I have left it borderless opaque for now; we can revise that
-			// in ScaleSetter if desired.
-
-			// create transparent scaleSetterPanel with no LayoutManager
-			// scaleSetterPanel = new JPanel(null);
-			// scaleSetterPanel.setOpaque(false);
-			// scaleSetterPanel.add(scaleSetter);
+				plot.add(scaleSetter);
 		}
 
 		// refresh autoscale checkbox text if needed (eg, new Locale)
