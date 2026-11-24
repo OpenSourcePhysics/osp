@@ -70,7 +70,7 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 		switch (type) {
 		case TYPE_STRING: //$NON-NLS-1$
 			if (XML.requiresCDATA((String) value)) {
-				content.add(XML.CDATA_PRE + value + XML.CDATA_POST);
+				content.add(XML.CDATA_PRE + ((String) value).replace("]]>", "]]]]><![CDATA[>") + XML.CDATA_POST);
 			} else {
 				content.add(value.toString());
 			}
@@ -266,7 +266,7 @@ public final class XMLPropertyElement extends XMLNode implements XMLProperty {
 				stringValue = stringValue.equals("true") ? "true" : "false"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				break;
 			case TYPE_STRING:
-				stringValue = XML.CDATA_PRE + stringValue + XML.CDATA_POST;
+				stringValue = XML.CDATA_PRE + stringValue.replace("]]>", "]]]]><![CDATA[>") + XML.CDATA_POST;
 				break;
 			case TYPE_OBJECT:
 			case TYPE_ARRAY:

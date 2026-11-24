@@ -689,8 +689,11 @@ public class XML {
   }
 
 	public static String removeCDATA(String content) {
-		int pt = content.indexOf(XML.CDATA_PRE);
-		return (pt >= 0 ? content.substring(pt + XML.CDATA_PRE_LEN, content.indexOf(XML.CDATA_POST)) : content);
+		if (!(content.startsWith(CDATA_PRE) && content.endsWith(CDATA_POST))) {
+			return content;
+		}
+		return content.substring(CDATA_PRE_LEN, content.length() - CDATA_POST_LEN)
+				.replace("]]]]><![CDATA[>", "]]>");
 	}
 
 }

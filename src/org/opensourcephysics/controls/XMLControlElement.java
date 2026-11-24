@@ -1786,7 +1786,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 				while ((pt = s.indexOf(XML.CDATA_POST_PROP)) < 0) { // look for end tag //$NON-NLS-1$
 					s += XML.NEW_LINE + input.readLine();
 				}
-				prop.content.add(s.substring(0, pt));
+				prop.content.add(XML.CDATA_PRE + s.substring(0, pt) + XML.CDATA_POST);
 				break;
 			}
 			//$FALL-THROUGH$
