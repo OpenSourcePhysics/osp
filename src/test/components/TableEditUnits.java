@@ -3,10 +3,15 @@ package test.components;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -28,6 +33,20 @@ public class TableEditUnits extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
+        setBackground(Color.green);
+        getContentPane().setBackground(Color.magenta);
+        
+    	JMenuBar m = new JMenuBar() {
+    		public Dimension getPreferredSize() {
+    			Dimension d = super.getPreferredSize();
+    			d.height = 50;
+    			return d;
+    		}
+    	};
+    	m.add(new JLabel("osp"));
+    	m.setBackground(Color.yellow);
+    	setJMenuBar(m);
+
         // 1. Setup Columns & Data with Units
         String[] columns = {"Item", "Length", "Weight"};
         Object[][] data = {
@@ -37,7 +56,13 @@ public class TableEditUnits extends JFrame {
         };
 
         model = new DefaultTableModel(data, columns);
-        table = new JTable(model);
+        table = new JTable(model) {
+        	public void paintComponent(Graphics g) {
+        		super.paintComponent(g);
+        		
+        	}
+        };
+        table.setBackground(Color.pink);
         table.setRowHeight(28);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 
@@ -59,7 +84,10 @@ public class TableEditUnits extends JFrame {
             }
         });
 
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBackground(Color.RED);
+        
+        add(sp, BorderLayout.CENTER);
     }
 
     /**
