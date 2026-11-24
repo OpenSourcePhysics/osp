@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<project name="swingjs-project" default="tosite" basedir="."
+ xmlns:if="ant:if"
+    xmlns:unless="ant:unless">
+
+	   <!-- copy java2script distribution SwingJS-site.zip to swingjs/ and unzip it into site/ 
+	        requires java2script Git has been imported to ../java2script -->
+
+  <target name="tosite">
+  	  	
+  	<!-- location of ant-contrib.jar -->
+  	<property name="tools.dir" value = "tools" />
+
+    <!-- input directories -->
+    
+    <property name="java2script.local.dir" value = "../java2script" />
+    <property name="site.dir" value = "site" />
+    <property name="swingjs.dir" value = "swingjs" />
+  
+    <property name="java2script.dist.dir" value = "${java2script.local.dir}/sources/net.sf.j2s.java.core/dist" />
+  	
+   	<echo> Copying ${java2script.dist.dir}/SwingJS-site.zip to ${swingjs.dir}/ </echo>
+	<copy file="${java2script.dist.dir}/SwingJS-site.zip" todir="${swingjs.dir}" overwrite="true" />
+
+    <echo> unzipping ${swingjs.dir}/SwingJS-site.zip into ${site.dir}</echo>
+    <unzip src="${swingjs.dir}/SwingJS-site.zip" dest="${site.dir}/" overwrite="true"/>      
+
+</target>
+	
+
+</project>
