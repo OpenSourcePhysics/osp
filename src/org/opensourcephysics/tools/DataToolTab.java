@@ -3689,7 +3689,7 @@ public class DataToolTab extends JPanel implements Tool, PropertyChangeListener 
 				}
 				plot.setMessage(plot.createMessage());
 				
-				if (positionOrSlopeChanged || !DrawingPanel.messagesAsJLabels)
+				if (positionOrSlopeChanged)
 					plot.repaint();
 			}
 			else {
