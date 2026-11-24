@@ -2216,7 +2216,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 				d.draw(this, g2);
 			}
 		}
-		getMessages().draw(this, g2);
 		g2.dispose(); // BH 2020.02.26
 	}
 
