@@ -372,12 +372,12 @@ public abstract class ClipControl extends OSPRuntime.Supported implements Proper
 			ClipControl clipControl = (ClipControl) obj;
 			// set rate
 			double rate = control.getDouble("rate"); //$NON-NLS-1$
-			if (rate != Double.NaN) {
+			if (!Double.isNaN(rate)) {
 				clipControl.setRate(rate);
 			}
 			// set dt
 			double dt = control.getDouble("delta_t"); //$NON-NLS-1$
-			if (dt != Double.NaN) {
+			if (!Double.isNaN(dt)) {
 				clipControl.setFrameDuration(dt);
 			}
 			// set looping and playing
