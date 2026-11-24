@@ -86,8 +86,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 
 	static int ntest;
 
-	public static final boolean messagesAsJLabels = true;
-
 	protected static boolean RECORD_PAINT_TIMES = false; // set true to test painting time
 	protected long currentTime;// = System.currentTimeMillis();
 
@@ -104,15 +102,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	
 	protected boolean isDisposed;
 	
-	/**
-	 * BH experimental -- not needed.
-	 */
-	private JPanel glassPane;
-	
-	public JPanel getGlassPane() {
-		return (glassPane == null ? this : glassPane);
-	}
-
 	protected JPopupMenu popupmenu; // right mouse click popup menu
 	/**
 	 * 
@@ -219,7 +208,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	 */
 	public DrawingPanel() {
 		super(null);
-//		addGlassPane(); // BH was not helpful
 		setName("DrawingPanel");
 		setBackground(bgColor);
 		setPreferredSize(new Dimension(300, 300));
@@ -287,48 +275,6 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 		addMouseListener(mouseController);
 		addMouseMotionListener(mouseController);
 		addOptionController();
-	}
-
-//	private void addGlassPane() {
-//		glassPane = new JPanel(null);
-//		glassPane.setOpaque(false);
-//		glassPane.setBounds(0, 0, 0, 0);
-//		add(glassPane);
-//		addComponentListener(new ComponentListener() {
-//
-//			@Override
-//			public void componentResized(ComponentEvent e) {
-//				resizeGlassPane();
-//			}
-//
-//			@Override
-//			public void componentMoved(ComponentEvent e) {
-//				resizeGlassPane();
-//			}
-//
-//			@Override
-//			public void componentShown(ComponentEvent e) {
-//				// TODO Auto-generated method stub
-//				
-//			}
-//
-//			@Override
-//			public void componentHidden(ComponentEvent e) {
-//				// TODO Auto-generated method stub
-//				
-//			}
-//			
-//		});
-//	}
-//	protected void resizeGlassPane() {
-//		glassPane.setBounds(0, 0, getWidth(), getHeight());
-//	}
-
-	public void addMessageLabel(JLabel l) {
-		if (glassPane == null)
-			add(l);
-		else
-			glassPane.add(l);
 	}
 
 	/**
@@ -2270,8 +2216,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 				d.draw(this, g2);
 			}
 		}
-		if (!messagesAsJLabels)
-			getMessages().draw(this, g2);
+		getMessages().draw(this, g2);
 		g2.dispose(); // BH 2020.02.26
 	}
 
@@ -2677,7 +2622,7 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	}
 
 	private MessageDrawable getMessages() {
-		return (messages == null ? (messages = new MessageDrawable(messagesAsJLabels ? this : null)) : messages);
+		return (messages == null ? (messages = new MessageDrawable(this)) : messages);
 	}
 
 	/**
@@ -2734,15 +2679,8 @@ public class DrawingPanel extends JPanel implements Disposable, ActionListener, 
 	}
 
 	public void repaintIfNecessary() {
-	    if (!OSPRuntime.isJS || !messagesAsJLabels)
-			repaintGlassPane();
-	}
-
-	private void repaintGlassPane() {
-		if (glassPane == null)
+	    if (!OSPRuntime.isJS) 
 			repaint();
-		else
-			glassPane.repaint();
 	}
 
 	/**
