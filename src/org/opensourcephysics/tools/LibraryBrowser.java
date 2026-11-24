@@ -472,7 +472,11 @@ public class LibraryBrowser extends JPanel {
 			}
 		}
 		FontSizer.setMenuFonts(collectionsMenu);
-		searchTargetButton.setEnabled(true);
+		setButtonEnabled(searchTargetButton, true);
+	}
+
+	private void setButtonEnabled(JButton btn, boolean b) {
+		btn.setEnabled(b);
 	}
 
 	/**
@@ -1203,9 +1207,9 @@ public class LibraryBrowser extends JPanel {
 			public void insertUpdate(DocumentEvent e) {
 				String text = commandField.getText();
 				boolean enable = !"".equals(text);
-				openButton.setEnabled(enable); // $NON-NLS-1$
-//				downloadButton.setEnabled(enable && ResourceLoader.isHTTP(text)); //$NON-NLS-1$
-				downloadButton.setEnabled(enable);
+				setButtonEnabled(openButton, enable); // $NON-NLS-1$
+//				setButtonEnabled(downloadButton, enable && ResourceLoader.isHTTP(text)); //$NON-NLS-1$
+				setButtonEnabled(downloadButton, enable);
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1213,8 +1217,8 @@ public class LibraryBrowser extends JPanel {
 					LibraryTreeNode node = treePanel.getSelectedNode();
 					if (node != null && node.isRoot() && node.record instanceof LibraryCollection
 							&& treePanel.pathToRoot.equals(text)) {
-						openButton.setEnabled(false);
-						downloadButton.setEnabled(false);
+						setButtonEnabled(openButton, false);
+						setButtonEnabled(downloadButton, false);
 					}
 				} else {
 					commandField.setBackground(Color.yellow);
@@ -1225,8 +1229,8 @@ public class LibraryBrowser extends JPanel {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				boolean enable = !"".equals(commandField.getText());
-				openButton.setEnabled(enable); // $NON-NLS-1$
-				downloadButton.setEnabled(enable); // $NON-NLS-1$
+				setButtonEnabled(openButton, enable); // $NON-NLS-1$
+				setButtonEnabled(downloadButton, enable); // $NON-NLS-1$
 				textChanged = keyPressed;
 				LibraryTreePanel treePanel = getSelectedTreePanel();
 				if (treePanel != null) {
@@ -1308,7 +1312,7 @@ public class LibraryBrowser extends JPanel {
 			chooseSearchTargets();
 		});
 		searchTargetButton.setToolTipText(ToolsRes.getString("LibraryBrowser.Dialog.SearchTargets.Text"));
-		searchTargetButton.setEnabled(false); // set true when Library is fully loaded
+		setButtonEnabled(searchTargetButton, false); // set true when Library is fully loaded
 
 		refreshButton = new OSPButton(refreshIcon);
 		refreshButton.addActionListener(new ActionListener() {
@@ -2307,7 +2311,7 @@ public class LibraryBrowser extends JPanel {
 	 */
 	public void setComandButtonEnabled(boolean enabled) {
 		String text = commandField.getText();
-		openButton.setEnabled(enabled && !"".equals(text)); //$NON-NLS-1$
+		setButtonEnabled(openButton, enabled && !"".equals(text)); //$NON-NLS-1$
 	}
 
 	/**
@@ -2380,7 +2384,7 @@ public class LibraryBrowser extends JPanel {
 		if (treePanel != null) {
 			editButton.setText(!treePanel.isEditing() ? ToolsRes.getString("LibraryBrowser.Button.OpenEditor") : //$NON-NLS-1$
 					ToolsRes.getString("LibraryBrowser.Button.CloseEditor")); //$NON-NLS-1$
-			editButton.setEnabled(treePanel.isEditable());
+			setButtonEnabled(editButton, treePanel.isEditable());
 			String tabname = " '" + getTabTitle(treePanel.pathToRoot) + "'"; //$NON-NLS-1$ //$NON-NLS-2$
 			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab") + tabname); //$NON-NLS-1$
 			closeItem.setEnabled(true);
@@ -2403,11 +2407,11 @@ public class LibraryBrowser extends JPanel {
 			closeItem.setText(ToolsRes.getString("LibraryBrowser.MenuItem.CloseTab")); //$NON-NLS-1$
 			closeItem.setEnabled(false);
 			closeAllItem.setEnabled(false);
-			editButton.setEnabled(false);
-			refreshButton.setEnabled(false);
+			setButtonEnabled(editButton, false);
+			setButtonEnabled(refreshButton, false);
 			commandField.setText(null);
-			openButton.setEnabled(false);
-			downloadButton.setEnabled(false);
+			setButtonEnabled(openButton, false);
+			setButtonEnabled(downloadButton, false);
 			saveAsItem.setEnabled(false);
 		}
 		repaint();
@@ -2547,7 +2551,7 @@ public class LibraryBrowser extends JPanel {
 		commandField.setForeground(available ? LibraryTreePanel.getDefaultForeground() : LibraryTreePanel.darkRed);
 		commandField.setCaretPosition(0);
 		if (isRoot)
-			openButton.setEnabled(false);
+			setButtonEnabled(openButton, false);
 		else if (available) {
 			flashOpen();
 		}
@@ -2563,7 +2567,7 @@ public class LibraryBrowser extends JPanel {
 	}
 
 	protected void setRefreshForNode(boolean selected, boolean isRoot) {
-		refreshButton.setEnabled(selected);
+		setButtonEnabled(refreshButton, selected);
 		setRefreshToolTip(isRoot);
 	}
 
