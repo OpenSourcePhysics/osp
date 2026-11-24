@@ -453,8 +453,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
         jsCustomCursor("pressed", cursorColor, e);
         if(isShowCoordinates()) {
           String s = coordinateStrBuilder.getCoordinateString(this, e);
-          if (setMessage(s, MessageDrawable.BOTTOM_LEFT) && !messagesAsJLabels)
-          	repaint();
+          setMessage(s, MessageDrawable.BOTTOM_LEFT);
         }
 	}
 
@@ -468,8 +467,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
         }
         iaDraggable = null;
         if(isShowCoordinates()) {
-          if (setMessage(null, MessageDrawable.BOTTOM_LEFT) && !messagesAsJLabels)
-          	repaint();
+          setMessage(null, MessageDrawable.BOTTOM_LEFT);
         }
         setMouseCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	}
@@ -517,8 +515,7 @@ public class InteractivePanel extends DrawingPanel implements InteractiveMouseHa
 		}
 		if (isShowCoordinates()) {
 			String s = coordinateStrBuilder.getCoordinateString(this, e);
-			if (setMessage(s, 0) && !messagesAsJLabels)
-				repaint();
+			setMessage(s, 0);
 		}
 	}
 
