@@ -2027,10 +2027,7 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 			// create and collect the array elements from substrings
 			ArrayList<Object> list = new ArrayList<Object>();
 			Class<?> arrayType = componentType.getComponentType();
-			// if intent is to allow trailing comma to represents a final null value, 
-			// then set this true
-			boolean allowTrailingNull = false;
-			int n = s.length() - (allowTrailingNull ? 0 : 1);
+			int n = s.length() - 1;
 			boolean wasArray = false;
 			for (int pt = 1; pt < n; pt++) {
 				switch (s.charAt(pt)) {
@@ -2050,6 +2047,9 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 					break;
 				}
 			}
+			if (!wasArray && n > 1) {
+				list.add(null);
+			}
 			// create the array
 			n = list.size();
 			Object array = Array.newInstance(componentType, n);
@@ -2064,7 +2064,8 @@ public final class XMLControlElement extends XMLNode implements XMLControl {
 		// int, double, or boolean values separated by comma
 		// wiil not be null, but may be empty
 		// collect element substrings separated by commas
-		String[] list = (s.length() == 0 ? new String[0] : s.substring(1, s.length() - 1).split(","));
+		String body = s.substring(1, s.length() - 1);
+		String[] list = (body.isEmpty() ? new String[0] : body.split(","));
 		// create the array and populate it
 		Object array = Array.newInstance(componentType, list.length);
 		if (componentType == Integer.TYPE) {
