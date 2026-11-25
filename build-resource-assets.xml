@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+ * just a crude zip up of non-Jalview classes for development purposes -BH 2018
+ *
+ * external JAR class treatment for JavaScript: see src2/README_SWINGJS.txt
+ * 
+ -->
+
+<project name="osp" default="getresources" basedir="."
+ xmlns:if="ant:if"
+    xmlns:unless="ant:unless">
+
+  	<!-- inputs directories -->
+    <property name="source.resource.dir" value="src/org/opensourcephysics/resources" />    
+	<!-- output directories -->
+    <property name="resource.dir" value="resource-assets" />    
+
+
+ 
+<target name="getresources"> 
+  	    <echo> Copying  files from ${source.resource.dir} into ${resource.dir} </echo>
+  	    <copy overwrite="true" todir="${resource.dir}">
+  	      <fileset dir="${source.resource.dir}">
+  	        <include name="**/*.properties"/>
+            <include name="**/*.gif"/>
+            <include name="**/*.html"/>
+  	    </fileset>
+  	    </copy>
+		
+		
+</target>
+		  		
+</project>

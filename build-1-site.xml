@@ -78,13 +78,13 @@
  	<!-- transfer resources -->
 
   	<echo> Copying ${site-resource.dir} files into ${site.dir} </echo>
-  	<copy todir="${site.dir}">
+  	<copy overwrite="true" todir="${site.dir}">
       <fileset dir="${site-resource.dir}" erroronmissingdir="false" >
       	<include name="**"/>
   	</fileset>
     </copy>
   	<echo> Copying ${resource.dir} files into ${j2s.dir} </echo>
-   	<copy todir="${j2s.dir}">
+   	<copy overwrite="true" todir="${j2s.dir}">
       <fileset dir="${resource.dir}">
       	<include name="**"/>
   	</fileset>
