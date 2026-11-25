@@ -21,6 +21,7 @@
   	    <echo> Copying  files from ${source.resource.dir} into ${resource.dir} </echo>
   	    <copy overwrite="true" todir="${resource.dir}">
   	      <fileset dir="${source.resource.dir}">
+            <include name="*.gif"/>
   	        <include name="**/*.properties"/>
             <include name="**/*.gif"/>
             <include name="**/*.html"/>

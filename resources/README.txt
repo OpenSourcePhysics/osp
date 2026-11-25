@@ -1,7 +1,7 @@
 SwingJS distribution -- resources directory
 
-This directory can be used to hold files that code within this Eclipse project 
-needs to run -- data files, for instance. Files in it will be copied to 
-the SwingJS JavaScript library within the site by build-site.xml.
+This directory can be used to hold files that only JavaScript needs to run
+and that are not included in the Java src/ directory
 
-The default location for the SwingJS library is: ./site/swingjs/j2s.
+Files in it will be copied to the SwingJS site/swingjs/j2s directory when build-1-site.xml is run
+
