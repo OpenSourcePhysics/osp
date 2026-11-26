@@ -538,18 +538,18 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 */
 	@Override
 	public UserFunction clone() {
-		UserFunction f = new UserFunction(name);
-		f.setDescription(description);
-		f.setNameEditable(nameEditable);
-		f.setParametersClone(paramNames, paramValues, paramDescriptions);
+		UserFunction clone = new UserFunction(name);
+		clone.setDescription(description);
+		clone.setNameEditable(nameEditable);
+		clone.setParametersClone(paramNames, paramValues, paramDescriptions);
 		UserFunction[] refs = new UserFunction[references.length];
 		for (int i = 0; i < refs.length; i++) {
 			refs[i] = references[i].clone();
 		}
-		f.setReferences(refs);
-		f.setExpression(dummyInputString, vars);
-		f.polynomial = (polynomial == null ? null : polynomial.clone());
-		return f;
+		clone.setReferences(refs);
+		clone.setExpression(dummyInputString, vars);
+		clone.polynomial = (polynomial == null ? null : polynomial.clone());
+		return clone;
 	}
 
 	/**

@@ -204,18 +204,16 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 		clone.setDescription(getDescription());
 
 		// set parameters
-//		String[] names = new String[coefficients.length];
-//		double[] values = new double[coefficients.length];
-//		String[] desc = new String[coefficients.length];
-//		for (int i = 0; i < coefficients.length; i++) {
-//			names[i] = getParameterName(i);
-//			values[i] = getParameterValue(i);
-//			desc[i] = getParameterDescription(i);
-//			// BH!?? This clone will have reversed values
-//		}
-		clone.paramNames = paramNames.clone();
+		int n = coefficients.length;
+		String[] names = new String[n];
+		String[] desc = new String[n];
+		for (int i = n; --i >= 0;) {
+			names[i] = paramNames[i];
+			desc[i] = getParameterDescription(i);
+		}
+		clone.paramNames = names;
 		clone.coefficients = coefficients.clone();
-		clone.paramDescriptions = paramDescriptions.clone();
+		clone.paramDescriptions = desc;
 		return clone;
 	}
 

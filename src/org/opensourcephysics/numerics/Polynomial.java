@@ -25,7 +25,7 @@ package org.opensourcephysics.numerics;
  * ......KnownPolynomial
  * 
  */
-public class Polynomial implements Function {
+  public class Polynomial implements Function {
   /**
    * Polynomial coefficients; note that these are reverse order of UserFunction.Polynomial
    */
