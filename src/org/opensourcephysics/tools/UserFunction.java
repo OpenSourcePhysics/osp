@@ -105,7 +105,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 			paramValues[i] = poly.coefficients[n - 1 - i];
 		}
 		poly.paramDescriptions = (poly.paramDescriptions == null ? null : poly.paramDescriptions.clone());
-		setExpression(getExpression(var), new String[] { var });
+		setExpression(poly.getExpression(var), new String[] { var });
 	}
 
 	/**
