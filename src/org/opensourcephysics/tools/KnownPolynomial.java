@@ -11,6 +11,8 @@ import org.opensourcephysics.numerics.PolynomialLeastSquareFit;
 
 /**
  * A polynomial that implements KnownFunction. Limited to degree 5 or less.
+ * 
+ * Note that coefficients 
  */
 public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFunction {
 	String name;
@@ -79,9 +81,10 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 	}
 
 	/**
-	 * Sets a parameter value.
+	 * Sets a parameter value. 
+	 * 
 	 *
-	 * @param i     the parameter index
+	 * @param i     the parameter index, reversed here because of c3x^3 + c2x^2 + c1x
 	 * @param value the value
 	 */
 	@Override
@@ -116,7 +119,8 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 	}
 
 	/**
-	 * Gets the expression.
+	 * Gets the expression. [c0, c1, c2] t gives c2*t^2 + c1*t + c0
+	 * 
 	 *
 	 * @param indepVarName the name of the independent variable
 	 * @return the equation expression
@@ -127,10 +131,10 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 		int end = coefficients.length - 1;
 		for (int i = 0; i <= end; i++) {
 			eqn.append(getParameterName(i));
-			if (end - i > 0) {
+			if (end > i) {
 				eqn.append("*"); //$NON-NLS-1$
 				eqn.append(indepVarName);
-				if (end - i > 1) {
+				if (end > i + 1) {
 					eqn.append("^"); //$NON-NLS-1$
 					eqn.append(end - i);
 				}
@@ -200,16 +204,18 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 		clone.setDescription(getDescription());
 
 		// set parameters
-		String[] names = new String[coefficients.length];
-		double[] values = new double[coefficients.length];
-		String[] desc = new String[coefficients.length];
-		for (int i = 0; i < coefficients.length; i++) {
-			names[i] = getParameterName(i);
-			values[i] = getParameterValue(i);
-			desc[i] = getParameterDescription(i);
-		}
-		clone.setParameters(names, values, desc);
-
+//		String[] names = new String[coefficients.length];
+//		double[] values = new double[coefficients.length];
+//		String[] desc = new String[coefficients.length];
+//		for (int i = 0; i < coefficients.length; i++) {
+//			names[i] = getParameterName(i);
+//			values[i] = getParameterValue(i);
+//			desc[i] = getParameterDescription(i);
+//			// BH!?? This clone will have reversed values
+//		}
+		clone.paramNames = paramNames.clone();
+		clone.coefficients = coefficients.clone();
+		clone.paramDescriptions = paramDescriptions.clone();
 		return clone;
 	}
 
@@ -249,21 +255,18 @@ public class KnownPolynomial extends PolynomialLeastSquareFit implements KnownFu
 		return "KnownPolynomial: " + getExpression("<x>"); 
 	}
 
+	/** 
+	 * Convert KnownPolynomial to UserFunction
+	 * 
+	 * From DatasetCurveFitter
+	 * 
+	 * Does NOT set uf.polynomial to this and does NOT set uf.description.
+	 * BH!? is that what is desired? 
+	 * 
+	 */
 	@Override
 	public UserFunction newUserFunction(String var) {
-		UserFunction uf = new UserFunction(getName());
-		int n = getParameterCount();
-			String[] params = new String[n];
-			double[] values = new double[n];
-			String[] desc = new String[n];
-			for (int i = 0; i < n; i++) {
-				params[i] = getParameterName(i);
-				values[i] = getParameterValue(i);
-				desc[i] = getParameterDescription(i);
-			}
-			uf.setParameters(params, values, desc);
-			uf.setExpression(getExpression(var), new String[] { var });
-		return uf;
+	  return new UserFunction(this, var);
 	}
 
 }

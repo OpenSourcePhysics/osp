@@ -275,7 +275,7 @@ public class FitBuilder extends FunctionTool {
 			panel.originalName = name;
 			addedFits.add(name);
 		} else if (f instanceof KnownPolynomial) {
-			UserFunction uf = new UserFunction((KnownPolynomial) f);
+			UserFunction uf = new UserFunction((KnownPolynomial) f, null);
 			return addFitFunction(uf);
 		}
 		return true;

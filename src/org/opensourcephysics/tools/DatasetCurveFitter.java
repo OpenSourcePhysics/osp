@@ -1678,7 +1678,7 @@ public class DatasetCurveFitter extends JPanel {
 		}
 		UserFunction testFunction = getTestFunction(level);
 		
-    // set up parameters
+    // set up parameters, without this parameter name
 		int len = f.getParameterCount();
 		if (len < 1) 
 			return null;

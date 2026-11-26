@@ -8,18 +8,28 @@
 package org.opensourcephysics.numerics;
 
 /**
- * Polynomial implements a mathematical polynomial:
+ * Polynomial implements a mathematical polynomial: 
+ * 
  * c[0] + c[1] * x + c[2] * x^2 + ....
  *
  * This class is based on code published in Object-Oriented Implementation of
- * Numerical Methods by Didier H. Besset.
- * The code has been adapted to the OSP framework by Wolfgang Christian.
+ * Numerical Methods by Didier H. Besset. The code has been adapted to the OSP
+ * framework by Wolfgang Christian.
+ * 
+ * Function
+ * 
+ * ..Polynomial
+ * 
+ * ....PolynomialLeastSquareFit
+ * 
+ * ......KnownPolynomial
+ * 
  */
 public class Polynomial implements Function {
   /**
-   * Polynomial coefficients.
+   * Polynomial coefficients; note that these are reverse order of UserFunction.Polynomial
    */
-  protected double[] coefficients;
+  public double[] coefficients;
 
   /**
    * Constructs a polynomial with the given coefficients.
@@ -54,21 +64,52 @@ public class Polynomial implements Function {
     }
   }
 
-  /**
-   * Evaluates a polynomial using the given coefficients.
-   *
-   * @param x
-   * @param coeff the polynomial coefficients.
-   */
-  public static double evalPolynomial(final double x, final double[] coeff) {
-    int n = coeff.length-1;
-    double y = coeff[n];
-    for(int i = n-1; i>=0; i--) {
-      y = coeff[i]+(y*x);
-    }
-    return y;
-  }
-
+	/**
+	 * Evaluates a polynomial using the given coefficients, top down, no pow(x).
+	 * 
+	 * e.g.
+	 * 
+	 * coef == [c0,c1,c2,c3]
+	 * 
+	 * y = c3x^3 + c2x^2 + c1x + c0
+	 * 
+	 *   = x * (x * (x*c3 + c2) + c1) + c0
+	 *
+	 *set y = c3
+	 *
+	 *............y=(x*y + c2 )  n==2
+	 *
+	 *.......y=(x*y + c1 ...........) n==1
+	 *
+	 *..y=(x*y + c0.......................) n==0
+	 * 
+	 * @param x
+	 * @param coeff the polynomial coefficients.
+	 */
+	public static double evalPolynomial(final double x, final double[] coeff) {
+		int n = coeff.length - 1; // 3
+		double y = coeff[n--]; // c3
+		for (; n >= 0; n--) { // 2,1,0
+			y = x * y + coeff[n];
+		}
+		return y;
+	}
+	
+//	  public static double evalPolynomialOrig(final double x, final double[] coeff) {
+//		    int n = coeff.length-1;
+//		    double y = coeff[n];
+//		    for(int i = n-1; i>=0; i--) {
+//		      y = coeff[i]+(y*x);
+//		    }
+//		    return y;
+//		  }
+//
+//	static {
+//		System.out.println(evalPolynomial(2,new double[] {5,2,1}));
+//		System.out.println(evalPolynomialOrig(2,new double[] {5,2,1}));
+//		
+//	}
+//
   /**
    *
    * @param r double    number added to the polynomial.

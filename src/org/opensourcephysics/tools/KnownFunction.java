@@ -54,13 +54,24 @@ public interface KnownFunction extends Function {
 	public void setParameterValue(int i, double value);
 
 	/**
-	 * Sets the parameters.
+	 * Sets the parameters - arrays are not cloned.
 	 *
 	 * @param names        the parameter names
 	 * @param values       the parameter values
 	 * @param descriptions the parameter descriptions
 	 */
 	public void setParameters(String[] names, double[] values, String[] descriptions);
+
+	/**
+	 * Sets the parameters - arrays are cloned.
+	 *
+	 * @param names        the parameter names
+	 * @param values       the parameter values
+	 * @param descriptions the parameter descriptions
+	 */
+	default public void setParametersClone(String[] names, double[] values, String[] descriptions) {
+		setParameters(names.clone(), values.clone(), (descriptions ==  null ? null : descriptions.clone())); 
+	}
 
 	/**
 	 * Gets the equation.
@@ -104,7 +115,7 @@ public interface KnownFunction extends Function {
 	 * @return the clone
 	 */
 	public KnownFunction clone();
-
+	
 	/**
 	 * Determines if another Object is the same as this one.
 	 *
@@ -114,6 +125,11 @@ public interface KnownFunction extends Function {
 	@Override
 	public boolean equals(Object f);
 
+	/**
+	 * Creates a new UserFunction from this KnownFunction
+	 * @param var
+	 * @return
+	 */
 	public UserFunction newUserFunction(String var);
 
 }

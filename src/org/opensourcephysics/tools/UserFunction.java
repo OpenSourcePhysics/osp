@@ -18,6 +18,7 @@ import org.opensourcephysics.tools.FunctionEditor.FObject;
 
 /**
  * A known function for which the expression and parameters are user-editable.
+ * UserFunction and KnownPolynomial
  *
  * @author Douglas Brown
  */
@@ -84,25 +85,27 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	 *
 	 * @param poly the KnownPolynomial
 	 */
-	public UserFunction(KnownPolynomial poly) {
+	public UserFunction(KnownPolynomial poly, String var) {
 		this(poly.getName());
-		polynomial = poly;
-		// set up name and description
-		setName(poly.getName());
-		setDescription(poly.getDescription());
-
-		// set up parameters
-		String[] params = new String[poly.getParameterCount()];
-		double[] paramValues = new double[poly.getParameterCount()];
-		String[] desc = new String[poly.getParameterCount()];
-		for (int i = 0; i < params.length; i++) {
-			params[i] = poly.getParameterName(i);
-			paramValues[i] = poly.getParameterValue(i);
-			desc[i] = poly.getParameterDescription(i);
+		if (var == null) {
+			// from FitBuilder
+			var = "x";
+			polynomial = poly;
+			setDescription(poly.getDescription());
+		} else {
+			// from DatasetCurveFitter via KnownPolynomial.newUserFunction(var)
+			// BH!? leaving this.polynomial out? not creating the description?
 		}
-		setParameters(params, paramValues, desc);
-
-		setExpression(poly.getExpression("x"), new String[] { "x" }); //$NON-NLS-1$ //$NON-NLS-2$
+		// set up parameters, reversing order
+		// PolyClone reverses the values of coefficients to their standard order
+		paramNames = poly.paramNames.clone();
+		int n = poly.coefficients.length;
+		paramValues = new double[n];
+		for (int i = 0; i < n; i++) {
+			paramValues[i] = poly.coefficients[n - 1 - i];
+		}
+		poly.paramDescriptions = (poly.paramDescriptions == null ? null : poly.paramDescriptions.clone());
+		setExpression(getExpression(var), new String[] { var });
 	}
 
 	/**
@@ -345,6 +348,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	}
 
 	/**
+	 * BH! never called
 	 * Sets the parameters.
 	 *
 	 * @param names  the parameter names
@@ -378,7 +382,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	public void updateReferenceParameters() {
 		for (int i = 0, n = references.length; i < n; i++) {
 			UserFunction next = references[i];
-			next.setParameters(paramNames, paramValues, paramDescriptions);
+			next.setParametersClone(paramNames, paramValues, paramDescriptions);
 			next.updateReferenceParameters();
 		}
 	}
@@ -537,7 +541,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 		UserFunction f = new UserFunction(name);
 		f.setDescription(description);
 		f.setNameEditable(nameEditable);
-		f.setParameters(paramNames, paramValues, paramDescriptions);
+		f.setParametersClone(paramNames, paramValues, paramDescriptions);
 		UserFunction[] refs = new UserFunction[references.length];
 		for (int i = 0; i < refs.length; i++) {
 			refs[i] = references[i].clone();
@@ -723,6 +727,7 @@ public class UserFunction implements FObject, KnownFunction, MultiVarFunction, C
 	public UserFunction newUserFunction(String var) {
 		return clone();
 	}
+
 }
 
 /*

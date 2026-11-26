@@ -183,7 +183,7 @@ public class UserFunctionEditor extends FunctionEditor {
 		for (int i = 0; i < evaluate.size(); i++) {
 			UserFunction f = (UserFunction) evaluate.get(i);
 			if (!parametersValid && (paramEditor != null)) {
-				f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+				f.setParametersClone(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
 			}
 			f.setExpression(f.getInputString(), f.getIndependentVariables());
 		}
@@ -264,12 +264,12 @@ public class UserFunctionEditor extends FunctionEditor {
 					}
 					if (oldName != null) {
 						for (UserFunction f : getMainFunctions()) {
-							f.setParameters(paramEditor.getNames(), paramEditor.getValues(),
+							f.setParametersClone(paramEditor.getNames(), paramEditor.getValues(),
 									paramEditor.getDescriptions());
 							f.replaceParameterNameInExpression(oldName, newName);
 						}
 						for (UserFunction f : getSupportFunctions()) {
-							f.setParameters(paramEditor.getNames(), paramEditor.getValues(),
+							f.setParametersClone(paramEditor.getNames(), paramEditor.getValues(),
 									paramEditor.getDescriptions());
 							f.replaceParameterNameInExpression(oldName, newName);
 						}
@@ -283,7 +283,7 @@ public class UserFunctionEditor extends FunctionEditor {
 
 	void updateAllFunctions(ParamEditor paramEditor) {
 		for (int i = 0, n = objects.size(); i < n; i++) {
-			((UserFunction) objects.get(i)).setParameters(paramEditor.getNames(), paramEditor.getValues(),
+			((UserFunction) objects.get(i)).setParametersClone(paramEditor.getNames(), paramEditor.getValues(),
 					paramEditor.getDescriptions());
 		}
 	}
@@ -425,13 +425,13 @@ public class UserFunctionEditor extends FunctionEditor {
 		}
 		if (f == null) {
 			f = new UserFunction(name);
-			f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+			f.setParametersClone(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
 			f.setExpression(expression, defaultVariableNames);
 		} else if (!f.getName().equals(name)) {
 			f.setNameEditable(true);
 			f.setName(name);
 		} else {
-			f.setParameters(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
+			f.setParametersClone(paramEditor.getNames(), paramEditor.getValues(), paramEditor.getDescriptions());
 			f.setExpression(expression, f.getIndependentVariables());
 		}
 		return f;
